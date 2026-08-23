@@ -1,0 +1,12 @@
+title: Interviewed
+description: Personal interview question bank — Java, API, SQL, Cloud
+theme: jekyll-theme-minimal
+markdown: kramdown
+
+# repo-relative baseurl so links work at https://<user>.github.io/<repo>/
+baseurl: "/interviewed"
+
+exclude:
+  - README.md
+  - .claude/
+  - src/TEMPLATE.md
