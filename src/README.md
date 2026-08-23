@@ -169,3 +169,4 @@ Use the `/new-question <topic>` skill (e.g. `/new-question java`,
 - `api/` — REST/HTTP API design, versioning, auth, idempotency, rate limiting.
 - `sql/` — Query design, indexing, execution plans, transactions, isolation levels.
 - `cloud/` — Cloud infra, networking, IAM, scaling, resilience, cost/perf trade-offs.
+- `dotnet/` — C#/.NET runtime (CLR), ASP.NET Core, async/await, GC, EF Core, performance diagnosis.

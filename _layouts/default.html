@@ -42,10 +42,12 @@
             &raquo; <a href="{{ '/src/sql/' | relative_url }}">SQL</a>
           {% elsif page.url contains '/src/cloud/' %}
             &raquo; <a href="{{ '/src/cloud/' | relative_url }}">Cloud</a>
+          {% elsif page.url contains '/src/dotnet/' %}
+            &raquo; <a href="{{ '/src/dotnet/' | relative_url }}">.NET</a>
           {% elsif page.url contains '/src/README' %}
             &raquo; Contributor Guide
           {% endif %}
-          {% unless page.url == '/src/java/' or page.url == '/src/api/' or page.url == '/src/sql/' or page.url == '/src/cloud/' or page.url contains '/src/README' %}
+          {% unless page.url == '/src/java/' or page.url == '/src/api/' or page.url == '/src/sql/' or page.url == '/src/cloud/' or page.url == '/src/dotnet/' or page.url contains '/src/README' %}
             &raquo; {{ page.title }}
           {% endunless %}
         </nav>
