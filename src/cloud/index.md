@@ -16,4 +16,3 @@ _No question sets yet — generate one with `/new-question cloud`._
 </ul>
 {% endif %}
 
-[← Back to home]({{ "/" | relative_url }})

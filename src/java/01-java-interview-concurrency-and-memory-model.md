@@ -42,6 +42,9 @@ map.putIfAbsent("k", 1);
 **Follow-up question:**
 How would `putIfAbsent` or `computeIfAbsent` fix the race condition example above, and why don't they suffer from the same issue?
 
+**Follow-up good answer:**
+`putIfAbsent(k, v)` and `computeIfAbsent(k, fn)` perform the check-and-insert as a single atomic operation inside `ConcurrentHashMap`'s internal locking (per-bin CAS/synchronized, as covered in Q10) — no other thread can observe or act between the "check" and the "act" because there is no gap: it's one indivisible operation from the caller's point of view. The original `containsKey` + `put` sequence is two separate method calls, and the JVM/scheduler is free to interleave another thread's `put` between them, which is exactly the race. Compound atomic methods close that window entirely rather than just making each half individually safe.
+
 **Glossary:**
 - **Data race** — concurrent access to shared memory, one write, no happens-before edge between them (JLS §17.4.5).
 - **Race condition** — outcome depends on timing/interleaving of operations; a correctness bug, not necessarily a memory-safety violation.
@@ -95,6 +98,9 @@ class Flag {
 **Follow-up question:**
 In the code example, why is it safe for the reader to see `data == 42` even though `data` itself is not `volatile`?
 
+**Follow-up good answer:**
+It's safe because of **transitivity** of happens-before, not because `data` is volatile. Program order gives: `data = 42` happens-before `ready = true` (both in the writer thread, sequential). The volatile write/read rule gives: `ready = true` happens-before the subsequent read of `ready` in the reader thread. Chaining those with transitivity: `data = 42` happens-before the read of `ready == true`, which happens-before `System.out.println(data)`. So the plain write to `data` is guaranteed visible — the `volatile` field acts as a "memory barrier" / publication point that piggybacks the visibility of everything written before it in program order, not just itself.
+
 **Glossary:**
 - **Happens-before** — JMM partial order guaranteeing visibility + no harmful reordering.
 - **Program order** — within a single thread, happens-before is implied by sequential execution order.
@@ -132,6 +138,9 @@ void increment() { counter.incrementAndGet(); } // CAS loop, actually atomic
 
 **Follow-up question:**
 How does `AtomicInteger.incrementAndGet()` achieve atomicity without taking a lock? (Hint: CAS / `compareAndSwap`, and what happens on contention.)
+
+**Follow-up good answer:**
+`incrementAndGet()` runs a **CAS loop**: it reads the current value, computes `current + 1`, then attempts a hardware-level compare-and-swap that writes the new value only if the field still equals the value it read. If another thread modified the field in between, the CAS fails and the loop retries with the freshly-read value — no thread ever blocks or is descheduled by the JVM the way it would with a monitor. Under contention this can burn CPU cycles retrying (unlike a lock, where a blocked thread is parked), but for short, cheap operations like an increment it's typically far faster than lock/unlock overhead because there's no OS-level scheduling involved, no thread parking/waking, and no possibility of a thread holding the "lock" while descheduled.
 
 **Glossary:**
 - **Visibility** — a thread reading a variable sees the latest write from any thread.
@@ -179,6 +188,9 @@ void doWork() {
 **Follow-up question:**
 What happens if you forget the `finally` block and an exception is thrown inside the critical section while holding a `ReentrantLock`? Contrast with `synchronized`.
 
+**Follow-up good answer:**
+Without a `finally`, an exception thrown inside the critical section propagates out of `doWork()` while the `ReentrantLock` is **still held** — nothing automatically releases it. Every other thread calling `lock()` (or blocking on `tryLock()`) on that same lock instance will now block forever (or until timeout, if using a timed `tryLock`), effectively a self-inflicted deadlock/liveness bug. `synchronized`, in contrast, is enforced by the JVM at the bytecode level: `monitorexit` is guaranteed to run when a synchronized block/method exits abnormally via exception (the compiler emits an implicit exception handler that calls `monitorexit`), so the monitor is always released even without explicit code for it. This is precisely why `ReentrantLock`'s explicit API requires disciplined `try { ... } finally { unlock(); }` usage — the safety `synchronized` gives for free must be hand-written with `Lock`.
+
 **Glossary:**
 - **Reentrant** — a thread already holding the lock can re-acquire it without deadlocking itself.
 - **Fairness** — FIFO granting of a lock to waiting threads, vs. default barging/unfair mode which favors throughput.
@@ -221,6 +233,9 @@ void increment2() {
 **Follow-up question:**
 What is "lock inflation" and why does the JVM avoid starting every lock as a heavyweight OS mutex?
 
+**Follow-up good answer:**
+**Lock inflation** is the JVM escalating a lock's internal representation from a cheap, CAS-based lightweight/thin lock (stored directly in the object header) to a full heavyweight monitor backed by an OS-level mutex, and it happens only when real contention is detected — i.e. a second thread tries to acquire a lock another thread already holds. The JVM avoids starting every lock heavyweight because the vast majority of `synchronized` blocks in real programs are **never actually contended** at a given moment (single-threaded access, or a monitor entered/exited by one thread far more often than it's contested). A heavyweight monitor requires an OS-level mutex, kernel-mediated thread parking/waking, and a wait queue — all real overhead compared to a CAS on the object header. Starting cheap and only inflating on demonstrated contention means the common uncontended case pays almost nothing, while correctness under real contention is still fully preserved once inflated.
+
 **Glossary:**
 - **Monitor** — the object-associated lock structure supporting mutual exclusion + wait/notify.
 - **monitorenter / monitorexit** — JVM bytecode instructions implementing `synchronized` blocks.
@@ -262,6 +277,9 @@ Response call() throws InterruptedException {
 
 **Follow-up question:**
 Since a `Semaphore` has no ownership, what bug class becomes possible that isn't possible with `ReentrantLock`?
+
+**Follow-up good answer:**
+Because any thread can `release()` regardless of whether it ever `acquire()`d, you can get **permit-count corruption**: a thread that never acquired can accidentally call `release()` (e.g. a `finally` block wired up wrong, or double-releasing after both a success and an error path each release once), inflating the available-permit count beyond its intended cap and silently defeating the throttling the semaphore exists to enforce — more concurrent access than intended, with no exception thrown. `ReentrantLock` structurally prevents this class of bug: `unlock()` by a thread that doesn't own the lock throws `IllegalMonitorStateException` immediately, so an accidental extra/mismatched release fails loudly instead of silently corrupting shared state.
 
 **Glossary:**
 - **Permit** — a semaphore's unit of availability; acquiring decrements the count, releasing increments it.
@@ -311,6 +329,9 @@ void transferSafe(Account a, Account b, int amt) {
 **Follow-up question:**
 How would you detect a live deadlock in a running production JVM without restarting it?
 
+**Follow-up good answer:**
+Take a thread dump with `jcmd <pid> Thread.print` (or `jstack <pid>`) — HotSpot's thread-dump logic actively runs cycle detection over the "thread waiting for lock held by thread" graph, and if it finds one, the dump prints an explicit **"Found one Java-level deadlock"** section naming the exact threads and monitors/locks involved in the cycle, not just individual thread states. This works without restarting or modifying the JVM at all — `jcmd`/`jstack` attach out-of-process via the JVM's diagnostic agent and only pause threads briefly to capture stacks. You can also monitor via JMX (`ThreadMXBean.findDeadlockedThreads()`) programmatically or through tools like VisualVM/JConsole for the same detection without manually parsing a text dump.
+
 **Glossary:**
 - **Circular wait** — a cycle in the "waiting-for" graph of threads and resources.
 - **Lock ordering** — a discipline of always acquiring locks in the same relative order.
@@ -352,6 +373,9 @@ jcmd <pid> JFR.start duration=60s filename=recording.jfr
 **Follow-up question:**
 In a thread dump, how do you distinguish a thread that's `BLOCKED` on a monitor from one that's `WAITING` because of `Object.wait()` or a `Condition.await()`, and why does that distinction change your diagnosis?
 
+**Follow-up good answer:**
+A thread dump prints the thread's `Thread.State` explicitly: `BLOCKED (on object monitor)` means the thread is trying to *enter* a `synchronized` block/method and another thread currently owns that monitor — the dump also names the owning thread and the exact lock object, which is your direct lead for a contention/deadlock investigation. `WAITING`/`TIMED_WAITING` means the thread **voluntarily** gave up the lock via `Object.wait()`, `Condition.await()`, `Thread.join()`, `LockSupport.park()`, or `Thread.sleep()` — it isn't fighting for a lock, it's deliberately paused pending a notification, timeout, or another thread's completion. The distinction matters because `BLOCKED` threads point you at a genuine contention/design problem (critical section too coarse, hot lock), while a large number of `WAITING` threads is often perfectly normal (e.g. idle pool threads waiting on a work queue) — mistaking one for the other leads you to "fix" healthy idle threads or, worse, dismiss a real contention problem as benign waiting.
+
 **Glossary:**
 - **jcmd** — the modern, recommended diagnostic-command tool; superset of `jstack`/`jmap`/`jinfo` functionality with lower overhead.
 - **JFR (Java Flight Recorder)** — low-overhead, continuous JVM profiling/event framework built into HotSpot.
@@ -363,6 +387,7 @@ This is the "performance methodology" question every interview is now asking in 
 **References:**
 - [Troubleshooting Guide — Diagnostic Tools (Java SE 21)](https://docs.oracle.com/en/java/javase/21/troubleshoot/diagnostic-tools.html)
 - [jstack Command Reference](https://docs.oracle.com/en/java/javase/17/docs/specs/man/jstack.html)
+- [Thread.State javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Thread.State.html)
 
 ---
 
@@ -394,6 +419,9 @@ void handleRequest(String id) {
 
 **Follow-up question:**
 Why does this leak not show up as a `Thread`-level leak in a heap dump, but rather appears attached to `Thread.threadLocals`? How would you find it in a heap dump?
+
+**Follow-up good answer:**
+Internally, each `Thread` object holds a package-private field, `threadLocals`, referencing a `ThreadLocal.ThreadLocalMap` — the actual storage for every `ThreadLocal` value set on that thread. When you `set()` a value without a later `remove()`, the entry lives inside that map, which is itself reachable from the (long-lived, pooled) `Thread` object — so the GC correctly considers it reachable and never collects it; it's not a "leak" in the sense of unreachable memory, it's a correctness/lifecycle leak of retained-but-unwanted objects. In a heap dump (e.g. via Eclipse MAT or `jhat`/`jcmd GC.heap_dump` + a viewer), you find it by inspecting a pooled worker `Thread` object's `threadLocals` field and walking its `ThreadLocalMap.Entry[]` table — a large or ever-growing table on long-lived thread-pool threads, especially with entries whose values reference large or business-specific objects, is the tell-tale sign. MAT's "dominator tree" or "Leak Suspects" report often surfaces this pattern directly since a thread pool has few threads retaining disproportionately large object graphs.
 
 **Glossary:**
 - **ThreadLocal** — per-thread variable storage, backed internally by a `ThreadLocalMap` referenced from the `Thread` object itself.
@@ -429,6 +457,9 @@ counts.merge("key", 1, Integer::sum);
 **Follow-up question:**
 Why does `ConcurrentHashMap.size()` being an approximate/eventually-consistent value under heavy concurrent modification not usually matter in practice — and when would it?
 
+**Follow-up good answer:**
+`size()` doesn't lock the whole map to count entries — it sums per-bin/per-segment counters that may be mid-update by other threads, so under concurrent modification the returned count can be **stale by the time you read it**, reflecting the map's state at some moment during the call rather than a frozen snapshot. In practice this rarely matters because `size()` is almost always used for approximate purposes — logging, metrics, capacity-planning heuristics, UI display counts — where "off by a few, momentarily" is harmless, and any use of `size()` to drive control flow already implies a race regardless of exactness (the size can change the instant after you read it anyway, so treating it as exact was never safe in a concurrent map). It *does* matter if code mistakenly uses `size() == 0` as a synchronization gate (e.g. "wait until empty") — that's a correctness bug independent of the approximation, since even an exact momentary size is stale for making a subsequent decision; the fix there is a proper synchronizer (e.g. a latch/barrier or `isEmpty()` combined with real coordination), not a more "accurate" size call.
+
 **Glossary:**
 - **Lock striping** — dividing a structure into independently-lockable segments to reduce contention.
 - **CAS** — compare-and-swap; lock-free atomic update.
@@ -454,6 +485,9 @@ It matters because it's the shared foundation underneath most of `java.util.conc
 
 **Follow-up question:**
 Why does AQS use a single `int` for state rather than something more expressive, and how does `Semaphore` encode "permits available" into that single int?
+
+**Follow-up good answer:**
+A single `int`, updated exclusively via `Unsafe`/`VarHandle` CAS, is deliberately minimal: it's the smallest unit that supports a lock-free atomic compare-and-swap on essentially all hardware, keeping the fast, uncontended path extremely cheap with no allocation and no wider synchronization needed just to update the state word itself. Subclasses interpret that `int` however their semantics require — AQS itself is policy-agnostic. `Semaphore`'s internal `Sync` (an AQS subclass) simply stores the current permit count directly as the state value: `acquire()` does a CAS loop decrementing state if it's still positive (failing/blocking via the AQS queue if state would go negative), and `release()` CASes it upward. `ReentrantLock` instead uses the same int as a **hold count** (0 = unlocked, N = held with N nested reentrant acquisitions by the owner), and `CountDownLatch` uses it as the remaining countdown — same field, different meaning per subclass, which is exactly the point of AQS separating the generic acquire/release queueing machinery from what "state" represents.
 
 **Glossary:**
 - **AQS** — `AbstractQueuedSynchronizer`, the shared framework for blocking lock/synchronizer implementations.
@@ -493,6 +527,9 @@ ordersFuture
 **Follow-up question:**
 What's the difference between `thenApply` and `thenCompose`, and when would using the wrong one give you a `CompletableFuture<CompletableFuture<T>>`?
 
+**Follow-up good answer:**
+`thenApply(Function<T,U>)` applies a plain synchronous transform and wraps the result in a new stage: `CompletableFuture<T>` → `CompletableFuture<U>`. `thenCompose(Function<T, CompletionStage<U>>)` is for when the transform itself returns another async stage, and it **flattens** the result instead of nesting it: `CompletableFuture<T>` → `CompletableFuture<U>` (not `CompletableFuture<CompletableFuture<U>>`), by unwrapping the inner stage and propagating its eventual result/exception into the outer one. If you use `thenApply` where the mapping function itself returns a `CompletableFuture<U>` (as `fetchOrdersAsync` does in the example), the result type becomes `CompletableFuture<CompletableFuture<U>>` — a future of a future — because `thenApply` has no idea the `U` it received is itself an async handle; it just wraps whatever the function returns, once, at the outer level. That's the exact bug `thenCompose` exists to prevent when chaining async-returning operations.
+
 **Glossary:**
 - **CompletionStage** — the interface defining composable async pipeline stages.
 - **thenApply** — transform the result with a synchronous function (`T -> U`).
@@ -530,6 +567,9 @@ new ThreadPoolExecutor(
 **Follow-up question:**
 Why is an unbounded work queue considered a production anti-pattern even though it "never rejects" tasks?
 
+**Follow-up good answer:**
+An unbounded queue means the pool can never observe overload as overload — it just keeps accepting and queueing tasks indefinitely, so `maximumPoolSize` and any `RejectedExecutionHandler` you configured are effectively dead code, since the queue absorbs everything before the pool would ever need to grow past `corePoolSize` or reject. Under sustained overload (arrival rate > processing rate), the queue grows unbounded, each queued task retains memory (and often other resources like open connections/request payloads referenced by the task), and eventually the process runs out of heap and dies with an `OutOfMemoryError` — an uncontrolled, catastrophic failure instead of a controlled, immediate rejection at the point of overload. It also destroys latency for anything that does get processed: tasks queued behind thousands of others wait a very long time even after the burst subsides, so callers see huge tail latency instead of a fast, clear rejection they could retry or fail over on. A bounded queue with an explicit rejection/backpressure policy fails fast and predictably instead of slowly and catastrophically.
+
 **Glossary:**
 - **corePoolSize / maximumPoolSize** — minimum threads kept alive vs. the ceiling under load.
 - **RejectedExecutionHandler** — the pluggable policy invoked when a task can't be queued or run.
@@ -555,6 +595,9 @@ What it doesn't fix: virtual threads are not faster for **CPU-bound** work (no m
 
 **Follow-up question:**
 Why doesn't creating a million virtual threads by itself improve throughput for a CPU-bound task like a tight numerical loop?
+
+**Follow-up good answer:**
+Virtual threads solve **concurrency**, not **parallelism** — they let many logical threads share a small pool of carrier threads efficiently when those logical threads spend most of their time *blocked/waiting*, because the JDK scheduler can unmount a blocked virtual thread and run another on the freed carrier. A tight CPU-bound loop never blocks — it's runnable the entire time — so there's nothing to unmount and no idle carrier capacity being reclaimed. The number of carrier (platform) threads actually executing code simultaneously is still bounded by the number of CPU cores, exactly as with regular threads. Spawning a million virtual threads all doing pure computation just creates a million runnable tasks contending for the same fixed number of cores, adding scheduling overhead without adding any real execution parallelism.
 
 **Glossary:**
 - **Virtual thread** — a JDK-managed lightweight thread, not directly mapped 1:1 to an OS thread.
@@ -600,6 +643,9 @@ Runnable worker = () -> {
 **Follow-up question:**
 What happens to a `CyclicBarrier` if one of the participating threads throws an exception instead of calling `await()`?
 
+**Follow-up good answer:**
+If a participating thread never reaches `await()` at all (e.g. it dies from an uncaught exception before calling it), the barrier simply never fills — every other thread that did call `await()` for that round stays blocked indefinitely, since `CyclicBarrier` has no way to know a party isn't coming. If instead a thread is *already waiting inside* `await()` and another waiting thread is interrupted, times out (on the timed `await` overload), or the barrier is explicitly `reset()`, `CyclicBarrier` puts itself into a **broken** state: it throws `BrokenBarrierException` to *all* the other threads currently or subsequently waiting on that barrier instance, so the whole cohort fails together rather than hanging silently. A broken barrier must be explicitly `reset()` before it can be reused; javadoc explicitly warns this makes `CyclicBarrier` a poor fit for actions that can throw, unless you wrap participant code to guarantee `await()` (or an equivalent failure signal) is always reached.
+
 **Glossary:**
 - **Latch** — a one-time gate that opens permanently once triggered.
 - **Barrier** — a reusable rendezvous point requiring all parties to arrive before any proceeds.
@@ -610,6 +656,7 @@ A fundamentals question that also tests API-choice judgment — picking the wron
 **References:**
 - [High Level Concurrency Objects — Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/concurrency/highlevel.html)
 - [CountDownLatch javadoc (Java SE 8)](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CountDownLatch.html)
+- [CyclicBarrier javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/CyclicBarrier.html)
 
 ---
 
@@ -644,6 +691,9 @@ double distanceFromOrigin() {
 
 **Follow-up question:**
 Why does `StampedLock` not support reentrancy the way `ReentrantReadWriteLock` does, and what real bug can that cause if you're not careful?
+
+**Follow-up good answer:**
+`StampedLock` deliberately tracks lock state as a plain `long` stamp rather than a per-thread hold count, which is part of what keeps its acquire/release path cheap and avoids the bookkeeping overhead reentrancy requires — the javadoc explicitly documents it as non-reentrant. The real bug this causes: if a thread already holding the lock calls back into a method that tries to acquire the *same* lock again (directly or via a callback/nested call the caller doesn't fully control), the second acquisition attempt blocks waiting for a lock the very same thread already holds — a **self-deadlock**, since there's no reentrancy check to let it through. `ReentrantLock`/`ReentrantReadWriteLock` avoid this by tracking ownership and hold count. The documented workaround is to never call unknown/outside code from within a locked section, and instead pass the `stamp` value down to any nested method that needs to interact with the same lock state.
 
 **Glossary:**
 - **Optimistic read** — an unlocked read followed by a validation check, retried under a real lock if invalidated.
@@ -689,6 +739,9 @@ class PaddedCounters {
 **Follow-up question:**
 Why can padding-based fixes be fragile across different JVMs/hardware, and what's a more portable alternative in modern Java?
 
+**Follow-up good answer:**
+Manual padding assumes a specific cache-line size (commonly 64 bytes, but not universal across all CPU architectures) and relies on the JVM not reordering/eliminating the padding fields — the JIT is legally free to reorder fields for layout efficiency or, in aggressive cases, dead-code-eliminate padding it deems unused, silently defeating the fix on a different JVM version, JIT optimization level, or hardware target with a different line size. It's effectively an unenforced implementation-detail assumption baked into application code. The more portable alternative is `jdk.internal.vm.annotation.Contended` (used internally by the JDK itself for exactly this, e.g. in `Thread` and `ConcurrentHashMap` counter cells) — it hints the JVM to lay out the annotated field or class with appropriate padding automatically, tuned to the actual running platform rather than a hardcoded guess. It's JDK-internal (requires `--add-opens`/module access in some configurations) rather than a fully public, stable API, so it's used more as an internal-tuning tool than a routine application-level fix — but it's the mechanism the platform itself relies on, in preference to hand-rolled padding.
+
 **Glossary:**
 - **Cache line** — the fixed-size unit (typically 64 bytes) transferred between CPU cache and memory.
 - **False sharing** — cache-line-level contention between logically independent variables.
@@ -723,6 +776,9 @@ java -Xlog:gc*:file=gc.log:time,uptime,level,tags -jar app.jar
 
 **Follow-up question:**
 Why is a Full GC in G1 considered a "failure mode" rather than normal operation, unlike in the older CMS/Parallel collectors where full GCs were more routine?
+
+**Follow-up good answer:**
+G1 is designed around **incremental, region-based** collection — it's meant to *never* need a full-heap collection under normal operation, instead reclaiming space via short, predictable young and mixed collections that only touch a subset of regions at a time (this is the entire point of the "garbage-first" design: prioritize collecting the regions with the most garbage). G1 falls back to a Full GC only when it can't keep pace — e.g. the old generation fills faster than concurrent marking/mixed collections can reclaim it (an "evacuation failure" or allocation outpacing reclamation) — and a G1 Full GC is single-threaded and typically the most expensive pause type it has, which is why healthy, well-tuned G1 deployments should see it rarely if ever. Older collectors like Parallel GC treat full, whole-heap compaction as a routine, expected part of their normal collection cycle (not an emergency fallback), and CMS, while avoiding full compaction most of the time, would itself fall back to a (worse, single-threaded, stop-the-world) full GC under fragmentation or concurrent-mode failure — so both older collectors already budgeted for full/near-full pauses as part of normal tuning, whereas seeing one in G1 is a signal something is misconfigured or under-provisioned.
 
 **Glossary:**
 - **Stop-the-world (STW) pause** — a GC phase where all application threads are suspended.
@@ -767,6 +823,9 @@ final class Point {
 **Follow-up question:**
 If a class has a `final List<String> items` field but exposes it via a plain getter (`return items;`), is the class actually immutable? Why or why not?
 
+**Follow-up good answer:**
+No — `final` on the field only guarantees the **reference** `items` can't be reassigned to point at a different list; it says nothing about whether the list object itself can be mutated. Returning the live reference via `return items;` hands external callers a direct handle to the object's internal mutable state: any caller can do `obj.getItems().add("x")` and silently mutate the "immutable" object's internals from outside, no reflection needed — the class only looks immutable from its own API surface, but its actual state is not protected. To be genuinely immutable it must either wrap the return value in `Collections.unmodifiableList(items)` (still backed by the same list, so it only prevents mutation *through that returned view*, not through other references) or, more robustly, return a defensive copy (or use an inherently immutable collection type, e.g. `List.copyOf(items)`), and equally take a defensive copy on construction so the caller who passed the original list in can't mutate it after the fact either.
+
 **Glossary:**
 - **Immutability** — state cannot change after construction.
 - **Defensive copy** — copying a mutable input/output so external code can't reach into an object's internal state.
@@ -778,6 +837,7 @@ This connects a Java-specific idiom to a general software-engineering theory pri
 **References:**
 - [JLS §17.5 final Field Semantics](https://docs.oracle.com/javase/specs/jls/se24/html/jls-17.html)
 - [Immutable Objects — Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/concurrency/immutable.html)
+- [List.copyOf javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/List.html#copyOf(java.util.Collection))
 
 ---
 
@@ -807,6 +867,9 @@ Lock fair = new ReentrantLock(true);
 
 **Follow-up question:**
 Why does using a fair lock everywhere "by default" hurt overall system throughput, and when is that trade-off actually worth it?
+
+**Follow-up good answer:**
+A fair `ReentrantLock` must grant access strictly in FIFO arrival order, which forces every acquisition — even by a thread that could otherwise grab a momentarily-free lock instantly — to check and respect the wait queue, and prevents an already-running thread from immediately re-acquiring a lock it just released even if no one is "really" waiting yet in a meaningful sense. This adds real per-acquisition overhead (queue bookkeeping, more context switches as ownership is handed off strictly in order) and, per the `ReentrantLock` javadoc itself, measurably reduces throughput compared to the default (unfair/"barging") mode, which lets a newly-arriving or currently-running thread often win the race for a lock over a longer-waiting one, favoring overall throughput at the cost of individual fairness. The trade-off is worth it specifically when **starvation is an actual observed or provable risk** — e.g. a high-contention lock where profiling shows certain threads/requests are being starved for unacceptably long under the unfair default, or where SLA/fairness requirements (every request must eventually be served within bounded time) outweigh raw throughput. For most locks, contention is low enough that fairness policy barely matters either way, so the default unfair mode is the right choice unless you have concrete evidence of starvation.
 
 **Glossary:**
 - **Deadlock** — permanent mutual blocking via circular resource waits.

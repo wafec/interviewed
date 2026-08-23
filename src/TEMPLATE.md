@@ -24,6 +24,10 @@ here must be backed by a link in References below.>
 **Follow-up question:**
 <a natural follow-up an interviewer would ask to probe deeper>
 
+**Follow-up good answer:**
+<a strong, complete answer to the follow-up question — same bar as the main
+Good answer: accurate, concise, and its claims backed by References below>
+
 **Glossary:**
 - **Term** — definition
 - **Term** — definition
@@ -47,6 +51,9 @@ the question, not a restatement of the answer.>
 ...
 
 **Follow-up question:**
+...
+
+**Follow-up good answer:**
 ...
 
 **Glossary:**

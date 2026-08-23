@@ -22,6 +22,9 @@ REST (Representational State Transfer) is an architectural style defined by Roy 
 **Follow-up question:**
 If most production "REST" APIs don't implement HATEOAS, does that mean they're not really REST — and does it matter?
 
+**Follow-up good answer:**
+Strictly, yes — per Fielding, without hypermedia controls driving state transitions, an API is not REST by his definition; it's more accurately "HTTP RPC" or a pragmatic JSON-over-HTTP API. Whether that matters depends on the actual payoff: full HATEOAS buys you client/server decoupling from URI structure, so the server can restructure or move endpoints without breaking clients and without a version bump, since clients never hardcode URIs — they follow links. That's valuable for long-lived, public APIs with many independent third-party clients you don't control the release cadence of. For most internal or product APIs with a small number of clients deployed in lockstep, that evolvability isn't worth the added complexity (media-type design, link-following client tooling), so most teams reasonably choose the pragmatic non-HATEOAS subset and document endpoints instead. It's largely a terminology-purity issue, not a correctness bug — but worth recognizing as an intentional trade-off of evolvability for simplicity, not "doing REST wrong" by accident.
+
 **Glossary:**
 - **Representation** — a serialized form (e.g. JSON, XML) of a resource's current state.
 - **HATEOAS** — Hypermedia As The Engine Of Application State; clients discover available actions from links in responses instead of out-of-band documentation.
@@ -54,6 +57,9 @@ Authorization: Bearer eyJhbGciOi...
 **Follow-up question:**
 If you need a multi-step workflow (e.g. a checkout wizard), how do you preserve statelessness while still tracking progress across requests?
 
+**Follow-up good answer:**
+Move the workflow state out of any single server's memory and into something either the client carries or a shared external store holds, so any server instance can handle any request in the sequence. Two common approaches: (1) client-held state — return the accumulated draft/workflow data to the client (e.g. in a signed/encrypted token or the response body) and have the client send it back with each subsequent request, so the server reconstructs full context purely from what arrived; (2) server-side state persisted in a shared external store (a database row or Redis entry keyed by a workflow/session ID) that every instance can read and write — no server instance holds anything in local memory, it just looks up shared state by ID per request. Both preserve REST's statelessness constraint, because no request depends on a *specific* server instance having seen prior requests — the difference is only where the durable state physically lives.
+
 **Glossary:**
 - **Sticky session** — a load balancer routing all requests from a client to the same backend instance to preserve server-held state, a common workaround when statelessness is violated.
 - **Session affinity** — the same concept as sticky sessions, viewed from the load balancer's config.
@@ -76,6 +82,9 @@ A **safe** method is one that doesn't change server state — it's read-only (GE
 
 **Follow-up question:**
 Your DELETE endpoint returns 404 on the second call because the resource is already gone — does that break idempotency?
+
+**Follow-up good answer:**
+No. RFC 9110 §9.2.2 defines idempotency in terms of the *intended effect on server state* of repeated identical requests, not in terms of identical response codes or bodies. After the first DELETE, the resource is gone; after the second DELETE, the resource is still gone — server state is unchanged between the two outcomes, so the method is idempotent even though the HTTP status differs (e.g. 204 the first time, 404 the second). This trips people up because "idempotent" sounds like it should mean "returns the same response every time," but the spec only guarantees the same end state, not the same response. Returning 404 on a repeat DELETE is correct and common.
 
 **Glossary:**
 - **Safe method** — doesn't alter server-observable state (GET, HEAD, OPTIONS).
@@ -113,6 +122,9 @@ Content-Type: application/merge-patch+json
 **Follow-up question:**
 A client PATCHes a resource with a stale copy of a field, unintentionally overwriting a concurrent update from another client — how do you defend against that?
 
+**Follow-up good answer:**
+Use optimistic concurrency control via conditional requests. The server returns an `ETag` representing the resource's current version on GET; the client must send that value back in an `If-Match` header on the PATCH/PUT. Per RFC 9110's conditional-request semantics, if the resource's current ETag no longer matches (meaning someone else changed it since the client last read it), the server rejects the write with `412 Precondition Failed` instead of applying it. This forces the client to re-fetch the latest version, reconcile, and retry rather than silently overwriting a field with stale data — the classic "lost update" problem — without needing full database transactions across the request boundary.
+
 **Glossary:**
 - **JSON Merge Patch (RFC 7396)** — a common PATCH body format where the given object is recursively merged into the resource.
 - **JSON Patch (RFC 6902)** — an alternative PATCH format expressing changes as an explicit list of add/remove/replace operations.
@@ -123,6 +135,7 @@ Checks whether the candidate understands PUT/PATCH semantics precisely enough to
 **References:**
 - [RFC 5789 — PATCH Method for HTTP](https://www.rfc-editor.org/rfc/rfc5789)
 - [RFC 9110 §9.3.4 PUT](https://www.rfc-editor.org/rfc/rfc9110)
+- [RFC 9110 §13.1.1 If-Match (optimistic concurrency via ETag)](https://www.rfc-editor.org/rfc/rfc9110#section-13.1.1)
 
 ---
 
@@ -137,6 +150,9 @@ When do you return 400 vs 422, and 401 vs 403?
 **Follow-up question:**
 Should a 403 response ever reveal that the resource exists (vs returning 404 to avoid leaking existence to unauthorized users)?
 
+**Follow-up good answer:**
+It depends on the sensitivity of what "existence" itself reveals. For most authorization failures, 403 is fine and more honest to the client — the resource exists, you're just not allowed to see it, which helps legitimate clients debug their own permissions. But when the *existence* of the resource is itself sensitive information (e.g. a private repository's name, another user's private document ID, an admin-only record), returning 403 leaks that something is there at that URI even though the caller can't access it — an attacker can enumerate valid IDs just by distinguishing 403 from 404 responses. In that case, the safer pattern (used by GitHub for private repos, for example) is to return 404 for both "doesn't exist" and "exists but you can't see it," so an unauthorized caller can't distinguish the two. The trade-off is debuggability: legitimate users lose the clearer "you don't have permission" signal.
+
 **Glossary:**
 - **Authentication** — verifying who the caller is.
 - **Authorization** — verifying what the (known) caller is allowed to do.
@@ -146,6 +162,7 @@ Tests precision with the client-error status code space, and whether the candida
 
 **References:**
 - [RFC 9110 §15.5 Client Error 4xx](https://www.rfc-editor.org/rfc/rfc9110)
+- [GitHub REST API docs — Troubleshooting: 404 returned instead of 403 for private/unauthorized resources](https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api)
 
 ---
 
@@ -169,6 +186,9 @@ Content-Type: application/json
 **Follow-up question:**
 How long should the server retain an idempotency key's stored result, and what happens if two requests with the same key arrive concurrently?
 
+**Follow-up good answer:**
+Stripe retains idempotency keys for at least 24 hours before they're eligible for pruning; if a key is reused after that window, it's treated as a brand-new operation. That window is a trade-off between storage cost and how long a client's retry logic might plausibly wait before giving up — 24 hours comfortably covers realistic retry/backoff scenarios (including a client retrying after being offline overnight) without keeping unbounded state forever. For concurrent requests with the same key, the server needs a lock or an atomic "claim" on the key: the first request to arrive marks the key as in-progress and executes the operation; if a second request with the same key arrives while the first is still executing, the server should not execute it a second time — Stripe's behavior here is to treat the concurrent duplicate as a conflict rather than serving a cached result that doesn't exist yet, so the client should retry rather than assume success or failure.
+
 **Glossary:**
 - **Idempotency key** — a client-generated unique token identifying a logical operation so retries don't re-execute it.
 
@@ -177,7 +197,7 @@ This is a real production-failure-mode question: does the candidate know retries
 
 **References:**
 - [IETF draft-ietf-httpapi-idempotency-key-header-07: The Idempotency-Key HTTP Header Field](https://www.ietf.org/archive/id/draft-ietf-httpapi-idempotency-key-header-07.txt)
-- [Stripe: Idempotent Requests](https://stripe.com/blog/rate-limiters)
+- [Stripe API Reference: Idempotent requests (24h retention, concurrent-request handling)](https://docs.stripe.com/api/idempotent_requests)
 
 ---
 
@@ -191,6 +211,9 @@ Common strategies: **URI versioning** (`/v1/orders`) — simplest, highly visibl
 
 **Follow-up question:**
 How do you communicate and enforce a deprecation timeline for `v1` once `v2` ships, without breaking clients who haven't migrated?
+
+**Follow-up good answer:**
+Deprecation typically has two stages: first, mark `v1` as no longer recommended while it's still fully operational (communicate this out-of-band — changelog, email, dashboard banners — since there's no dedicated "not recommended" header); second, once an actual retirement date is set, add the `Sunset` header (RFC 8594) to every `v1` response with the exact date/time it will stop working, ideally alongside a `Link` header pointing to migration documentation. In the interim, track which clients/API keys are still calling `v1` so you can proactively reach out to the heaviest remaining users before flipping it off — don't rely on the header alone. After the sunset date passes, `v1` should return `410 Gone` (not a silent 404) with a body pointing to `v2`, so clients get an unambiguous, actionable failure instead of a confusing generic error.
 
 **Glossary:**
 - **Content negotiation** — client and server agreeing on representation format/version via `Accept`/`Content-Type` headers rather than the URI.
@@ -223,6 +246,9 @@ Link: <https://api.github.com/...&page=2>; rel="next"
 **Follow-up question:**
 How would you design a cursor for a feed sorted by `(created_at, id)` where `created_at` isn't unique?
 
+**Follow-up good answer:**
+Encode both columns into the cursor, not just `created_at` — e.g. a base64 blob of `{"created_at": "...", "id": 12345}`. The next-page query then becomes a compound keyset comparison: `WHERE (created_at, id) < (:cursor_created_at, :cursor_id) ORDER BY created_at DESC, id DESC LIMIT N` (row-value comparison), or equivalently `WHERE created_at < :c OR (created_at = :c AND id < :i)`. This works correctly even when many rows share the same `created_at`, because `id` acts as a tiebreaker that makes the composite key unique — without it, rows with an identical timestamp could be skipped or duplicated across page boundaries. The underlying index needs to match: a composite index on `(created_at, id)` so the comparison can still be served efficiently rather than falling back to a full scan.
+
 **Glossary:**
 - **Keyset pagination** — cursor-based pagination anchored to indexed column values rather than a row offset.
 - **Opaque cursor** — a cursor value the client treats as a black box (often base64-encoded), so the server is free to change its internal encoding.
@@ -232,6 +258,7 @@ A classic performance-and-correctness-under-scale question — tests whether the
 
 **References:**
 - [GitHub REST API: Using pagination in the REST API](https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api)
+- [PostgreSQL docs §9.24.5 — Row and Array Comparisons (row-wise keyset comparison)](https://www.postgresql.org/docs/current/functions-comparisons.html)
 
 ---
 
@@ -260,6 +287,9 @@ else:
 **Follow-up question:**
 You're rate-limiting per API key across a fleet of stateless servers — where does the bucket state live, and what happens if that store goes down?
 
+**Follow-up good answer:**
+The bucket state lives in a fast shared store all instances can reach — typically Redis, using an atomic script (e.g. Lua) so the check-and-decrement is a single atomic operation and safe under concurrent access from multiple app servers. If that store goes down, you face a fundamental availability-vs-protection trade-off with no universally correct answer: **fail open** (let all requests through when the limiter is unreachable) keeps the service available but removes the only thing protecting downstream systems from a load spike right when the store's own failure may itself be load-related; **fail closed** (reject everything) protects the backend but turns your own rate limiter into a self-inflicted outage for every caller. A common middle ground is falling back to per-instance in-memory counters using `global_limit / num_instances` as each instance's local limit — inaccurate (since instances don't coordinate) but bounded, so you get some protection without a hard dependency on the shared store's availability.
+
 **Glossary:**
 - **Token bucket** — rate-limiting algorithm allowing bursts up to a capped capacity while enforcing a steady average rate.
 - **Fixed window counter** — a simpler (flawed) rate limiter that resets a counter every fixed interval, vulnerable to boundary bursts.
@@ -270,6 +300,7 @@ Performance/internals question testing whether the candidate can explain the act
 **References:**
 - [Stripe Engineering: Scaling your API with rate limiters](https://stripe.com/blog/rate-limiters)
 - [RFC 9110 §15.5.30 — 429 Too Many Requests semantics context](https://www.rfc-editor.org/rfc/rfc9110)
+- [Envoy proxy docs — rate limit filter `failure_mode_deny` (fail-open default vs. fail-closed)](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter)
 
 ---
 
@@ -299,6 +330,9 @@ HTTP/1.1 304 Not Modified
 
 **Follow-up question:**
 Why must a `304 Not Modified` response never include a body, and what does that imply about how you generate the ETag?
+
+**Follow-up good answer:**
+RFC 9110 specifies that a `304` response's whole purpose is to tell the client "your cached copy is still valid" without re-transmitting the representation — the entire point is to save the bandwidth/time of resending a body the client already has, so including one would defeat the mechanism (and the spec explicitly forbids a message body in a 304). This means the server must be able to determine whether the resource has changed *without* having to (re)generate the full response body — the ETag must be computable cheaply and independently of rendering the whole representation, e.g. derived from a stored `updated_at`/version column or a hash the server already maintains, not by generating the full JSON payload and hashing it every request (which would erase the whole performance benefit of caching in the first place).
 
 **Glossary:**
 - **ETag** — an opaque validator (fingerprint) representing a specific version of a resource's content.
@@ -336,6 +370,9 @@ Access-Control-Allow-Headers: X-PINGOTHER, Content-Type
 **Follow-up question:**
 A request with `credentials: include` is failing CORS even though `Access-Control-Allow-Origin: *` is set — why?
 
+**Follow-up good answer:**
+Per the Fetch/CORS spec (as documented by MDN), the wildcard `*` is explicitly disallowed for `Access-Control-Allow-Origin` on credentialed requests — a request carrying cookies, HTTP auth, or client TLS certs, sent with `credentials: "include"` (or `XMLHttpRequest.withCredentials = true`). If the server responds with `*`, the browser blocks access to the response, because a wildcard combined with credentials would let *any* origin read privileged, cookie-scoped data — exactly the cross-site data leak CORS exists to prevent. The fix is for the server to echo back the specific requesting `Origin` value (validated against an allowlist) instead of `*`, and to also send `Access-Control-Allow-Credentials: true`.
+
 **Glossary:**
 - **Same-origin policy** — the browser security model restricting scripts to interacting only with resources from the same scheme+host+port unless explicitly relaxed.
 - **Preflight request** — an automatic `OPTIONS` request the browser sends to check permissions before a "non-simple" cross-origin request.
@@ -369,6 +406,9 @@ client_id=s6BhdRkqt3
 **Follow-up question:**
 Why was the implicit grant deprecated in favor of authorization code + PKCE for public clients like SPAs?
 
+**Follow-up good answer:**
+RFC 9700 (the OAuth 2.0 Security Best Current Practice) formally deprecates the implicit grant. Its core flaw: the implicit grant returns the access token directly in the redirect URI fragment, meaning the token passes through the browser's address bar/history and can be exposed via browser history, referrer headers, or malicious browser extensions/scripts — with no back-channel exchange step to keep it out of the user-agent entirely. It's also more exposed to interception and replay since there's no proof that the party redeeming the response is the same party that started the flow. The replacement — authorization code + PKCE — keeps the token exchange in a back-channel request and adds a cryptographic `code_verifier`/`code_challenge` pair: the client generates a secret verifier up front, sends only its hashed challenge in the initial request, and must present the original verifier when exchanging the code for a token, so an attacker who intercepts just the authorization code (e.g. via a malicious app registering the same redirect scheme) can't redeem it without also having the verifier. RFC 9700 now mandates PKCE for all authorization code flows, including confidential clients, not just public ones like SPAs.
+
 **Glossary:**
 - **Access token** — short-lived credential the client presents to the resource server.
 - **Refresh token** — longer-lived credential used to obtain new access tokens without re-prompting the user.
@@ -379,6 +419,7 @@ Security-fundamentals question testing whether the candidate can correctly map "
 
 **References:**
 - [RFC 6749 — The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749)
+- [RFC 9700 — Best Current Practice for OAuth 2.0 Security (implicit grant deprecation, mandatory PKCE)](https://www.rfc-editor.org/rfc/rfc9700.html)
 
 ---
 
@@ -392,6 +433,9 @@ HATEOAS (Hypermedia As The Engine Of Application State) means a client should be
 
 **Follow-up question:**
 What's the actual practical cost of NOT doing HATEOAS — teams ship non-hypermedia "REST" APIs successfully all the time, so is this constraint just academic?
+
+**Follow-up good answer:**
+The real cost shows up specifically as coupling: every client that hardcodes a URI template (`/users/{id}/orders/{orderId}/cancel`) instead of following a `cancel` link returned in a response is now coupled to that exact URI shape staying stable forever, or every client breaks simultaneously on any restructuring. For an API with a handful of clients you control and deploy alongside, that's a manageable, even preferable trade — you get simpler client code and a smaller surface to design (no media-type/link-relation vocabulary to invent) in exchange for accepting that URI changes require coordinated client updates. The cost becomes real once you have many independent, slowly-updating third-party clients (the scenario Fielding was actually addressing) — then every URI-shape change becomes a breaking-change event requiring a version bump, deprecation cycle, and migration comms, which HATEOAS would have avoided by letting clients discover the current URI at runtime. So it's not academic, but it's also not free — it's a genuine trade-off most teams correctly evaluate as not worth it for their actual client population.
 
 **Glossary:**
 - **Hypermedia** — content containing links/controls that drive further interaction (as in HTML, where you don't hardcode form endpoints — you follow the `<form action>` given to you).
@@ -415,6 +459,9 @@ First, quantify it: pull p50/p95/p99 latency for that endpoint from your APM/met
 
 **Follow-up question:**
 Your trace shows the database query itself is fast (2ms), but the endpoint is still 800ms — where do you look next?
+
+**Follow-up good answer:**
+With the DB ruled out, work outward from the trace's unaccounted-for time. Common culprits, in rough order of likelihood: (1) other downstream calls not yet instrumented as spans — a third-party API, an internal microservice, a cache lookup that's actually slow (e.g. cold cache or a network-partitioned Redis); (2) serialization/deserialization cost — large response payloads being JSON-encoded, or ORM object hydration turning a fast query into a slow object-mapping step; (3) connection acquisition — the app waiting on a connection pool (DB or HTTP client pool) that's exhausted, which shows up as "wait time" not "query time" and is easy to miss if your tracing only wraps the query execution itself; (4) app-level CPU work — synchronous business logic, validation, or serialization that's blocking the event loop/thread; (5) queueing before the request even reaches your handler — a thread pool or async runtime backlog. The fix is to widen the trace's instrumentation (span connection-pool wait time, serialization, and every downstream call explicitly) rather than assume the gap is "network," and if that still doesn't explain it, profile the request handler directly (flame graph / CPU profiler) to see where wall-clock time is actually going.
 
 **Glossary:**
 - **APM (Application Performance Monitoring)** — tooling (e.g. Datadog, New Relic) that tracks latency, throughput, and errors per endpoint.
@@ -453,6 +500,9 @@ GET /customers?ids=1,2,3,...,50
 **Follow-up question:**
 Your team wants to fix this by embedding the full customer object in every order response — what's the downside of that approach?
 
+**Follow-up good answer:**
+It trades the N+1 round-trip problem for over-fetching and payload bloat: every order response now carries a full, possibly large customer object even when the caller only needed the customer's name, and if 50 orders share the same 5 customers, that customer data gets duplicated 50 times in the response instead of fetched once. It also couples the orders endpoint's response shape to the customer schema, so an unrelated change to customer fields now affects every consumer of orders, and different callers that want different subsets of customer data (or none at all) all pay the same fixed cost. Better middle grounds: a bulk `/customers?ids=...` endpoint the client calls once after fetching orders (2 round trips total, no duplication, no coupling), or letting the caller opt in to embedding via a field-selection parameter (`?include=customer`) so the cost is only paid by callers who need it — or GraphQL, if the client population is diverse enough that different callers routinely want different shapes.
+
 **Glossary:**
 - **N+1 problem** — 1 query/call to fetch a collection, plus N further calls (one per item) for related data.
 - **Batch/bulk endpoint** — an API operation that accepts multiple identifiers and returns multiple resources in a single round trip.
@@ -476,6 +526,9 @@ HTTP/1.0 opened a new TCP connection per request by default — each request pai
 **Follow-up question:**
 Why can HTTP/1.1 pipelining (sending multiple requests without waiting for responses) still suffer head-of-line blocking, and how does HTTP/2 solve it differently?
 
+**Follow-up good answer:**
+HTTP/1.1 pipelining lets a client send several requests back-to-back on one connection without waiting for each response, but the protocol still requires responses to come back **strictly in the order the requests were sent** — there's no way to tag a response as belonging to a specific request. So if the first request is slow, every response behind it is stuck waiting even if their own work finished first: head-of-line blocking at the application/HTTP layer. HTTP/2 (RFC 9113) fixes this by introducing **streams**: each request/response exchange gets its own independent stream ID multiplexed over the same TCP connection, so responses can be interleaved and returned in any order — a slow stream no longer blocks unrelated streams at the HTTP layer. The catch, per RFC 9113 itself, is that this only solves HOL blocking *above* TCP: since all streams still share one TCP connection, a single lost/delayed TCP segment still stalls the entire connection at the transport layer (TCP guarantees in-order byte delivery), affecting every HTTP/2 stream regardless of which stream's data was actually lost. That residual TCP-level HOL blocking is exactly what HTTP/3 (built on QUIC/UDP instead of TCP) was designed to eliminate, by giving each stream its own independent loss-recovery.
+
 **Glossary:**
 - **TCP handshake** — the 3-way SYN/SYN-ACK/ACK exchange required to establish a TCP connection before any application data can flow.
 - **Head-of-line blocking** — a slow/stuck response blocking all responses queued behind it on the same connection.
@@ -485,6 +538,7 @@ Internals question — tests whether the candidate can go one layer below "HTTP"
 
 **References:**
 - [RFC 9112 §9.3 Persistence](https://www.rfc-editor.org/rfc/rfc9112)
+- [RFC 9113 — HTTP/2 (stream multiplexing; TCP-level head-of-line blocking not addressed by HTTP/2)](https://www.rfc-editor.org/rfc/rfc9113.html)
 
 ---
 
@@ -499,6 +553,9 @@ gRPC is an RPC framework built on HTTP/2, using Protocol Buffers (a compact bina
 **Follow-up question:**
 You're building a public third-party-facing API — would gRPC's performance advantage ever outweigh REST's accessibility advantage there?
 
+**Follow-up good answer:**
+Occasionally, yes — when the API's consumers are themselves sophisticated backend systems (not browsers or ad-hoc scripts) and raw throughput/latency genuinely matters more than exploratory debuggability: high-frequency trading feeds, real-time telemetry ingestion, or infrastructure APIs consumed primarily by other well-resourced platforms (e.g. Google's own public Cloud APIs offer gRPC alongside REST for exactly this reason). But for the median public API — where third-party developers need to explore it with curl/Postman, debug it by eye, and integrate quickly without generating client stubs from a `.proto` file — REST/JSON's accessibility usually wins, so the common real-world pattern is offering *both*: a REST/JSON facade (often generated from the same underlying gRPC service via a transcoding gateway) for broad accessibility, and native gRPC for consumers who specifically need the performance and are equipped to use it.
+
 **Glossary:**
 - **Protocol Buffers (protobuf)** — Google's binary serialization format and IDL used to define gRPC service contracts.
 - **HTTP/2 multiplexing** — multiple concurrent request/response streams over a single TCP connection, which gRPC relies on for streaming.
@@ -508,6 +565,7 @@ Trade-off/comparison question — tests whether the candidate picks a technology
 
 **References:**
 - [gRPC: Introduction to gRPC](https://grpc.io/docs/what-is-grpc/introduction/)
+- [Google Cloud Endpoints docs — gRPC Transcoding (REST/JSON facade over a gRPC service)](https://cloud.google.com/endpoints/docs/grpc/transcoding)
 
 ---
 
@@ -522,6 +580,9 @@ GraphQL exposes a single endpoint where the client specifies exactly the shape o
 **Follow-up question:**
 How would you prevent a malicious or careless client from sending a GraphQL query so deeply nested it takes down your database?
 
+**Follow-up good answer:**
+Depth limiting alone (capping how many levels of nesting a query can have) is a blunt instrument and not sufficient on its own, because fields vary wildly in how expensive they are to resolve — a shallow query can still be catastrophically expensive if it fans out wide (e.g. requesting a field that triggers thousands of resolver calls) rather than deep. The more robust approach is **query complexity/cost analysis**: assign a cost to each field in the schema (fields backed by expensive service calls or large fan-out get a high cost, cheap scalar fields get a low cost, often defaulting to 1 if unspecified), walk the incoming query's AST before execution to sum the total cost, and reject the query outright if it exceeds a configured maximum — so expensive queries are rejected before any resolver runs, not after the damage is done. This is commonly combined with per-client/per-API-key rate limiting based on cumulative query cost (not just request count), since a single complex query can be equivalent to hundreds of simple REST calls.
+
 **Glossary:**
 - **Resolver** — a GraphQL server-side function responsible for fetching the data for one field in a query.
 - **Dataloader pattern** — batching + caching resolver calls within a single request to avoid resolver-level N+1 queries.
@@ -531,6 +592,7 @@ Trade-off question testing whether the candidate understands GraphQL's actual va
 
 **References:**
 - [GraphQL: Introduction to GraphQL](https://graphql.org/learn/)
+- [GraphQL.js docs — Operation Complexity Controls](https://www.graphql-js.org/docs/operation-complexity-controls/)
 
 ---
 
@@ -552,6 +614,9 @@ HALF_OPEN --(test call fails)--> OPEN
 
 **Follow-up question:**
 Should the circuit breaker's failure threshold be a raw count or a rate (percentage of recent calls), and why does that choice matter under varying traffic volume?
+
+**Follow-up good answer:**
+A raw count ("open after 5 failures") is dangerously miscalibrated across varying traffic: during low traffic, 5 failures might represent 100% of recent calls (a clearly dead dependency) but the breaker takes just as long to trip as it would during high traffic, where 5 failures might be a negligible 0.1% blip that shouldn't trip anything. A rate-based threshold ("open if more than 50% of the last N calls failed," evaluated over a rolling window) scales correctly with actual traffic volume and better reflects the real health signal — Microsoft's Azure Architecture Center guidance for the circuit breaker pattern recommends this rate/rolling-window approach for production use. The practical refinement most implementations add is a **minimum call volume** gate (e.g. "don't evaluate the rate at all until at least 10 calls have been made in the window"), so the breaker doesn't trip on a statistically meaningless sample like 1 failure out of 1 call.
 
 **Glossary:**
 - **Cascading failure** — one struggling service's slowness/failure propagating upstream and taking down callers that depend on it.
@@ -576,6 +641,9 @@ Backpressure is a flow-control mechanism where a slower consumer signals its act
 **Follow-up question:**
 If you can't modify the producer to support backpressure signaling (e.g. it's a third-party firehose), what are your options for protecting your consumer?
 
+**Follow-up good answer:**
+When the producer can't cooperate, you have to absorb or shed excess load on the consumer side instead of signaling upstream. Reactive libraries built on Reactive Streams (e.g. Project Reactor) expose exactly this as explicit operators: **buffer** the overflow up to a bounded size (with an overflow strategy like dropping the oldest or newest item once the buffer is full, to keep memory bounded rather than growing unboundedly); **drop** new items outright once the consumer can't keep up (`onBackpressureDrop`); keep only the **latest** value and discard stale intermediate ones if only the freshest data matters (`onBackpressureLatest`); or **error out** the stream entirely once demand is exceeded, forcing an explicit failure instead of silent data loss (`onBackpressureError`). Which one is correct depends on the data's semantics: a sensor reading stream can usually drop-to-latest safely, but a payment event stream generally can't drop anything, so you'd bound the buffer and fail loudly (error) rather than silently lose events.
+
 **Glossary:**
 - **Backpressure** — a consumer signaling capacity back to a producer so it throttles output instead of overwhelming the consumer.
 - **Bounded buffer** — a fixed-capacity queue between producer and consumer; without backpressure, a bounded buffer must drop or block, and an unbounded one risks OOM.
@@ -585,3 +653,4 @@ Advanced/internals question — tests whether the candidate understands flow con
 
 **References:**
 - [Reactive Streams Specification](https://www.reactive-streams.org/)
+- [Project Reactor Flux API docs — onBackpressureBuffer / onBackpressureDrop / onBackpressureLatest / onBackpressureError](https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html)

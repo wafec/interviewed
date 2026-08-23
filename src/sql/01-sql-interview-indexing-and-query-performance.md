@@ -47,6 +47,18 @@ CREATE INDEX idx_orders_customer_id ON orders (customer_id);
 If a table is small (say, a few hundred rows), does adding an index still
 help?
 
+**Follow-up good answer:**
+Usually not — and it can even be counterproductive. A table that small
+typically fits in a handful of 8KB pages, all of which end up cached in
+memory, so a sequential scan just reads a few pages in one cheap pass. Adding
+an index costs real write overhead (as noted above) without a matching read
+benefit, since the constant-factor cost of traversing index pages and then
+following each match back to the heap can be *more* work than just scanning
+everything directly when n is small. This is why the query planner is
+cost-based rather than "always prefer an index if one exists" — it correctly
+chooses a sequential scan over a usable index on small tables, because its
+cost model accounts for page reads and I/O, not just algorithmic complexity.
+
 **Glossary:**
 - **B-tree** — a self-balancing tree data structure that keeps data sorted and allows searches, insertions, and deletions in O(log n).
 - **Sequential scan (seq scan)** — reading every row of a table in physical order to evaluate a condition.
@@ -89,6 +101,19 @@ keys) cause more page splits and index bloat than sequential inserts.
 **Follow-up question:**
 Why do B-trees support range queries (`BETWEEN`, `<`, `>`) well, but a hash
 index does not?
+
+**Follow-up good answer:**
+A B-tree's leaf nodes are stored in sorted key order and linked together
+(typically as a doubly-linked list), so once you've located the start of a
+range via a single tree descent, you can walk sequentially forward (or
+backward) through the leaves to collect every value in the range — the
+sortedness is inherent to the structure. A hash index instead computes a
+hash of the key and uses that hash to pick a storage bucket; a good hash
+function deliberately scatters similar keys into unrelated buckets to keep
+lookups uniform, which destroys any notion of "next value" — there's no way
+to know which bucket holds the next-larger key without hashing every
+candidate value, so a hash index can only answer "does this exact key
+exist," not "what's near this key."
 
 **Glossary:**
 - **Page split** — when a B-tree node is full and a new key has to be inserted, causing the node to divide into two and a key to propagate to the parent.
@@ -148,6 +173,18 @@ SELECT * FROM orders WHERE created_at > now() - interval '1 day';
 When would you create two separate single-column indexes instead of one
 composite index?
 
+**Follow-up good answer:**
+When your queries filter on those columns independently rather than
+together — e.g. one hot query filters only on `a`, another filters only on
+`c`, and no query filters on both at once. A composite `(a, c)` index would
+only serve the `a`-only query efficiently (via the leftmost prefix rule) and
+would be useless for the `c`-only query, so you'd need a separate index on
+`c` anyway, making the composite index partly redundant. Two single-column
+indexes are also more flexible when the *set* of columns queried varies
+unpredictably, since PostgreSQL can combine multiple single-column indexes
+via a bitmap AND/OR when a query filters on several of them together,
+recovering some of the benefit a composite index would have given directly.
+
 **Glossary:**
 - **Leftmost prefix rule** — a composite B-tree index can only be used efficiently for query conditions that constrain a contiguous prefix of its columns, starting from the first.
 - **Composite/multicolumn index** — a single index built over more than one column.
@@ -160,6 +197,7 @@ reason about *which* queries a given index actually serves, not just
 
 **References:**
 - [PostgreSQL: 11.3. Multicolumn Indexes](https://www.postgresql.org/docs/current/indexes-multicolumn.html)
+- [PostgreSQL: 11.5. Combining Multiple Indexes](https://www.postgresql.org/docs/current/indexes-bitmap-scans.html)
 
 ---
 
@@ -202,6 +240,19 @@ SELECT y FROM tab WHERE x = 'key';
 
 **Follow-up question:**
 Why can a GIN index not support index-only scans the way a B-tree can?
+
+**Follow-up good answer:**
+An index-only scan requires the index to store (or be able to fully
+reconstruct) the original column value for each entry, since the whole point
+is to answer the query without visiting the heap. A B-tree entry always
+holds a complete copy of the indexed value, so it qualifies. A GIN entry
+typically holds only *part* of the original value — for example, GIN indexes
+an array or `tsvector` column by creating one index entry per individual
+element/lexeme, not one entry per row's full value — so no single index
+entry (or even a small set of them) is guaranteed to let PostgreSQL
+reconstruct the original composite value. Since it can't reliably answer
+"what was the full original value in this row" from the index alone, it
+can't skip the heap.
 
 **Glossary:**
 - **Heap** — the actual table storage holding full rows, as opposed to the index.
@@ -259,6 +310,22 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM orders WHERE customer_id = 42;
 The planner estimated 10 rows but actually got back 500,000. What do you do
 next?
 
+**Follow-up good answer:**
+That's a 50,000x misestimate, which is almost always the root cause of the
+slow plan rather than a symptom of it — a plan that's efficient for 10 rows
+(e.g. a nested loop) is disastrous for 500,000. First step is to run
+`ANALYZE` on the table(s) involved and re-check the plan: if the estimate
+becomes accurate, stale statistics were the culprit, and I'd check whether
+autovacuum/auto-analyze is keeping up on that table. If the estimate is
+still wildly off after a fresh `ANALYZE`, the likely cause is a condition the
+planner structurally can't estimate well — e.g. correlated columns (the
+planner assumes independence between conditions by default), a non-sargable
+expression, or a value distribution too skewed for the default statistics
+target — in which case I'd look at extended statistics
+(`CREATE STATISTICS`) for correlated columns, increase
+`default_statistics_target` on the relevant column, or rewrite the query to
+be more directly estimable.
+
 **Glossary:**
 - **Plan node** — one step of the query execution plan (e.g. a scan, join, or sort).
 - **Cost** — the planner's internal, unit-less estimate of how expensive a plan node is, used to compare candidate plans.
@@ -272,6 +339,7 @@ vague "I'd look at the query plan."
 
 **References:**
 - [PostgreSQL: 14.1. Using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html)
+- [PostgreSQL: 14.2. Statistics Used by the Planner](https://www.postgresql.org/docs/current/planner-stats.html)
 
 ---
 
@@ -313,6 +381,19 @@ LIMIT 10;
 **Follow-up question:**
 `pg_stat_statements` shows a query with high `total_exec_time` but low
 `mean_exec_time`. What does that tell you, and what would you do about it?
+
+**Follow-up good answer:**
+High total time with low mean time means the query itself is individually
+cheap, but it's being called an enormous number of times (`total_exec_time`
+is effectively `calls × mean_exec_time`), so the aggregate cost to the
+cluster is still large — "death by a thousand cuts" rather than one bad
+query. This points away from query-plan tuning and toward reducing *call
+volume*: the classic causes are an N+1 query pattern from an ORM, a
+per-request query that could be batched/cached, or a polling loop hitting
+the database far more often than necessary. Optimizing the query itself
+(e.g. adding an index) would only shave a small amount off each call; the
+bigger win is fixing the access pattern that causes so many calls in the
+first place.
 
 **Glossary:**
 - **pg_stat_statements** — a PostgreSQL extension that aggregates execution statistics per normalized query.
@@ -361,6 +442,24 @@ actually keeping up (it can fall behind under heavy write load), or increase
 Autovacuum is enabled and running, but statistics are still stale on one
 specific huge table. What are the likely reasons?
 
+**Follow-up good answer:**
+A few common causes on large tables specifically: (1) the default
+autovacuum/auto-analyze thresholds (`autovacuum_analyze_scale_factor`, a
+*percentage* of table size, plus a small fixed base amount) mean a huge
+table has to accumulate a proportionally huge number of changed rows before
+auto-analyze triggers again — so it runs, but rarely relative to how fast the
+table's data is actually shifting; (2) a long-running or idle-in-transaction
+session elsewhere is holding back cleanup/visibility progress and can delay
+or starve autovacuum workers generally; (3) autovacuum is running but taking
+so long on this one huge table (or being repeatedly canceled by conflicting
+DDL) that it never completes an ANALYZE pass; or (4) the table is a heavy
+target for concurrent autovacuum workers competing for
+`autovacuum_max_workers`, so this specific table's turn comes up rarely. The
+fix is usually to set per-table overrides
+(`ALTER TABLE ... SET (autovacuum_analyze_scale_factor = ...)`) with a
+smaller scale factor for that one large table, or run `ANALYZE` manually on
+a schedule as a stopgap.
+
 **Glossary:**
 - **ANALYZE** — the command that gathers and stores planner statistics about a table's contents.
 - **Cardinality estimation** — the planner's predicted row count for a plan node, derived from statistics.
@@ -373,6 +472,7 @@ whole category of "it just got slow for no reason" incidents.
 
 **References:**
 - [PostgreSQL: 14.2. Statistics Used by the Planner](https://www.postgresql.org/docs/current/planner-stats.html)
+- [PostgreSQL: 19.10. Automatic Vacuuming](https://www.postgresql.org/docs/current/runtime-config-autovacuum.html)
 
 ---
 
@@ -401,6 +501,18 @@ which old row versions can be safely reclaimed, causing table/index bloat.
 **Follow-up question:**
 If reads and writes don't block each other, can two concurrent `UPDATE`
 statements on the *same row* still block each other? Why?
+
+**Follow-up good answer:**
+Yes. MVCC solves the reader-vs-writer conflict by giving readers a
+consistent snapshot instead of blocking them, but it doesn't (and can't)
+solve the writer-vs-writer conflict the same way, because two concurrent
+updates to the same row can't both "win" — allowing both to create new row
+versions independently would silently lose one of the updates. So PostgreSQL
+still uses row-level locking for writers: the second `UPDATE` targeting a
+row already being updated by an uncommitted transaction blocks until the
+first transaction commits or rolls back, at which point it either proceeds
+against the new row version (Read Committed) or, depending on isolation
+level, can raise a serialization/update-conflict error instead.
 
 **Glossary:**
 - **MVCC** — Multiversion Concurrency Control; maintaining multiple versions of a row so readers and writers don't block each other.
@@ -459,6 +571,21 @@ COMMIT;
 Two transactions each run `UPDATE` on two rows in opposite order and
 deadlock. How do you prevent this at the application level?
 
+**Follow-up good answer:**
+The standard defense is to enforce a **consistent lock acquisition order**
+across every code path that touches multiple rows: always lock/update rows
+in the same deterministic order (e.g. sorted by primary key), regardless of
+the order the application logic happens to receive them in. If both
+transactions in the example had updated the rows in the same order, one
+would simply wait for the other to finish instead of deadlocking. Where
+enforcing a global order isn't feasible, the fallback is to catch the
+deadlock error and retry the transaction — PostgreSQL automatically detects
+deadlocks and aborts one of the participating transactions, so the
+application just needs to be written to retry on that specific error rather
+than treating it as a hard failure. Keeping transactions short (not holding
+locks open across app-level waits like user input) also shrinks the window
+in which a deadlock can occur.
+
 **Glossary:**
 - **Row-level lock** — a lock held on individual rows rather than the whole table.
 - **Deadlock** — a cycle of transactions each waiting on a lock held by another, none of which can proceed.
@@ -500,6 +627,19 @@ over an available index for a low-selectivity condition.
 **Follow-up question:**
 Why does a `LIMIT` clause sometimes make the planner switch from a
 sequential scan to an index scan for the same `WHERE` condition?
+
+**Follow-up good answer:**
+Without `LIMIT`, the planner has to produce *every* matching row, so its
+cost estimate is based on scanning however much of the table/index is needed
+to find them all — for a low-selectivity condition, a sequential scan can
+win because it avoids the random I/O of repeated index-to-heap hops. With a
+small `LIMIT`, the planner only needs to find enough matching rows to
+satisfy the limit, and it can assume (based on statistics) that it will find
+them relatively quickly by walking the index — so it estimates a much
+cheaper *partial* index scan that stops early, rather than costing a full
+scan of everything. This is also exactly why `LIMIT` without an accompanying
+`ORDER BY` can return different rows across runs/plans — there's no
+guarantee about which subset the planner happens to stop at.
 
 **Glossary:**
 - **Big-O notation** — a way to describe how an algorithm's cost scales with input size, ignoring constant factors.
@@ -545,6 +685,19 @@ canonical database-level instance of it.
 Give an example of a system where you'd deliberately *avoid* adding an
 index even though it would speed up a specific query.
 
+**Follow-up good answer:**
+A high-throughput write-heavy table used mainly for ingestion — e.g. an
+event/telemetry logging table receiving thousands of inserts per second,
+where the only reads are rare, ad-hoc analytical queries run by a handful of
+people. Adding an index to speed up those rare reads would add write
+overhead to *every single insert*, on the table's hot path, to benefit a
+query pattern that's infrequent and where users can tolerate a slower report
+running for a few extra seconds. In that situation, the right trade is to
+leave the operational table unindexed (or minimally indexed) and instead run
+analytical queries against a replica, a data warehouse, or a periodically
+refreshed materialized view — keeping the write path as cheap as possible
+where it matters most.
+
 **Glossary:**
 - **OLTP (Online Transaction Processing)** — workloads characterized by many small, concurrent read/write transactions, as opposed to analytical (OLAP) workloads.
 - **Denormalization** — deliberately duplicating data to avoid expensive joins/lookups at read time, at the cost of write complexity.
@@ -589,6 +742,19 @@ near-zero scans are pure overhead).
 How would you identify and safely remove unused indexes in a production
 database?
 
+**Follow-up good answer:**
+Query `pg_stat_user_indexes` and look at `idx_scan` (the number of times the
+index has actually been used to answer a query) — an index with `idx_scan`
+near zero over a long observation window (long enough to cover periodic
+jobs like month-end reports) is a strong unused-index candidate, aside from
+unique/PK-backing indexes and ones enforcing a constraint, which must stay
+regardless of scan count. Before dropping, I'd double-check it isn't a
+recently-added index still waiting to prove itself, and confirm across all
+replicas/environments since usage can differ by node. To remove it safely
+under load, use `DROP INDEX CONCURRENTLY`, which avoids taking the exclusive
+lock a plain `DROP INDEX` would hold, so reads/writes on the table aren't
+blocked during the drop.
+
 **Glossary:**
 - **Write amplification** — extra write work caused by having to update auxiliary structures (indexes) in addition to the primary data.
 - **REINDEX** — rebuilding an index from scratch, sometimes needed to reclaim bloat.
@@ -600,6 +766,7 @@ justify an index with data rather than intuition.
 
 **References:**
 - [PostgreSQL: Chapter 11. Indexes](https://www.postgresql.org/docs/current/indexes.html)
+- [PostgreSQL: DROP INDEX](https://www.postgresql.org/docs/current/sql-dropindex.html)
 
 ---
 
@@ -643,6 +810,21 @@ CREATE INDEX idx_orders_created_date ON orders (DATE(created_at));
 **Follow-up question:**
 What does "sargable" mean, and why is it a useful concept when writing
 `WHERE` clauses?
+
+**Follow-up good answer:**
+"Sargable" (from "Search ARGument ABLE") describes a condition written in a
+form the database can evaluate directly against an index — typically
+`column <op> constant-or-bound-value`, with the column left bare and
+unwrapped. It's useful as a mental checklist while writing queries: before
+relying on an index, ask "is my condition sargable?" — i.e. is the indexed
+column on one side by itself, with no function call, arithmetic, or type
+coercion applied to it? If not (e.g. `DATE(created_at) = ...`,
+`price * 1.1 > 100`, or comparing a `text` column to an `int`), the index
+can't be used as a direct range/lookup, and you can usually restructure the
+query — move the transformation to the constant side of the comparison
+instead of the column side — to make it sargable again, which is often the
+fastest fix for a "why is this suddenly slow" query without touching schema
+at all.
 
 **Glossary:**
 - **Sargable (Search ARGument ABLE)** — a condition that can be evaluated using an index directly, without transforming the indexed column.
@@ -696,6 +878,19 @@ WHERE is_primary = true;
 For a partial index to be used, what has to be true about the query's
 `WHERE` clause relative to the index's predicate?
 
+**Follow-up good answer:**
+The planner has to be able to prove, from the query's `WHERE` clause alone,
+that every row the query could match is guaranteed to satisfy the index's
+predicate — i.e. the query's condition must logically imply the index's
+condition. The simplest and most reliable way to guarantee this is for the
+query to include the exact same condition as the index's predicate (e.g.
+querying `WHERE status = 'pending'` against an index built
+`WHERE status = 'pending'`); PostgreSQL can also handle some simple logical
+implications (e.g. a query condition that's a stricter subset of the
+predicate), but it doesn't do arbitrary theorem-proving, so in practice you
+should keep the predicate simple and mirror it closely in the queries you
+expect to benefit from the index.
+
 **Glossary:**
 - **Partial index** — an index built over only the rows matching a given predicate.
 - **Predicate** — the boolean condition defining which rows are included in a partial index.
@@ -736,6 +931,18 @@ measured a specific reason not to.
 **Follow-up question:**
 Why can't a hash index be used to satisfy an `ORDER BY` on the indexed
 column?
+
+**Follow-up good answer:**
+A hash index stores entries keyed by the *hash* of the column value, and a
+good hash function is deliberately designed to scatter inputs across the
+output space with no relationship between input order and output order —
+two adjacent keys (like 5 and 6) can hash to completely unrelated, far-apart
+buckets. So walking the hash index's buckets in storage order tells you
+nothing about the original values' order; there's no way to produce sorted
+output from it without effectively re-sorting the results after the fact,
+which defeats the purpose of using an index to avoid a sort. A B-tree, by
+contrast, physically stores entries in key order, so an index scan
+inherently produces sorted output for free.
 
 **Glossary:**
 - **Hash index** — an index that maps a hash of the key to a bucket, supporting only equality lookups.
@@ -778,6 +985,23 @@ bloats every secondary index and makes every secondary lookup do more work.
 Why is using a large random UUID as an InnoDB primary key often a
 performance anti-pattern, beyond just index bloat?
 
+**Follow-up good answer:**
+Because the clustered index *is* the table's physical storage in InnoDB,
+every insert has to place the new row in primary-key order. With a
+sequential key (e.g. auto-increment), inserts always land at the
+high/right-hand edge of the tree, so pages fill up efficiently — InnoDB's
+own documentation notes sequentially-inserted index pages end up roughly
+15/16 full, versus as low as 1/2 full for randomly-ordered inserts, since a
+random UUID scatters new rows across arbitrary existing pages, constantly
+forcing costly mid-tree page splits and leaving pages half-empty. Beyond the
+wasted space this implies, that randomness also destroys **locality of
+reference**: sequential inserts keep recently-written data clustered on a
+small, hot set of pages that stay cached in the buffer pool, while random
+UUID inserts spread writes across the entire keyspace, meaning far more of
+each insert/lookup misses the cache and requires physical disk I/O — a much
+larger effect on sustained throughput than the extra secondary-index
+bytes alone.
+
 **Glossary:**
 - **Clustered index** — an index whose leaf nodes contain the actual row data, determining physical row storage order.
 - **Secondary index** — any other index; in InnoDB, it stores primary key values instead of physical row pointers.
@@ -791,6 +1015,7 @@ into every other index.
 
 **References:**
 - [MySQL 8.4 Reference Manual: 17.6.2.1 Clustered and Secondary Indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html)
+- [MySQL 8.4 Reference Manual: 17.6.2.2 The Physical Structure of an InnoDB Index](https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html)
 
 ---
 
@@ -824,6 +1049,19 @@ variants per statement based on parameter value buckets.
 **Follow-up question:**
 Why doesn't this problem happen the same way with ad-hoc (non-parameterized)
 queries?
+
+**Follow-up good answer:**
+Parameter sniffing is specifically a consequence of *reusing* a cached plan
+across different literal values. An ad-hoc query sent with literal values
+baked directly into the SQL text (not bind parameters) is typically
+optimized fresh for those exact literal values every time it's compiled —
+the optimizer's cardinality estimates are based on the actual values in the
+statement, not a placeholder, so each distinct query text gets its own
+plan tailored to its own values. The trade-off is the opposite one: constant
+recompilation costs CPU/planning overhead on every execution, which is why
+parameterization and plan caching exist in the first place — parameter
+sniffing is the price paid for that reuse, and ad-hoc queries simply aren't
+paying for reuse.
 
 **Glossary:**
 - **Parameter sniffing** — the optimizer using the actual parameter values from a specific compilation to build a cached execution plan, which may not suit other parameter values.
@@ -880,6 +1118,20 @@ List<Order> findAllWithCustomer();
 Why can eager-loading *everything* by default also be a performance
 problem?
 
+**Follow-up good answer:**
+Eager-loading trades query *count* for query/result *size*, and that trade
+isn't free either. Joining in every related entity for every request pulls
+back data the caller often doesn't need, which means more bytes over the
+wire, more memory to materialize into objects, and — critically — if you
+eagerly fetch multiple one-to-many relations at once via joins, you get a
+**Cartesian product** effect: joining an order to both its 10 line items and
+its 5 status-history entries in one query returns 50 duplicated rows instead
+of 15, which the ORM then has to de-duplicate in memory. The right default
+is closer to "load only what this specific use case needs" — lazy by
+default with deliberate, targeted eager-fetching (e.g. `JOIN FETCH`) added
+per query where you know the access pattern, rather than blanket eager
+loading everywhere.
+
 **Glossary:**
 - **Lazy loading** — deferring the loading of related data until it's actually accessed.
 - **Eager loading / JOIN FETCH** — loading related data up front, typically via a join, to avoid separate follow-up queries.
@@ -930,6 +1182,21 @@ requires) rewrites the table to actually reclaim disk space.
 Why can a single long-running transaction cause bloat across the *entire*
 database, not just the tables it touches?
 
+**Follow-up good answer:**
+VACUUM can only remove a dead tuple once it's certain no current or future
+transaction snapshot could still need to see it — and that safety line
+(often called the "xmin horizon") is determined by the oldest still-open
+transaction *anywhere in the cluster*, not per-table. As long as that one
+long-running transaction is open, PostgreSQL has to assume it might still
+query any table in the database using its original snapshot, so VACUUM is
+blocked from reclaiming newly-dead tuples on *every* table being actively
+written to, not just the ones the long transaction happens to touch. This is
+why a single forgotten `idle in transaction` session can cause bloat
+cluster-wide — the fix is to actively monitor for and terminate long-running
+or idle-in-transaction sessions (e.g. via `pg_stat_activity`, or the
+`idle_in_transaction_session_timeout` setting), not just tune autovacuum
+parameters.
+
 **Glossary:**
 - **Dead tuple** — an old, no-longer-visible row version left behind by MVCC after an UPDATE/DELETE.
 - **Bloat** — wasted space in a table or index from unreclaimed dead tuples.
@@ -942,6 +1209,7 @@ candidate can trace a performance symptom to its root architectural cause.
 
 **References:**
 - [PostgreSQL: 24.1. Routine Vacuuming](https://www.postgresql.org/docs/current/routine-vacuuming.html)
+- [PostgreSQL: 19.11. Client Connection Defaults (idle_in_transaction_session_timeout)](https://www.postgresql.org/docs/current/runtime-config-client.html)
 
 ---
 
@@ -985,6 +1253,23 @@ you're trading throughput for that safety.
 **Follow-up question:**
 Give a concrete example of a bug that Read Committed allows but Repeatable
 Read would prevent.
+
+**Follow-up good answer:**
+Classic example: a transaction reads an account balance, checks it's
+sufficient, then later in the *same* transaction runs a second query that
+also reads related data based on that balance (e.g. re-reading it to
+compute a transfer amount), and finally issues the write. Under Read
+Committed, each statement gets a fresh snapshot, so if another transaction
+commits an update to that balance in between the two reads, the second read
+sees the *new* value — the transaction's logic silently operates on two
+different, inconsistent views of the same row within what should be one
+atomic unit of work, potentially allowing an overdraft the first check
+thought it had prevented. Under Repeatable Read, the entire transaction sees
+one fixed snapshot taken at its start, so both reads return the same value;
+if the underlying row was changed by another committed transaction, a
+subsequent *write* by this transaction would instead fail with a
+serialization error, forcing an explicit retry rather than silently
+proceeding on stale logic.
 
 **Glossary:**
 - **Dirty read** — reading another transaction's uncommitted changes.

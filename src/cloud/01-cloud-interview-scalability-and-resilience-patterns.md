@@ -32,6 +32,9 @@ SESSION_STORE=redis://interview-app-cache.xxxxx.cache.amazonaws.com:6379
 **Follow-up question:**
 What application-level changes are usually required before a monolith that scales vertically today can be scaled horizontally?
 
+**Follow-up good answer:**
+Externalize session state (a shared store like ElastiCache/Redis instead of in-process memory), move file uploads/writes off local disk onto shared storage (S3/EFS), remove reliance on in-process singleton caches that assume one instance sees all traffic, make scheduled/background jobs safe to run from any instance (leader election or a single dedicated worker) instead of relying on "the one server" to run them, switch to stateless auth (JWT) or a shared session store instead of sticky sessions, and add proper health-check endpoints plus graceful shutdown handling so the load balancer can safely route around any instance.
+
 **Glossary:**
 - **Scale up (vertical)** — increasing the resources of a single node.
 - **Scale out (horizontal)** — increasing the number of nodes serving a workload.
@@ -63,6 +66,9 @@ aws elbv2 modify-target-group-attributes \
 **Follow-up question:**
 When would `least_outstanding_requests` cause worse behavior than `round_robin`?
 
+**Follow-up good answer:**
+`least_outstanding_requests` (LOR) can misbehave right after a new or recovered target joins the group: because it has zero in-flight requests, LOR floods it with a disproportionate share of new traffic immediately, before its actual capacity/warm-up state is known — a "thundering herd onto the new target" effect that `round_robin` doesn't have, since round robin doesn't react to instantaneous load signals. LOR is best suited when request cost/duration varies meaningfully across requests; for uniform, short-lived requests it adds bookkeeping overhead for essentially the same distribution round robin would already give you.
+
 **Glossary:**
 - **Target group** — the set of registered backends an ALB routes to.
 - **Health check thresholds** — consecutive pass/fail counts before a status flips.
@@ -87,6 +93,9 @@ First, correlate the timing precisely — is it tied to the deploy, a traffic pa
 **Follow-up question:**
 The trace shows the extra latency is entirely inside your own service, not downstream calls — what's your next step?
 
+**Follow-up good answer:**
+Take repeated thread dumps (`jstack` / `jcmd <pid> Thread.print`) during the slow window to see whether threads are `BLOCKED` waiting on a lock/monitor (contention) versus busy `RUNNABLE` doing real work. If CPU-bound, pull a flame graph (async-profiler or AWS X-Ray/JFR) to see exactly which function is consuming the extra cycles. Also check GC metrics/logs — a deploy that changed allocation patterns can show up as more frequent or longer GC pauses. Comparing a flame graph from before vs. after the deploy (or canary vs. baseline) is usually what pinpoints the exact changed code path.
+
 **Glossary:**
 - **p99 latency** — the latency below which 99% of requests complete; sensitive to tail effects that averages hide.
 - **Flame graph** — a visualization of stack samples showing where CPU time is spent.
@@ -110,6 +119,9 @@ CAP theorem (Brewer, 2000; formally proven by Gilbert & Lynch, 2002) states that
 
 **Follow-up question:**
 Is CAP theorem still relevant when there's no network partition happening — what governs the consistency/latency trade-off then?
+
+**Follow-up good answer:**
+Without an active partition, CAP doesn't force a choice — a system can, in principle, be both consistent and available. What governs behavior day-to-day is the PACELC extension to CAP (Abadi, 2010): **e**lse (no partition), a system still trades **L**atency against **C**onsistency — do you wait for a synchronous quorum/replica acknowledgment (stronger consistency, higher latency), or return from the nearest replica immediately (lower latency, possibly stale)? DynamoDB's default eventually-consistent read vs. its strongly-consistent read option is exactly this trade-off exercised during normal operation, independent of whether a partition is happening.
 
 **Glossary:**
 - **Partition tolerance** — the system continues operating despite arbitrary message loss/delay between nodes.
@@ -152,6 +164,9 @@ except DownstreamError:
 **Follow-up question:**
 How would you decide the failure-rate threshold and cooldown duration for a specific dependency?
 
+**Follow-up good answer:**
+Base the failure-rate threshold on the dependency's normal baseline error rate plus margin — high enough that ordinary noise (a baseline 0.1–1% error rate) doesn't trip it, low enough to catch real degradation quickly; a common approach is requiring a minimum sample size (e.g., 20+ requests) before evaluating a failure percentage, so a handful of unlucky failures on a quiet dependency doesn't falsely open the breaker. The cooldown should reflect how long the dependency realistically takes to recover from its typical failure modes (an autoscaling event, a failover) — too short causes flapping between open and half-open, too long keeps you degraded longer than necessary. Both numbers should come from historical incident data and be validated empirically (e.g., via chaos experiments), not set once and forgotten.
+
 **Glossary:**
 - **Fail fast** — rejecting a request immediately instead of waiting on a doomed call.
 - **Cascading failure** — a failure in one component propagating to and taking down healthy components.
@@ -184,6 +199,9 @@ def backoff_full_jitter(attempt, base=0.1, cap=20):
 **Follow-up question:**
 Besides jitter, what else should a retry policy include to avoid making an outage worse (hint: think about total retry budget)?
 
+**Follow-up good answer:**
+A total retry budget: cap system-wide retries as a fraction of overall request volume (e.g., no more than 10% of requests may be retries) so a broad outage doesn't get amplified 2–3x by every caller retrying independently. This pairs with a hard cap on attempts per request, an overall deadline/timeout budget shared across all attempts of one logical request (not a fresh timeout per retry), and ideally a circuit breaker so retries stop entirely once failures cross a threshold instead of continuing to add load to an already-struggling dependency. AWS SDK retry strategies implement almost exactly this as a retry "token bucket" — drawn down by failures, replenished by successes — to prevent sustained retry storms.
+
 **Glossary:**
 - **Exponential backoff** — increasing the delay between retries exponentially with each attempt.
 - **Full jitter** — randomizing the delay uniformly within `[0, backoff_cap]` rather than using a fixed value.
@@ -208,6 +226,9 @@ The cooldown period pauses further scaling activity after a scaling action so th
 **Follow-up question:**
 How does this interact with a load balancer's connection draining — what happens to in-flight requests on an instance that's about to be terminated during scale-in?
 
+**Follow-up good answer:**
+The deregistration delay (default 300s, configurable 0–3600s) puts a scaling-in instance into the `draining` state in the target group: the ALB immediately stops sending it *new* requests, but requests already in flight get up to that window to finish before the instance is actually terminated — if the delay expires with a request still in flight, it's cut off. ASG coordinates by deregistering the instance from the target group as part of scale-in before terminating it; a Lifecycle Hook can extend this further, pausing the actual termination until app-level cleanup (finishing in-flight work, flushing logs) completes, not just until the LB-side drain window elapses.
+
 **Glossary:**
 - **Cooldown period** — the wait time after a scaling activity before another one can be triggered.
 - **Warm-up time** — how long a newly launched instance needs before it's counted toward capacity metrics.
@@ -217,6 +238,7 @@ Probes whether the candidate understands autoscaling as a control-loop stability
 
 **References:**
 - [Available warm-up and cooldown settings — Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/consolidated-view-of-warm-up-and-cooldown-settings.html)
+- [Edit target group attributes for your Application Load Balancer — Elastic Load Balancing](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html)
 
 ---
 
@@ -230,6 +252,9 @@ Target-tracking (reactive) scaling only responds after a metric (e.g. CPU or req
 
 **Follow-up question:**
 What would you check in "Forecast Only" mode before turning predictive scaling on in production?
+
+**Follow-up good answer:**
+Compare the forecast against actual historical load for the same recurring windows to sanity-check accuracy (AWS surfaces predicted vs. actual capacity so this is visible before enabling it live). Check whether the forecast baked in a one-off anomaly (an incident-driven spike) as if it were a recurring pattern. Confirm you have enough history for the pattern being learned — ideally several occurrences of it (e.g., multiple Mondays for a weekly pattern), since a short window risks overfitting to an atypical day. And verify the forecasted proactive capacity doesn't conflict with, or fall below, any minimum floor set by an existing scaling/scheduled policy during low-traffic hours.
 
 **Glossary:**
 - **Target tracking** — a scaling policy that adjusts capacity to keep a chosen metric at a target value.
@@ -254,6 +279,9 @@ An Availability Zone is one or more physically distinct data centers within a re
 **Follow-up question:**
 For a Multi-Region active-passive setup, what's your RTO/RPO and how do those numbers drive your replication and failover design?
 
+**Follow-up good answer:**
+RTO (max acceptable downtime) drives how "warm" the standby needs to be and how automated failover must be — a tight RTO (minutes) forces an active-passive or warm-standby design with infrastructure already provisioned and automated failover (e.g., Route 53 health-check-based routing), while a looser RTO tolerates a cold, restore-from-backup approach. RPO (max acceptable data loss) drives replication mode/frequency — a near-zero RPO forces synchronous or near-real-time replication (e.g., Aurora Global Database's typical <1s cross-region lag) despite the latency cost, while a looser RPO (hours) allows cheaper periodic snapshot-based replication. Together they size the actual dollar cost of the DR strategy, pushing you along the spectrum from backup/restore → pilot light → warm standby → multi-site active-active as both numbers tighten.
+
 **Glossary:**
 - **Availability Zone (AZ)** — one or more discrete data centers with independent infrastructure within a region.
 - **RTO / RPO** — Recovery Time Objective / Recovery Point Objective — how long to recover, and how much data loss is acceptable.
@@ -263,6 +291,7 @@ Checks whether the candidate can reason about availability in terms of concrete 
 
 **References:**
 - [AWS Fault Isolation Boundaries](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/abstract-and-introduction.html)
+- [Disaster recovery options in the cloud — AWS Whitepapers](https://docs.aws.amazon.com/whitepapers/latest/disaster-recovery-workloads-on-aws/disaster-recovery-options-in-the-cloud.html)
 
 ---
 
@@ -276,6 +305,9 @@ Named after a ship's watertight compartments, the bulkhead pattern isolates reso
 
 **Follow-up question:**
 How do you size a bulkhead's resource pool — what happens if you make it too small vs. too large?
+
+**Follow-up good answer:**
+Size each pool from the dependency's realistic sustainable throughput and observed p99 latency for calls to it specifically — using Little's Law (concurrency ≈ throughput × latency) as a starting estimate, then load-testing to validate. Undersizing causes the caller to queue or reject requests to a dependency even when that dependency is healthy and fast, artificially capping throughput below what the system could actually sustain. Oversizing defeats the isolation purpose: if the sum of all bulkheads' capacities exceeds the host's real shared resource limits (total threads, memory, connections), a single slow dependency's oversized pool can still starve the others. In practice, monitor per-bulkhead rejection/queue-depth metrics and tune sizing from real traffic rather than a one-time guess.
 
 **Glossary:**
 - **Resource pool** — a bounded set of reusable resources (threads, connections) shared across callers.
@@ -317,6 +349,9 @@ class TokenBucket:
 **Follow-up question:**
 How would you design rate limiting per-API-key instead of per-account, and what storage would you use to keep it consistent across multiple gateway nodes?
 
+**Follow-up good answer:**
+Give each API key its own token-bucket state (rate + burst) rather than one shared bucket per account. Using API Gateway usage plans and API keys, this is largely built in — a usage plan defines the throttle/quota target, and every API key attached to it is tracked and enforced independently by API Gateway's own distributed throttling, with no self-managed storage needed. If implementing it yourself across multiple gateway/app nodes, you need centralized, low-latency shared storage all nodes read/write consistently — typically Redis/ElastiCache, since `INCR` + `EXPIRE` (or a Lua script implementing the token-bucket refill atomically) gives sub-millisecond, race-free updates; DynamoDB with conditional updates is also viable but adds more per-request latency than an in-memory store.
+
 **Glossary:**
 - **Rate limit** — steady-state allowed throughput (tokens/sec).
 - **Burst limit** — the bucket's capacity, i.e. how far above the steady rate a client can momentarily spike.
@@ -326,6 +361,7 @@ Tests fundamental algorithm knowledge tied to a real, nameable AWS mechanism —
 
 **References:**
 - [Throttle requests to your REST APIs — Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html)
+- [Usage plans and API keys for REST APIs in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html)
 
 ---
 
@@ -354,6 +390,9 @@ def handler(event, context):
 **Follow-up question:**
 What happens if two retries with the same idempotency key arrive concurrently, before the first one has finished writing its result?
 
+**Follow-up good answer:**
+The second concurrent request's conditional `PutItem` fails, because the first request already claimed the idempotency key (the item exists in an `IN_PROGRESS` state) — so the second request never re-executes the handler. Powertools' idempotency utility raises an `IdempotencyAlreadyInProgressError` in this case, which should be mapped to a retryable response (e.g., `409`/`500` with a retry hint) rather than a false success, so the real client retries again after the first attempt finishes and its cached result becomes available. This is exactly the point of using an atomic conditional write instead of a naive "check, then insert" — it collapses the check-and-claim into one operation, closing the race window a two-step approach would leave open.
+
 **Glossary:**
 - **Idempotency key** — a client-supplied unique identifier for one logical operation, used to detect retries.
 - **Conditional write** — a write that only succeeds if a condition (e.g. "item doesn't exist yet") holds, used to prevent races.
@@ -377,6 +416,9 @@ A cold start happens when Lambda has to create a brand-new execution environment
 **Follow-up question:**
 For a Java or .NET Lambda with heavy JVM/CLR startup cost, what other techniques besides provisioned concurrency would you consider (hint: think about SnapStart)?
 
+**Follow-up good answer:**
+Lambda SnapStart (Java 11+, .NET 8+, and Python 3.12+) attacks cold starts differently than provisioned concurrency: instead of keeping environments continuously warm and billed, Lambda initializes the function once when a version is published, takes an encrypted Firecracker microVM snapshot of the initialized memory/disk state, and restores new execution environments from that snapshot on invocation — cutting init latency from potentially several seconds to sub-second in optimal cases without paying for idle capacity. It requires auditing init-time code for state uniqueness (cached random values, IDs, or connections created during init get baked into the snapshot and reused verbatim across environments unless explicitly refreshed after resume), and it can't be combined with provisioned concurrency, EFS, or >512MB ephemeral storage. Other options: trimming init-time work (lazy-loading heavy dependencies), a smaller deployment package, or a lighter runtime/native-image approach (e.g., GraalVM native image for Java) to reduce JVM/CLR startup cost directly.
+
 **Glossary:**
 - **Execution environment** — the sandboxed runtime instance Lambda creates to run your function code.
 - **Provisioned concurrency** — a set number of execution environments kept initialized ahead of invocation.
@@ -386,6 +428,7 @@ A performance-internals question specific to serverless — tests whether the ca
 
 **References:**
 - [Configuring provisioned concurrency for a function — AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html)
+- [Improving startup performance with Lambda SnapStart](https://docs.aws.amazon.com/lambda/latest/dg/snapstart.html)
 
 ---
 
@@ -400,6 +443,9 @@ Each Lambda concurrent execution can open its own DB connection, and because Lam
 **Follow-up question:**
 Multiplexing reuses a connection after each *transaction* — what class of application behavior (hint: session-level state) becomes unsafe once you introduce that, and how do you detect it?
 
+**Follow-up good answer:**
+Anything relying on session-scoped state — `SET`-configured session variables, temp tables, prepared statements, advisory locks, cursors, `LISTEN`/`NOTIFY` channels, MARS on SQL Server — becomes unsafe, because the next transaction on the same logical client connection can land on a *different* physical DB connection that never saw that state (a temp table created in one transaction could silently "vanish" in the next). RDS Proxy actually detects most of these automatically and "pins" that session to one physical connection for its lifetime rather than letting state corrupt silently — but pinning defeats the pooling benefit you added the proxy for in the first place. Detect it via the CloudWatch metric `DatabaseConnectionsCurrentlySessionPinned`: a high pinned ratio signals the application is issuing multiplexing-breaking statements that should be refactored or moved into the proxy's initialization query instead.
+
 **Glossary:**
 - **Connection multiplexing** — reusing one physical DB connection across multiple logical client sessions/transactions.
 - **max_connections** — the hard cap on simultaneous connections a database instance will accept.
@@ -409,6 +455,7 @@ A very common "Lambda + RDS" gotcha in real production systems — tests whether
 
 **References:**
 - [Amazon RDS Proxy — RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html)
+- [Avoiding pinning an RDS Proxy](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy-pinning.html)
 
 ---
 
@@ -422,6 +469,9 @@ Blue-green deployment runs the new version ("green") fully alongside the current
 
 **Follow-up question:**
 What CloudWatch alarm(s) would you wire up to auto-rollback a canary deployment for a payment service, and why those specifically?
+
+**Follow-up good answer:**
+At minimum: a 5xx/error-rate alarm scoped specifically to the canary target group (tight absolute threshold, since even low-volume payment errors are high severity), a p95/p99 latency alarm scoped to the same canary targets (degraded-but-not-erroring is still a failure mode for payments), and a business-metric alarm if one exists (e.g., a custom CloudWatch metric tracking failed charge/authorization attempts), since an HTTP 200 can still represent an incorrect business outcome an infra-level alarm won't catch. All alarms should read only the canary's slice of traffic, not the blended blue+green aggregate, and thresholds should sit well inside your normal SLO so a real regression triggers rollback before it burns meaningful error budget.
 
 **Glossary:**
 - **Blast radius** — the scope of impact if a deployed change is bad.
@@ -446,6 +496,9 @@ With `hash(key) % N`, adding or removing even one node changes `N`, which change
 **Follow-up question:**
 What's the "hot partition" problem, and how does DynamoDB's partition key design guidance try to prevent it?
 
+**Follow-up good answer:**
+A hot partition happens when reads/writes concentrate disproportionately on one partition — typically from a low-cardinality or predictably-clustered partition key (a raw timestamp, a status field with few values, a sequential ID) — so that one partition hits its fixed per-partition ceiling (3,000 RCU / 1,000 WCU) and throttles, even though the table's aggregate capacity has plenty of headroom elsewhere. DynamoDB's guidance is to pick high-cardinality, uniformly-accessed partition keys, and to shard an otherwise-hot logical key with a composite or randomized suffix (e.g., `userId-sessionId`, or `itemId#0`–`itemId#9` for a very hot single item) so writes spread across many physical partitions. DynamoDB also mitigates this automatically at runtime via adaptive capacity (temporarily reallocating throughput toward a hot partition) and split-for-heat (splitting a hot partition's keyspace), but those are safety nets, not a substitute for key design.
+
 **Glossary:**
 - **Hash ring** — a circular hash-value space onto which nodes and keys are both mapped.
 - **Virtual nodes** — multiple ring positions assigned to one physical node to smooth load distribution.
@@ -455,6 +508,7 @@ A classic distributed-systems internals question — tests whether the candidate
 
 **References:**
 - [DynamoDB Deep Dive for System Design Interviews — Hello Interview](https://www.hellointerview.com/learn/system-design/deep-dives/dynamodb)
+- [Best practices for designing and using partition keys effectively in DynamoDB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/bp-partition-key-design.html)
 
 ---
 
@@ -476,6 +530,9 @@ When a consumer receives a message from SQS, the message isn't deleted — it be
 
 **Follow-up question:**
 How would you size the visibility timeout relative to your consumer's actual processing time, and what goes wrong if it's set too short?
+
+**Follow-up good answer:**
+Set the visibility timeout to at least the consumer's expected maximum processing time, with margin — AWS recommends at least 6x your function's timeout for a typical Lambda-SQS setup — and extend it dynamically via `ChangeMessageVisibility` for tasks whose duration varies a lot, rather than statically over-provisioning for the worst case. If it's set too short, a consumer still legitimately processing a message (just slower than the timeout assumed) sees that message become visible again and delivered to a second consumer before the first finishes — causing concurrent duplicate processing of the same message. That's a self-inflicted version of the exact failure mode a correctly sized timeout is meant to prevent, and it pushes you to lean on idempotency to paper over what's really a misconfiguration.
 
 **Glossary:**
 - **Visibility timeout** — the window during which a received-but-undeleted message is hidden from other consumers.
@@ -501,6 +558,9 @@ Chaos engineering is the practice of deliberately injecting failure into a syste
 **Follow-up question:**
 Why is testing resilience in staging alone often insufficient, and what would you need to trust a production chaos experiment enough to run it?
 
+**Follow-up good answer:**
+Staging usually can't reproduce production's real traffic volume/shape, real data skew (a hot customer, an outsized tenant, adversarial inputs), or actual fleet scale — a resilience mechanism that looks fine in staging (autoscaling catching up in time, a cache absorbing load) can fail in production purely because scale changes the failure dynamics. Trusting a production experiment enough to run it requires: tight, automated stop conditions (alarms that abort the instant real customer impact is detected), a small initial blast radius (a tiny random target subset, not "every instance in an AZ" on a first run), a tested and fast rollback/abort path, and starting during low-traffic windows before widening scope as confidence builds.
+
 **Glossary:**
 - **Steady state** — the measurable, expected normal behavior of the system before a fault is introduced.
 - **Stop condition** — an automatic abort trigger (typically a CloudWatch alarm) that halts an experiment if it causes real harm.
@@ -524,6 +584,9 @@ Spot Instances let you bid for unused EC2 capacity at a price set by supply and 
 **Follow-up question:**
 How would the two-minute interruption notice change how you handle an in-flight request on a Spot-backed web server behind an ALB?
 
+**Follow-up good answer:**
+On the two-minute interruption notice (surfaced via instance metadata, or an EventBridge event you can subscribe to), the instance should immediately deregister itself from the ALB target group (directly, or via a lifecycle hook) so the ALB stops routing *new* requests to it and the target enters `draining`, giving in-flight requests up to the target group's deregistration delay to finish. Because Spot's notice window (2 minutes) is shorter than the ALB's default 300s deregistration delay, that delay should be tuned down for Spot-backed target groups (or deregistration triggered immediately on notice, not deferred) so draining actually completes within the time available before AWS reclaims the instance — anything still in flight when the hard interruption lands is lost, which is why idempotent, retriable client behavior still matters here.
+
 **Glossary:**
 - **Spot price** — the current market price for Spot capacity, set by supply/demand.
 - **Capacity-optimized allocation** — a Spot Fleet strategy that sources instances from the pools with the most available capacity, minimizing interruption risk.
@@ -534,6 +597,7 @@ A cost-vs-performance/reliability trade-off question — tests whether the candi
 **References:**
 - [Spot Instance interruptions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-interruptions.html)
 - [Best practices for Amazon EC2 Spot](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-best-practices.html)
+- [Edit target group attributes for your Application Load Balancer — Elastic Load Balancing](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/edit-target-group-attributes.html)
 
 ---
 
@@ -547,6 +611,9 @@ Infrastructure-level implementation (a service mesh sidecar, load balancer, or A
 
 **Follow-up question:**
 If a sidecar proxy is responsible for retries, how do you prevent it from retrying a request whose side effect already happened but whose response was lost?
+
+**Follow-up good answer:**
+The sidecar's retry mechanism must be scoped to what's actually safe to retry — in practice, auto-retrying only inherently safe/idempotent methods (GET, HEAD, idempotent PUT) by default, and for anything else requiring the application to attach an idempotency-key header that the sidecar forwards unchanged on every retry attempt, so the downstream service's own idempotency-key handling (as in Q12) can dedupe regardless of how many times the transport layer resent the call. A sidecar that blindly retries POST/RPC calls with no such contract reintroduces exactly the double-execution risk idempotency exists to prevent — which is why service meshes let you configure retryable methods/status codes per route rather than retrying everything, and why the retry-safety *decision* stays an application/API-contract concern even once the retry *mechanism* lives in infrastructure.
 
 **Glossary:**
 - **Service mesh sidecar** — a proxy deployed alongside each service instance that intercepts and manages network traffic (e.g. Envoy in Istio).

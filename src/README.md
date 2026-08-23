@@ -85,6 +85,10 @@ Each topic folder has an `index.md` that automatically lists every file in
 that folder (via a Liquid loop over `site.pages`) — so once a new file has
 front matter, it shows up in the site nav with no extra wiring.
 
+The site uses the `jekyll-theme-hacker` theme with a custom `_layouts/default.html`
+that adds a breadcrumb (Home » Topic » Page) above every page's content —
+this is automatic for any page with front matter, no per-file work needed.
+
 ## Mandatory structure per question
 
 The canonical, always-up-to-date template lives at
@@ -111,6 +115,10 @@ question may not need one)
 **Follow-up question:**
 <a natural follow-up an interviewer would ask to probe deeper>
 
+**Follow-up good answer:**
+<a strong, complete answer to the follow-up question — same bar as the main
+Good answer, claims backed by References below>
+
 **Glossary:**
 - **Term** — definition
 - **Term** — definition
@@ -126,7 +134,8 @@ the question, not a restatement of the answer.>
 
 ### References are mandatory
 
-Every question's **Good answer** must end with a **References** section
+Every question's **Good answer** and **Follow-up good answer** must be backed
+by a **References** section
 linking to **official documentation** (language spec, vendor docs, RFC,
 official framework docs — not blog posts, not Stack Overflow, not
 third-party tutorials, unless no official source exists for that exact claim).

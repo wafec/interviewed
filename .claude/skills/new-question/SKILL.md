@@ -25,8 +25,8 @@ Generates a new interview question set file under `src/<topic>/`.
    real-world problems, pitfalls, advanced features, trade-offs) — and read
    `src/TEMPLATE.md`, the canonical per-question structure (front matter,
    Question / Good answer / optional Code example / Follow-up question /
-   Glossary / Mental model / References). Every file you generate must match
-   `src/TEMPLATE.md`'s shape exactly.
+   Follow-up good answer / Glossary / Mental model / References). Every file
+   you generate must match `src/TEMPLATE.md`'s shape exactly.
 
 2. **Survey existing files.** List `src/<topic>/*.md`. Read their titles/H1
    and subtopic slugs (don't need to read every question in full, just enough
@@ -42,7 +42,10 @@ Generates a new interview question set file under `src/<topic>/`.
    internals, resilience/failure modes, trade-off/comparison questions. Keep
    it narrow enough that 20 questions can go deep rather than staying generic.
 
-4. **Draft the 20 questions** covering every mandatory category from
+4. **Draft the 20 questions, each with its own follow-up question AND a full
+   good answer to that follow-up** (not just the follow-up question text —
+   write out the strong answer to it too, same bar as the main answer),
+   covering every mandatory category from
    `src/README.md` (fundamentals, internals, performance diagnosis, SE theory
    + practice, real-world problems, pitfalls, advanced features, trade-offs).
    Do not skip the performance-diagnosis angle (tools, methodology, how to
@@ -51,7 +54,8 @@ Generates a new interview question set file under `src/<topic>/`.
 
 5. **Verify each answer online before writing it down — this is mandatory,
    not optional.** For every question, use WebSearch/WebFetch to find the
-   **official documentation** backing the claims in the "Good answer"
+   **official documentation** backing the claims in both the "Good answer"
+   AND the "Follow-up good answer"
    (language spec, vendor docs, RFC, official framework docs). Do this
    *before* finalizing the answer text, not after — if what you find
    contradicts or refines your draft answer, fix the answer to match the
@@ -80,10 +84,11 @@ Generates a new interview question set file under `src/<topic>/`.
    - A one-paragraph intro naming the subtopic and what it covers.
    - Exactly 20 questions, each following the mandatory structure from
      `src/README.md` (`### Q<N>. ...` with Question / Good answer / optional
-     Code example / Follow-up question / Glossary / Mental model /
-     References subsections).
+     Code example / Follow-up question / Follow-up good answer / Glossary /
+     Mental model / References subsections).
    - Every question ends with a **References** section containing at least
-     one verified official-documentation link.
+     one verified official-documentation link covering both the main answer
+     and the follow-up answer.
    - Write real, accurate, senior-level answers — not placeholders. This is
      study material the user will rely on, so answers must be technically
      correct and complete enough to actually learn from.
