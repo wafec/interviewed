@@ -654,3 +654,7 @@ Advanced/internals question — tests whether the candidate understands flow con
 **References:**
 - [Reactive Streams Specification](https://www.reactive-streams.org/)
 - [Project Reactor Flux API docs — onBackpressureBuffer / onBackpressureDrop / onBackpressureLatest / onBackpressureError](https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html)
+
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=api&tags=rest-api-design-fundamentals&autostart=1" | relative_url }})

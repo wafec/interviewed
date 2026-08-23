@@ -22,11 +22,14 @@ Generates a new interview question set file under `src/<topic>/`.
 
 1. **Read the contract.** Read `src/README.md` in full — it defines the
    mandatory coverage areas (fundamentals, internals, performance, SE theory,
-   real-world problems, pitfalls, advanced features, trade-offs) — and read
-   `src/TEMPLATE.md`, the canonical per-question structure (front matter,
-   Question / Good answer / optional Code example / Follow-up question /
-   Follow-up good answer / Glossary / Mental model / References). Every file
-   you generate must match `src/TEMPLATE.md`'s shape exactly.
+   real-world problems, pitfalls, advanced features, trade-offs), the "Quiz
+   question bank" section (the `src/<topic>/quiz.json` contribution this
+   skill must make every run), and read `src/TEMPLATE.md`, the canonical
+   per-question structure (front matter, Question / Good answer / optional
+   Code example / Follow-up question / Follow-up good answer / Glossary /
+   Mental model / References, plus the mandatory "Test your knowledge" quiz
+   link footer). Also read `src/QUIZ_TEMPLATE.json` for the exact MCQ schema.
+   Every file you generate must match these shapes exactly.
 
 2. **Survey existing files.** List `src/<topic>/*.md`. Read their titles/H1
    and subtopic slugs (don't need to read every question in full, just enough
@@ -92,9 +95,31 @@ Generates a new interview question set file under `src/<topic>/`.
    - Write real, accurate, senior-level answers — not placeholders. This is
      study material the user will rely on, so answers must be technically
      correct and complete enough to actually learn from.
+   - End the file with the mandatory quiz-link footer from `src/TEMPLATE.md`,
+     with `<topic>` and `<subtopic>` filled in to match this file.
 
-8. **Report back** with the file path and a one-line summary of the subtopic
-   and coverage, so the user can review it.
+8. **Contribute to the quiz bank — mandatory every run.** Open (or create)
+   `src/<topic>/quiz.json`. If it doesn't exist, create it as
+   `{"topic": "<topic>", "questions": []}`. Append roughly 10 new
+   multiple-choice questions drawn from this subtopic, following
+   `src/QUIZ_TEMPLATE.json`'s schema exactly:
+   - Every item's `id` must be unique within the file (prefix with
+     `<topic>-<subtopic>-`, e.g. `java-concurrency-and-memory-model-001`).
+   - Tag every item with this file's `<subtopic>` slug plus any finer-grained
+     tags that fit (e.g. `performance`, `internals`, `trade-offs`) — the
+     subtopic tag is what makes this file's "Test your knowledge" footer
+     link resolve to a non-empty quiz.
+   - Never remove or overwrite existing entries already in the file — only
+     append.
+   - `explanation` must cover both why the correct choice(s) are right and
+     why the wrong choices are plausible-but-wrong distractors.
+   - `reference` must be a verified official-documentation link, checked
+     online the same way as the prose References (reuse a link already
+     verified in step 5 when it supports the same claim).
+
+9. **Report back** with the file path(s) touched (prose file + quiz.json)
+   and a one-line summary of the subtopic and coverage, so the user can
+   review it.
 
 ## Notes
 

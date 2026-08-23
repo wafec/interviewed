@@ -1284,3 +1284,7 @@ about *why* you wouldn't just pick the strictest option "to be safe."
 
 **References:**
 - [PostgreSQL: 13.2. Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
+
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=sql&tags=indexing-and-query-performance&autostart=1" | relative_url }})

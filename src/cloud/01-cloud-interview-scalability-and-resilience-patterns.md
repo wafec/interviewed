@@ -624,3 +624,7 @@ A synthesis question that ties the whole set together — tests architectural ju
 
 **References:**
 - [Circuit breaker pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html)
+
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=cloud&tags=scalability-and-resilience-patterns&autostart=1" | relative_url }})

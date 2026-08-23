@@ -1,0 +1,34 @@
+{
+  "topic": "<topic-slug, e.g. java>",
+  "questions": [
+    {
+      "id": "<topic>-<subtopic-slug>-001",
+      "tags": ["<tag-one>", "<tag-two>"],
+      "type": "single",
+      "question": "<the multiple-choice question text>",
+      "choices": [
+        { "id": "a", "text": "<choice A>" },
+        { "id": "b", "text": "<choice B>" },
+        { "id": "c", "text": "<choice C>" },
+        { "id": "d", "text": "<choice D>" }
+      ],
+      "correct": ["b"],
+      "explanation": "<why the correct choice(s) are right AND why each wrong choice is a plausible-but-wrong distractor>",
+      "reference": "https://official-docs-url"
+    },
+    {
+      "id": "<topic>-<subtopic-slug>-002",
+      "tags": ["<tag>"],
+      "type": "multiple",
+      "question": "<a question where more than one choice is correct — say so in the question text, e.g. 'select all that apply'>",
+      "choices": [
+        { "id": "a", "text": "<choice A>" },
+        { "id": "b", "text": "<choice B>" },
+        { "id": "c", "text": "<choice C>" }
+      ],
+      "correct": ["a", "c"],
+      "explanation": "<reasoning>",
+      "reference": "https://official-docs-url"
+    }
+  ]
+}

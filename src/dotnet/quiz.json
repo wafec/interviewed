@@ -1,0 +1,156 @@
+{
+  "topic": "dotnet",
+  "questions": [
+    {
+      "id": "dotnet-clr-and-async-internals-001",
+      "tags": ["clr-and-async-internals", "internals", "gc"],
+      "type": "single",
+      "question": "At what object size does the .NET GC place an allocation on the Large Object Heap (LOH) instead of the normal small-object heap?",
+      "choices": [
+        { "id": "a", "text": "8,000 bytes" },
+        { "id": "b", "text": "85,000 bytes" },
+        { "id": "c", "text": "1 MB" },
+        { "id": "d", "text": "There is no fixed threshold; it depends on available memory" }
+      ],
+      "correct": ["b"],
+      "explanation": "An object >= 85,000 bytes is allocated on the LOH; this threshold was determined by performance tuning and is a fixed constant, not memory-dependent. 8,000 bytes and 1 MB are plausible-sounding but wrong numbers; 'depends on memory' misdescribes it as dynamic when it's a fixed threshold.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-002",
+      "tags": ["clr-and-async-internals", "internals", "performance"],
+      "type": "single",
+      "question": "Why is boxing a value type considered expensive?",
+      "choices": [
+        { "id": "a", "text": "It requires a network round trip to the CLR type registry" },
+        { "id": "b", "text": "It allocates a new object on the managed heap and adds GC pressure" },
+        { "id": "c", "text": "It permanently locks the value type's memory for the process lifetime" },
+        { "id": "d", "text": "It converts the value to a string internally before storing it" }
+      ],
+      "correct": ["b"],
+      "explanation": "Boxing allocates a heap object and copies the value into it, adding GC pressure and defeating the point of using a value type. There's no network call, no permanent lock, and no implicit string conversion involved.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-003",
+      "tags": ["clr-and-async-internals", "async", "internals"],
+      "type": "single",
+      "question": "When an `await` is reached and the awaited task is already completed, what happens?",
+      "choices": [
+        { "id": "a", "text": "Execution continues synchronously in the same MoveNext() call, with no yielding of the thread" },
+        { "id": "b", "text": "The state machine always allocates on the heap and schedules a continuation" },
+        { "id": "c", "text": "The method restarts from the beginning" },
+        { "id": "d", "text": "The thread pool creates a new thread to run the rest of the method" }
+      ],
+      "correct": ["a"],
+      "explanation": "If the awaiter's IsCompleted is already true, MoveNext() just continues executing inline — no continuation registration, no thread yield, and (if the whole method completes this way) potentially no heap allocation at all for the state machine. It doesn't restart the method or spin up a new thread.",
+      "reference": "https://devblogs.microsoft.com/dotnet/how-async-await-really-works/"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-004",
+      "tags": ["clr-and-async-internals", "async", "aspnet-core"],
+      "type": "single",
+      "question": "What effect does `ConfigureAwait(false)` have inside an ASP.NET Core request-handling method?",
+      "choices": [
+        { "id": "a", "text": "It prevents thread pool starvation entirely" },
+        { "id": "b", "text": "It provides no deadlock-prevention or performance benefit there, because ASP.NET Core doesn't install a SynchronizationContext" },
+        { "id": "c", "text": "It forces the continuation to run on the original request thread" },
+        { "id": "d", "text": "It disables exception propagation from the awaited task" }
+      ],
+      "correct": ["b"],
+      "explanation": "ASP.NET Core doesn't install a SynchronizationContext (unlike classic ASP.NET), so continuations already run on arbitrary thread pool threads regardless of ConfigureAwait — it's harmless but provides no benefit there. It doesn't prevent starvation on its own, doesn't force a specific thread, and doesn't touch exception propagation.",
+      "reference": "https://devblogs.microsoft.com/dotnet/configureawait-faq/"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-005",
+      "tags": ["clr-and-async-internals", "async", "pitfalls"],
+      "type": "single",
+      "question": "Why can't a `try/catch` around the call site of a fire-and-forget `async void` method reliably catch its exceptions?",
+      "choices": [
+        { "id": "a", "text": "async void methods are not allowed to throw exceptions at all" },
+        { "id": "b", "text": "Exceptions from async void are thrown directly on the active SynchronizationContext/ThreadPool context, not captured on a Task the caller can observe" },
+        { "id": "c", "text": "The CLR automatically swallows all exceptions from async void methods" },
+        { "id": "d", "text": "try/catch cannot be used with any method that contains an await" }
+      ],
+      "correct": ["b"],
+      "explanation": "There's no Task for async void, so its exceptions can't be stored/observed like a normal async Task method's — they're thrown directly wherever the continuation resumes, bypassing a try/catch at the call site (often crashing the process). They aren't disallowed, aren't silently swallowed, and try/catch works fine around awaited async Task methods.",
+      "reference": "https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-006",
+      "tags": ["clr-and-async-internals", "async", "pitfalls"],
+      "type": "single",
+      "question": "What two conditions together cause the classic async/await deadlock when calling `.Result` or `.Wait()`?",
+      "choices": [
+        { "id": "a", "text": "A single-threaded SynchronizationContext plus code that synchronously blocks on the task" },
+        { "id": "b", "text": "Using ValueTask instead of Task" },
+        { "id": "c", "text": "Running the app in Debug configuration" },
+        { "id": "d", "text": "Calling an async method from a static constructor" }
+      ],
+      "correct": ["a"],
+      "explanation": "The deadlock needs a context (UI thread, classic ASP.NET request thread) that the continuation is captured to and blocked on — the blocked thread can never run the continuation, so the awaited task never completes. ValueTask, Debug builds, and static constructors aren't the cause.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/common-async-bugs"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-007",
+      "tags": ["clr-and-async-internals", "gc", "performance"],
+      "type": "single",
+      "question": "Which GC mode is the ASP.NET Core default, and why?",
+      "choices": [
+        { "id": "a", "text": "Workstation GC, because it minimizes memory footprint for containers" },
+        { "id": "b", "text": "Server GC, because a server typically has spare CPU cores and benefits from parallel, throughput-optimized collection" },
+        { "id": "c", "text": "Concurrent GC only, with no generational collection" },
+        { "id": "d", "text": "There is no default; it must always be configured explicitly" }
+      ],
+      "correct": ["b"],
+      "explanation": "Server GC runs a dedicated heap and GC thread per logical core in parallel, trading memory for throughput — the right trade-off for a typical server with spare cores, which is why it's the ASP.NET Core default. Workstation GC is the better fit for memory-constrained, low-CPU scenarios (e.g., many 1-core containers), not the ASP.NET Core default; the runtime does have a default even if unconfigured.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/workstation-server-gc"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-008",
+      "tags": ["clr-and-async-internals", "async", "advanced"],
+      "type": "single",
+      "question": "What is unsafe about awaiting the same `ValueTask` (or `ValueTask<T>`) more than once?",
+      "choices": [
+        { "id": "a", "text": "Nothing — ValueTask is safe to await multiple times just like Task" },
+        { "id": "b", "text": "It may wrap a pooled/reusable IValueTaskSource whose state can be reset or reused, so a second await is undefined behavior" },
+        { "id": "c", "text": "It throws a compile-time error" },
+        { "id": "d", "text": "It always deadlocks the calling thread" }
+      ],
+      "correct": ["b"],
+      "explanation": "Unlike Task (a plain object safe to observe multiple times), a ValueTask may back onto a pooled IValueTaskSource that gets reset once consumed — awaiting it again can throw, return stale data, or corrupt an unrelated operation reusing the same pooled object. It's not compile-time checked and doesn't inherently deadlock.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-009",
+      "tags": ["clr-and-async-internals", "di", "pitfalls"],
+      "type": "single",
+      "question": "You inject a Scoped service directly into a Singleton in ASP.NET Core's DI container. What's the correct description of the risk and the built-in safety net?",
+      "choices": [
+        { "id": "a", "text": "The DI container always throws at startup in every environment, so this is impossible to ship" },
+        { "id": "b", "text": "The scoped service becomes a captive dependency, effectively living as long as the singleton; by default the container only throws this validation error in the Development environment" },
+        { "id": "c", "text": "It works correctly and is the recommended way to use scoped services from singletons" },
+        { "id": "d", "text": "It silently creates a brand-new scope per call automatically" }
+      ],
+      "correct": ["b"],
+      "explanation": "This is a captive dependency: the singleton holds the scoped instance for its entire lifetime instead of getting a fresh one per request. Microsoft's docs note that scope-validation throwing this error by default only happens in the Development environment (not always, and not in every environment) — so it can slip through unnoticed in other environments. It's not automatically safe, and DI does not auto-create a new scope per call for you.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/service-lifetimes"
+    },
+    {
+      "id": "dotnet-clr-and-async-internals-010",
+      "tags": ["clr-and-async-internals", "ef-core", "performance"],
+      "type": "single",
+      "question": "What's the standard EF Core fix for the N+1 query problem caused by lazily-loaded navigation properties accessed in a loop?",
+      "choices": [
+        { "id": "a", "text": "Disable the database's query cache" },
+        { "id": "b", "text": "Use eager loading with .Include()/.ThenInclude() (or explicit loading) so the related data is fetched via a JOIN in the initial query" },
+        { "id": "c", "text": "Wrap the loop in a transaction" },
+        { "id": "d", "text": "Switch the DbContext lifetime from Scoped to Singleton" },
+        { "id": "e", "text": "Increase the connection pool size" }
+      ],
+      "correct": ["b"],
+      "explanation": ".Include()/.ThenInclude() (or explicit .Load() calls) fetch related data as part of the initial query via a JOIN, turning N+1 round trips into one (or a controlled few). A transaction, connection pool size, and query caching don't address the root cause of issuing one query per entity; making DbContext a Singleton is actively wrong and unsafe (DbContext is not thread-safe and is meant to be Scoped).",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+    }
+  ]
+}

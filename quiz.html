@@ -1,0 +1,322 @@
+---
+layout: default
+title: Quiz
+permalink: /quiz/
+---
+
+<style>
+  #quiz-app { font-family: inherit; max-width: 760px; }
+  #quiz-app fieldset { border: 1px solid #333; margin-bottom: 1.2em; padding: 0.8em 1em; }
+  #quiz-app legend { padding: 0 0.4em; }
+  #quiz-app label.choice-row { display: block; margin: 0.5em 0; cursor: pointer; }
+  #quiz-app label.choice-row input { margin-right: 0.6em; }
+  #quiz-app .topic-row, #quiz-app .tag-row { display: inline-block; margin: 0.3em 1em 0.3em 0; }
+  #quiz-app button { cursor: pointer; padding: 0.5em 1.2em; margin-top: 0.6em; margin-right: 0.6em; }
+  #quiz-app .progress { opacity: 0.7; margin-bottom: 0.6em; }
+  #quiz-app .q-tags { opacity: 0.6; font-size: 0.85em; margin-bottom: 0.6em; }
+  #quiz-app .result-item { border-left: 4px solid #555; padding: 0.4em 0 0.4em 0.8em; margin: 1em 0; }
+  #quiz-app .result-item.correct { border-left-color: #2ea043; }
+  #quiz-app .result-item.incorrect { border-left-color: #d1242f; }
+  #quiz-app .choice-your.correct { font-weight: bold; }
+  #quiz-app .choice-your.incorrect { text-decoration: line-through; opacity: 0.8; }
+  #quiz-app .choice-missed { opacity: 0.8; }
+  #quiz-app .score-banner { font-size: 1.4em; margin: 0.6em 0 1em; }
+  #quiz-app .empty-state { opacity: 0.7; }
+</style>
+
+# Quiz
+
+<div id="quiz-app">Loading question bank…</div>
+
+<script>
+(function () {
+  var BASEURL = {{ site.baseurl | jsonify }};
+  var TOPICS = [
+    { slug: "java", label: "Java" },
+    { slug: "api", label: "API" },
+    { slug: "sql", label: "SQL" },
+    { slug: "cloud", label: "Cloud" },
+    { slug: "dotnet", label: ".NET" }
+  ];
+
+  var app = document.getElementById("quiz-app");
+  var allQuestions = []; // flattened, each tagged with .topic
+  var state = null;
+
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (k) {
+      if (k === "text") e.textContent = attrs[k];
+      else if (k === "html") e.innerHTML = attrs[k];
+      else e.setAttribute(k, attrs[k]);
+    });
+    (children || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function loadAll() {
+    var fetches = TOPICS.map(function (t) {
+      return fetch(BASEURL + "/src/" + t.slug + "/quiz.json")
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .catch(function () { return null; })
+        .then(function (data) {
+          if (!data || !data.questions) return [];
+          return data.questions.map(function (q) {
+            q.topic = t.slug;
+            q.topicLabel = t.label;
+            return q;
+          });
+        });
+    });
+    return Promise.all(fetches).then(function (lists) {
+      allQuestions = lists.reduce(function (acc, l) { return acc.concat(l); }, []);
+    });
+  }
+
+  function parseQuery() {
+    var params = {};
+    var qs = window.location.search.substring(1);
+    qs.split("&").forEach(function (pair) {
+      if (!pair) return;
+      var kv = pair.split("=");
+      var k = decodeURIComponent(kv[0]);
+      var v = decodeURIComponent((kv[1] || "").replace(/\+/g, " "));
+      params[k] = v;
+    });
+    return params;
+  }
+
+  function startFromParams(params) {
+    var topics = params.topics ? params.topics.split(",") : TOPICS.map(function (t) { return t.slug; });
+    var tags = params.tags ? params.tags.split(",") : [];
+    var count = parseInt(params.count, 10) || 10;
+
+    var pool = allQuestions.filter(function (q) {
+      if (topics.indexOf(q.topic) === -1) return false;
+      if (tags.length === 0) return true;
+      return (q.tags || []).some(function (t) { return tags.indexOf(t) !== -1; });
+    });
+
+    if (pool.length === 0) { renderSetup(); return; }
+
+    var sampled = shuffle(pool).slice(0, count);
+    state = { questions: sampled, index: 0, answers: {} };
+    renderQuestion();
+  }
+
+  function tagsForTopics(topicSlugs) {
+    var set = {};
+    allQuestions.forEach(function (q) {
+      if (topicSlugs.indexOf(q.topic) === -1) return;
+      (q.tags || []).forEach(function (t) { set[t] = true; });
+    });
+    return Object.keys(set).sort();
+  }
+
+  function renderSetup() {
+    app.innerHTML = "";
+
+    var topicsWithData = TOPICS.filter(function (t) {
+      return allQuestions.some(function (q) { return q.topic === t.slug; });
+    });
+
+    if (topicsWithData.length === 0) {
+      app.appendChild(el("p", { "class": "empty-state",
+        text: "No quiz question banks found yet. Generate one with the /new-quiz-question skill (e.g. /new-quiz-question java)." }));
+      return;
+    }
+
+    var topicChecks = {};
+    var topicFieldset = el("fieldset", {}, [el("legend", { text: "Topics" })]);
+    topicsWithData.forEach(function (t) {
+      var cb = el("input", { type: "checkbox", value: t.slug, checked: "checked" });
+      topicChecks[t.slug] = cb;
+      cb.addEventListener("change", refreshTags);
+      var row = el("span", { "class": "topic-row" }, [
+        el("label", {}, [cb, document.createTextNode(" " + t.label)])
+      ]);
+      topicFieldset.appendChild(row);
+    });
+    app.appendChild(topicFieldset);
+
+    var tagFieldset = el("fieldset", {}, [el("legend", { text: "Tags (none checked = all)" })]);
+    app.appendChild(tagFieldset);
+
+    var tagChecks = {};
+    function refreshTags() {
+      tagFieldset.innerHTML = "";
+      tagFieldset.appendChild(el("legend", { text: "Tags (none checked = all)" }));
+      tagChecks = {};
+      var selectedTopics = topicsWithData
+        .map(function (t) { return t.slug; })
+        .filter(function (slug) { return topicChecks[slug].checked; });
+      tagsForTopics(selectedTopics).forEach(function (tag) {
+        var cb = el("input", { type: "checkbox", value: tag });
+        tagChecks[tag] = cb;
+        var row = el("span", { "class": "tag-row" }, [
+          el("label", {}, [cb, document.createTextNode(" " + tag)])
+        ]);
+        tagFieldset.appendChild(row);
+      });
+    }
+    refreshTags();
+
+    var countFieldset = el("fieldset", {}, [el("legend", { text: "Number of questions" })]);
+    var countInput = el("input", { type: "number", min: "1", value: "10", style: "width:5em;" });
+    countFieldset.appendChild(countInput);
+    app.appendChild(countFieldset);
+
+    var startBtn = el("button", { text: "Start quiz" });
+    startBtn.addEventListener("click", function () {
+      var selectedTopics = topicsWithData
+        .map(function (t) { return t.slug; })
+        .filter(function (slug) { return topicChecks[slug].checked; });
+      var selectedTags = Object.keys(tagChecks).filter(function (t) { return tagChecks[t].checked; });
+
+      var pool = allQuestions.filter(function (q) {
+        if (selectedTopics.indexOf(q.topic) === -1) return false;
+        if (selectedTags.length === 0) return true;
+        return (q.tags || []).some(function (t) { return selectedTags.indexOf(t) !== -1; });
+      });
+
+      var count = Math.max(1, parseInt(countInput.value, 10) || 10);
+      var sampled = shuffle(pool).slice(0, count);
+
+      if (sampled.length === 0) {
+        alert("No questions match that topic/tag combination.");
+        return;
+      }
+
+      state = { questions: sampled, index: 0, answers: {} };
+      renderQuestion();
+    });
+    app.appendChild(startBtn);
+  }
+
+  function renderQuestion() {
+    app.innerHTML = "";
+    var q = state.questions[state.index];
+    var total = state.questions.length;
+
+    app.appendChild(el("div", { "class": "progress",
+      text: "Question " + (state.index + 1) + " of " + total + " — " + q.topicLabel }));
+    app.appendChild(el("div", { "class": "q-tags", text: (q.tags || []).join(", ") }));
+    app.appendChild(el("h3", { text: q.question }));
+
+    var isMultiple = q.type === "multiple";
+    var selected = state.answers[q.id] || [];
+    var form = el("div", {});
+    (q.choices || []).forEach(function (choice) {
+      var input = el("input", {
+        type: isMultiple ? "checkbox" : "radio",
+        name: "choice",
+        value: choice.id
+      });
+      if (selected.indexOf(choice.id) !== -1) input.checked = true;
+      input.addEventListener("change", function () {
+        if (isMultiple) {
+          var cur = state.answers[q.id] || [];
+          if (input.checked) cur = cur.concat([choice.id]);
+          else cur = cur.filter(function (c) { return c !== choice.id; });
+          state.answers[q.id] = cur;
+        } else {
+          state.answers[q.id] = [choice.id];
+        }
+      });
+      form.appendChild(el("label", { "class": "choice-row" }, [
+        input, document.createTextNode(" " + choice.text)
+      ]));
+    });
+    app.appendChild(form);
+
+    if (state.index > 0) {
+      var prevBtn = el("button", { text: "Previous" });
+      prevBtn.addEventListener("click", function () { state.index--; renderQuestion(); });
+      app.appendChild(prevBtn);
+    }
+
+    if (state.index < total - 1) {
+      var nextBtn = el("button", { text: "Next" });
+      nextBtn.addEventListener("click", function () { state.index++; renderQuestion(); });
+      app.appendChild(nextBtn);
+    } else {
+      var finishBtn = el("button", { text: "Finish & score" });
+      finishBtn.addEventListener("click", renderResults);
+      app.appendChild(finishBtn);
+    }
+  }
+
+  function sameSet(a, b) {
+    if (a.length !== b.length) return false;
+    var sa = a.slice().sort(), sb = b.slice().sort();
+    return sa.every(function (v, i) { return v === sb[i]; });
+  }
+
+  function renderResults() {
+    app.innerHTML = "";
+    var correctCount = 0;
+    state.questions.forEach(function (q) {
+      var your = state.answers[q.id] || [];
+      if (sameSet(your, q.correct)) correctCount++;
+    });
+    var total = state.questions.length;
+    var pct = Math.round((correctCount / total) * 100);
+
+    app.appendChild(el("div", { "class": "score-banner",
+      text: "Score: " + correctCount + " / " + total + " (" + pct + "%)" }));
+
+    state.questions.forEach(function (q, i) {
+      var your = state.answers[q.id] || [];
+      var isCorrect = sameSet(your, q.correct);
+      var item = el("div", { "class": "result-item " + (isCorrect ? "correct" : "incorrect") });
+      item.appendChild(el("div", { html: "<strong>Q" + (i + 1) + ".</strong> " + escapeHtml(q.question) }));
+
+      var list = el("ul", {});
+      (q.choices || []).forEach(function (choice) {
+        var wasYours = your.indexOf(choice.id) !== -1;
+        var wasCorrect = q.correct.indexOf(choice.id) !== -1;
+        var cls = "";
+        var marker = "";
+        if (wasYours && wasCorrect) { cls = "choice-your correct"; marker = " ✓ (your answer)"; }
+        else if (wasYours && !wasCorrect) { cls = "choice-your incorrect"; marker = " ✗ (your answer)"; }
+        else if (!wasYours && wasCorrect) { cls = "choice-missed"; marker = " (correct answer)"; }
+        list.appendChild(el("li", { "class": cls, text: choice.text + marker }));
+      });
+      item.appendChild(list);
+
+      item.appendChild(el("p", { html: "<em>" + escapeHtml(q.explanation || "") + "</em>" }));
+      if (q.reference) {
+        var refLink = el("a", { href: q.reference, target: "_blank", rel: "noopener", text: "Reference" });
+        item.appendChild(el("p", {}, [refLink]));
+      }
+      app.appendChild(item);
+    });
+
+    var retakeBtn = el("button", { text: "New quiz" });
+    retakeBtn.addEventListener("click", renderSetup);
+    app.appendChild(retakeBtn);
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  loadAll().then(function () {
+    var params = parseQuery();
+    if (params.autostart) startFromParams(params);
+    else renderSetup();
+  });
+})();
+</script>

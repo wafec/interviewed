@@ -75,3 +75,14 @@ the question, not a restatement of the answer.>
   official documentation only, checked online before writing the answer),
   and when a Code example subsection is warranted.
 -->
+
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=<topic>&tags=<subtopic>&autostart=1" | relative_url }})
+
+<!--
+  This footer is mandatory on every generated file. See "Quiz question bank"
+  in src/README.md: generating this file must also contribute ~10 tagged MCQ
+  items to src/<topic>/quiz.json, tagged (among other things) with this same
+  <subtopic> slug, so this link resolves to a non-empty quiz.
+-->

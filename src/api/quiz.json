@@ -1,0 +1,155 @@
+{
+  "topic": "api",
+  "questions": [
+    {
+      "id": "api-rest-api-design-fundamentals-001",
+      "tags": ["rest-api-design-fundamentals", "fundamentals"],
+      "type": "single",
+      "question": "Which HTTP method is idempotent but NOT safe (i.e. it changes server state, but repeating it has the same effect as doing it once)?",
+      "choices": [
+        { "id": "a", "text": "GET" },
+        { "id": "b", "text": "PUT" },
+        { "id": "c", "text": "POST" },
+        { "id": "d", "text": "PATCH" }
+      ],
+      "correct": ["b"],
+      "explanation": "PUT replaces a resource with a given representation — calling it once or N times leaves the resource in the same end state, so it's idempotent, but it does change server state, so it isn't safe. GET is both safe and idempotent (read-only). POST and PATCH are neither safe nor idempotent by default: POST /orders twice creates two orders, and a PATCH expressed as a delta (e.g. \"increment counter\") is not idempotent either.",
+      "reference": "https://www.rfc-editor.org/rfc/rfc9110#section-9.2"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-002",
+      "tags": ["rest-api-design-fundamentals", "internals"],
+      "type": "single",
+      "question": "How long does Stripe retain the result of an idempotency key before it can be reused for a brand-new operation?",
+      "choices": [
+        { "id": "a", "text": "5 minutes" },
+        { "id": "b", "text": "1 hour" },
+        { "id": "c", "text": "24 hours" },
+        { "id": "d", "text": "Forever — keys are never expired" }
+      ],
+      "correct": ["c"],
+      "explanation": "Stripe retains idempotency keys for at least 24 hours, which comfortably covers realistic client retry/backoff windows (including a client retrying after being offline overnight) without keeping unbounded state forever. After that window, reusing the same key is treated as a new operation, not a replay.",
+      "reference": "https://docs.stripe.com/api/idempotent_requests"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-003",
+      "tags": ["rest-api-design-fundamentals", "performance"],
+      "type": "single",
+      "question": "What does the `Cache-Control: no-cache` directive actually mean?",
+      "choices": [
+        { "id": "a", "text": "The response must never be stored by any cache" },
+        { "id": "b", "text": "The response can be stored, but must be revalidated with the origin before each reuse" },
+        { "id": "c", "text": "The response can be cached for at most 1 second" },
+        { "id": "d", "text": "It's equivalent to Cache-Control: no-store" }
+      ],
+      "correct": ["b"],
+      "explanation": "Despite the name, `no-cache` does NOT mean \"don't cache.\" Per RFC 9111, it means the response may be stored, but must not be used to satisfy a later request without first being revalidated with the origin server. `no-store` is the directive that actually forbids storage entirely — a very common point of confusion.",
+      "reference": "https://www.rfc-editor.org/rfc/rfc9111"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-004",
+      "tags": ["rest-api-design-fundamentals", "internals"],
+      "type": "single",
+      "question": "Which of the following requests will NOT trigger a CORS preflight (i.e. qualifies as a \"simple request\")?",
+      "choices": [
+        { "id": "a", "text": "A POST with Content-Type: application/json" },
+        { "id": "b", "text": "A GET with a custom X-Api-Key header" },
+        { "id": "c", "text": "A POST with Content-Type: text/plain and no custom headers" },
+        { "id": "d", "text": "A PUT request with Content-Type: application/x-www-form-urlencoded" }
+      ],
+      "correct": ["c"],
+      "explanation": "A \"simple request\" is limited to GET/HEAD/POST, no custom headers, and a Content-Type of only application/x-www-form-urlencoded, multipart/form-data, or text/plain. A POST with text/plain and no custom headers qualifies. application/json is NOT in that allowed list (so option a triggers a preflight), any custom header triggers a preflight (option b), and PUT is not one of the three allowed simple methods (option d).",
+      "reference": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-005",
+      "tags": ["rest-api-design-fundamentals", "security"],
+      "type": "single",
+      "question": "Why was the OAuth 2.0 implicit grant deprecated in favor of authorization code + PKCE for public clients like SPAs?",
+      "choices": [
+        { "id": "a", "text": "It doesn't support refresh tokens" },
+        { "id": "b", "text": "It returns the access token directly in the redirect URI fragment, exposing it via browser history/referrers with no back-channel exchange" },
+        { "id": "c", "text": "It requires a client secret, which SPAs can't securely store" },
+        { "id": "d", "text": "It's slower than the authorization code flow" }
+      ],
+      "correct": ["b"],
+      "explanation": "RFC 9700 (OAuth 2.0 Security BCP) formally deprecates the implicit grant because it returns the token directly in the URI fragment with no back-channel exchange step, exposing it to browser history, referrer leakage, and malicious extensions. PKCE fixes this by keeping the token exchange server-side and requiring a cryptographic verifier the original requester alone holds. (Public clients like SPAs specifically can't hold a client secret at all, which is a separate reason authorization code + PKCE — not client credentials — is used, but it's not why implicit was deprecated.)",
+      "reference": "https://www.rfc-editor.org/rfc/rfc9700.html"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-006",
+      "tags": ["rest-api-design-fundamentals", "performance", "internals"],
+      "type": "single",
+      "question": "In the token bucket rate-limiting algorithm, what does the bucket's capacity (B) control?",
+      "choices": [
+        { "id": "a", "text": "The steady long-term average request rate" },
+        { "id": "b", "text": "The maximum burst of requests allowed in a short window, above the steady rate" },
+        { "id": "c", "text": "The HTTP status code returned once the bucket is empty" },
+        { "id": "d", "text": "How often the bucket refills" }
+      ],
+      "correct": ["b"],
+      "explanation": "The refill rate (R tokens/second) controls the steady long-term average rate; the bucket capacity (B) controls how large a burst can be spent at once before the client has to wait for refills. This is exactly why token bucket is preferred over a naive fixed-window counter, which allows an unintended 2x burst right at a window boundary.",
+      "reference": "https://stripe.com/blog/rate-limiters"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-007",
+      "tags": ["rest-api-design-fundamentals", "performance", "trade-offs"],
+      "type": "single",
+      "question": "Why does cursor-based (keyset) pagination stay fast at deep pages while offset-based pagination gets slower the deeper you page?",
+      "choices": [
+        { "id": "a", "text": "Cursor pagination caches results in Redis automatically" },
+        { "id": "b", "text": "Offset pagination still has to scan and discard all skipped rows; cursor pagination anchors to an indexed value with a WHERE clause" },
+        { "id": "c", "text": "Cursor pagination doesn't require an index" },
+        { "id": "d", "text": "Offset pagination performance is unrelated to page depth" }
+      ],
+      "correct": ["b"],
+      "explanation": "`OFFSET N` still requires the database to scan and discard the first N rows before returning results, so deep pages get progressively slower. Cursor/keyset pagination instead issues an indexed `WHERE id > :cursor ORDER BY id LIMIT N` query, which stays roughly constant-time regardless of how deep you page, because it jumps directly to the right place in the index rather than scanning from the start.",
+      "reference": "https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-008",
+      "tags": ["rest-api-design-fundamentals", "internals"],
+      "type": "single",
+      "question": "HTTP/2 solves HTTP/1.1's head-of-line blocking at the application layer via multiplexed streams. What limitation remains even with HTTP/2?",
+      "choices": [
+        { "id": "a", "text": "HTTP/2 doesn't support more than one request per connection" },
+        { "id": "b", "text": "A single lost/delayed TCP segment still stalls the whole connection, since all streams share one TCP connection and TCP guarantees in-order delivery" },
+        { "id": "c", "text": "HTTP/2 requires a new connection per stream, defeating the purpose" },
+        { "id": "d", "text": "There is no remaining limitation — HTTP/2 fully eliminates head-of-line blocking" }
+      ],
+      "correct": ["b"],
+      "explanation": "HTTP/2 multiplexes independent streams over a single TCP connection, fixing HOL blocking at the HTTP layer. But because all those streams still share one TCP connection, and TCP guarantees strictly in-order byte delivery, a single lost/delayed TCP segment stalls delivery for every stream on that connection — TCP-level HOL blocking remains. HTTP/3, built on QUIC/UDP, was designed specifically to give each stream independent loss recovery and eliminate this.",
+      "reference": "https://www.rfc-editor.org/rfc/rfc9113.html"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-009",
+      "tags": ["rest-api-design-fundamentals", "trade-offs"],
+      "type": "single",
+      "question": "What HTTP header is used to communicate the exact date/time an API version will stop working, as part of a deprecation timeline?",
+      "choices": [
+        { "id": "a", "text": "Deprecation" },
+        { "id": "b", "text": "Sunset" },
+        { "id": "c", "text": "Retry-After" },
+        { "id": "d", "text": "X-API-Version" }
+      ],
+      "correct": ["b"],
+      "explanation": "RFC 8594 defines the `Sunset` header, which a server includes on responses to signal the exact date/time an endpoint or resource will stop being available — typically paired with a `Link` header pointing to migration docs. After the sunset date passes, the endpoint should return `410 Gone`, not a silent `404`.",
+      "reference": "https://www.rfc-editor.org/rfc/rfc8594"
+    },
+    {
+      "id": "api-rest-api-design-fundamentals-010",
+      "tags": ["rest-api-design-fundamentals", "trade-offs", "performance"],
+      "type": "multiple",
+      "question": "Which of the following are genuine downsides of naive GraphQL usage compared to REST? (select all that apply)",
+      "choices": [
+        { "id": "a", "text": "A naive resolver implementation can introduce its own N+1 problem" },
+        { "id": "b", "text": "Standard HTTP-level caching (keyed on distinct cacheable URLs) doesn't work the same way against a single POST endpoint" },
+        { "id": "c", "text": "GraphQL cannot express nested/related data in a single request" },
+        { "id": "d", "text": "Clients can construct deeply nested or wide queries that are expensive to resolve if the server doesn't bound query cost" }
+      ],
+      "correct": ["a", "b", "d"],
+      "explanation": "GraphQL resolvers can introduce their own per-field N+1 problem without batching (e.g. Dataloader-style patterns), a single POST endpoint breaks typical URL-keyed HTTP caching, and uncapped query complexity/depth is a real DoS risk that requires server-side cost analysis or depth limiting. Option c is false — the ability to express nested/related data in one request is GraphQL's core value proposition (solving REST's over-fetching/under-fetching), not a limitation.",
+      "reference": "https://www.graphql-js.org/docs/operation-complexity-controls/"
+    }
+  ]
+}

@@ -673,3 +673,7 @@ Advanced/trade-off closer — checks whether the candidate can make a realistic 
 **References:**
 - [Native AOT deployment overview - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/)
 - [Optimizing AOT deployments - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/optimizing)
+
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=dotnet&tags=clr-and-async-internals&autostart=1" | relative_url }})

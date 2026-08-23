@@ -882,3 +882,7 @@ Tests precise vocabulary and conceptual boundaries between related failure modes
 **References:**
 - [Liveness — Java Tutorials (Deadlock, Starvation and Livelock)](https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html)
 - [ReentrantLock javadoc — fairness policy (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReentrantLock.html)
+
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=java&tags=concurrency-and-memory-model&autostart=1" | relative_url }})

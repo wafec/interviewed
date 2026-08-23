@@ -1,0 +1,155 @@
+{
+  "topic": "java",
+  "questions": [
+    {
+      "id": "java-concurrency-and-memory-model-001",
+      "tags": ["concurrency-and-memory-model", "internals"],
+      "type": "single",
+      "question": "What does declaring a field `volatile` guarantee in the Java Memory Model?",
+      "choices": [
+        { "id": "a", "text": "Reads and writes of the field are atomic and mutually exclusive, like a lock." },
+        { "id": "b", "text": "Writes are immediately visible to other threads and reordering across the volatile access is constrained (happens-before), but compound operations like `i++` are still not atomic." },
+        { "id": "c", "text": "The field is cached in each thread's local memory for performance." },
+        { "id": "d", "text": "The JIT compiler is prevented from inlining any method that reads the field." }
+      ],
+      "correct": ["b"],
+      "explanation": "Per the JLS, a write to a volatile field happens-before every subsequent read of that field, giving visibility and ordering guarantees. It does NOT provide mutual exclusion or atomicity for read-modify-write sequences (e.g. `i++` is still a race). (a) is what `synchronized`/locks provide, not `volatile`; (c) is backwards — volatile disables the kind of thread-local caching that would hide another thread's write; (d) is not something `volatile` controls.",
+      "reference": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.4.5"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-002",
+      "tags": ["concurrency-and-memory-model", "internals"],
+      "type": "multiple",
+      "question": "Which of the following establish a happens-before relationship under the Java Memory Model? (select all that apply)",
+      "choices": [
+        { "id": "a", "text": "A call to `Thread.start()` happens-before any action in the started thread." },
+        { "id": "b", "text": "All actions in a thread happen-before another thread successfully returns from a `join()` on that thread." },
+        { "id": "c", "text": "Two unsynchronized, non-volatile writes from different threads to the same field, in any order." },
+        { "id": "d", "text": "A write to a volatile field happens-before a subsequent read of that same field." }
+      ],
+      "correct": ["a", "b", "d"],
+      "explanation": "(a), (b), and (d) are explicit happens-before rules in JLS 17.4.5 (thread start rule, thread join rule, volatile variable rule). (c) is false — without synchronization or volatile, there is no ordering guarantee at all between writes from different threads; that's precisely a data race.",
+      "reference": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.4.5"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-003",
+      "tags": ["concurrency-and-memory-model", "internals", "performance"],
+      "type": "single",
+      "question": "In `StampedLock`'s optimistic read mode, what must a reader do after reading shared fields via `tryOptimisticRead()`?",
+      "choices": [
+        { "id": "a", "text": "Nothing — the returned stamp guarantees the read fields are consistent." },
+        { "id": "b", "text": "Call `validate(stamp)`; if it returns false, the fields may have been concurrently modified and the reader must retry (typically upgrading to a real read lock)." },
+        { "id": "c", "text": "Call `unlockRead(stamp)` to release the optimistic lock before using the values." },
+        { "id": "d", "text": "Acquire the write lock to confirm no writer is active." }
+      ],
+      "correct": ["b"],
+      "explanation": "`tryOptimisticRead()` never blocks and doesn't actually hold a lock, so fields read afterward can be inconsistent; `validate(stamp)` checks whether a write lock was acquired since the stamp was issued. If validation fails, the reader must retry, typically by falling back to `readLock()`. (a) is wrong because that's exactly the risk optimistic mode accepts; (c) is wrong because no lock was held, so there's nothing to unlock; (d) defeats the purpose of the lightweight optimistic path.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/StampedLock.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-004",
+      "tags": ["concurrency-and-memory-model", "internals", "collections"],
+      "type": "single",
+      "question": "How does `ConcurrentHashMap` (Java 8+) handle a `put` into a non-empty bucket under contention?",
+      "choices": [
+        { "id": "a", "text": "It locks the entire table with a single global lock for the duration of the put." },
+        { "id": "b", "text": "It uses a CAS loop only, with no locking, for every insertion regardless of bucket state." },
+        { "id": "c", "text": "It synchronizes on the bucket's first node (fine-grained, per-bin locking) rather than locking the whole map; an empty bin is instead populated via CAS with no lock at all." },
+        { "id": "d", "text": "It relies on a fixed array of 16 `Segment` locks, as in the Java 7 implementation." }
+      ],
+      "correct": ["c"],
+      "explanation": "Java 8 redesigned `ConcurrentHashMap` around per-bin (per-bucket) synchronization: an empty bin is populated with a lock-free CAS, while inserting into an already-occupied bin synchronizes on that bin's first node — much finer-grained than a single map-wide lock. (d) describes the older Java 7 `Segment`-based (lock striping) design, which Java 8 replaced. (a) and (b) each describe only part of the real, hybrid CAS-plus-per-bin-lock behavior.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-005",
+      "tags": ["concurrency-and-memory-model", "internals"],
+      "type": "single",
+      "question": "What is `AbstractQueuedSynchronizer` (AQS) and why do `ReentrantLock`, `Semaphore`, and `CountDownLatch` all build on it?",
+      "choices": [
+        { "id": "a", "text": "It's a garbage-collection subsystem shared by all concurrent collections." },
+        { "id": "b", "text": "It's a framework providing an atomic `int` state plus a FIFO wait queue of blocked threads, letting synchronizers implement just the acquire/release semantics specific to them (exclusive vs shared) instead of reimplementing thread parking/queuing each time." },
+        { "id": "c", "text": "It's the internal implementation of `volatile` field reads." },
+        { "id": "d", "text": "It's a thread-pool implementation used by `ExecutorService`." }
+      ],
+      "correct": ["b"],
+      "explanation": "AQS centralizes the hard, error-prone parts of building a synchronizer — an atomically managed state and a CLH-variant FIFO queue for blocked threads/park-unpark handling — so `ReentrantLock` (exclusive mode, state = hold count), `Semaphore` (shared mode, state = permits), and `CountDownLatch` (shared mode, state = count) only need to define what \"acquire succeeds\" means for them. The other options describe unrelated JVM subsystems.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/AbstractQueuedSynchronizer.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-006",
+      "tags": ["concurrency-and-memory-model", "pitfalls"],
+      "type": "single",
+      "question": "A candidate says deadlock, livelock, and starvation are 'basically the same thing — threads not making progress.' What's the key distinction between deadlock and livelock specifically?",
+      "choices": [
+        { "id": "a", "text": "Deadlock involves threads that are actively running and consuming CPU but never making progress; livelock involves threads that are permanently blocked/idle." },
+        { "id": "b", "text": "Deadlock involves threads permanently blocked in a circular wait for each other's resources; livelock involves threads that stay active, repeatedly changing state in response to each other, but still never make progress." },
+        { "id": "c", "text": "There is no real difference — they're interchangeable terms for the same JVM condition." },
+        { "id": "d", "text": "Livelock only happens with `synchronized`, while deadlock only happens with `java.util.concurrent` locks." }
+      ],
+      "correct": ["b"],
+      "explanation": "Deadlock = threads permanently blocked, each waiting on a resource the other holds (classic circular wait). Livelock = threads are NOT blocked — they're actively running and reacting to each other (e.g. both repeatedly backing off and retrying in a way that keeps colliding) but still make no real progress. (a) has the definitions backwards. (c) is wrong — the distinction matters for diagnosis (a livelocked thread will show up as burning CPU in a thread dump/profiler, not simply BLOCKED). (d) is a fabricated constraint not tied to any real JVM behavior.",
+      "reference": "https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-007",
+      "tags": ["concurrency-and-memory-model", "pitfalls"],
+      "type": "single",
+      "question": "Why is `ThreadLocal` risky when used inside a thread-pool-backed `ExecutorService` (e.g. storing per-request context)?",
+      "choices": [
+        { "id": "a", "text": "`ThreadLocal` is not thread-safe and can throw `ConcurrentModificationException` under a thread pool." },
+        { "id": "b", "text": "Pooled threads are long-lived and reused across many tasks; if a task doesn't explicitly `remove()` its `ThreadLocal` value, the next unrelated task run on that same pooled thread can see stale data from a previous task — a subtle correctness bug and a memory leak." },
+        { "id": "c", "text": "`ThreadLocal` values are automatically shared across all threads in the same pool, defeating its purpose." },
+        { "id": "d", "text": "Thread pools disallow `ThreadLocal` usage entirely and throw at runtime." }
+      ],
+      "correct": ["b"],
+      "explanation": "A `ThreadLocal`'s value lives as long as the underlying `Thread` object does (via a map keyed by the ThreadLocal, held on the Thread). A pool's worker threads are reused indefinitely across tasks, so an un-removed value silently leaks into whichever task runs next on that same thread — both a correctness hazard (stale context) and a memory leak (values never freed). (a) and (c) misdescribe `ThreadLocal`'s actual (per-thread, isolated) semantics; (d) is false — the JVM places no such restriction.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ThreadLocal.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-008",
+      "tags": ["concurrency-and-memory-model", "internals", "performance"],
+      "type": "single",
+      "question": "What does it mean for a virtual thread (JEP 444, Java 21+) to be 'pinned', and what commonly causes it?",
+      "choices": [
+        { "id": "a", "text": "The virtual thread is permanently bound to a single CPU core for its lifetime." },
+        { "id": "b", "text": "The virtual thread cannot be unmounted from its carrier (platform) thread during a blocking operation — most commonly because it's executing inside a `synchronized` block/method (pre-JDK 24) or a native method/foreign function call — so the carrier thread is blocked for the duration instead of being freed to run other virtual threads." },
+        { "id": "c", "text": "The virtual thread has been garbage-collected but its stack frame is retained." },
+        { "id": "d", "text": "The virtual thread is given elevated scheduling priority over other virtual threads." }
+      ],
+      "correct": ["b"],
+      "explanation": "Pinning doesn't make code incorrect, but it hurts scalability: while pinned, the carrier OS thread is stuck and unavailable to run other virtual threads. Historically the main cause was blocking inside a `synchronized` block/method (JEP 444), plus native/foreign calls; JEP 491 (JDK 24) removed most of the `synchronized`-related pinning cases. The other options describe behaviors virtual threads don't actually have.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-009",
+      "tags": ["concurrency-and-memory-model", "performance"],
+      "type": "single",
+      "question": "You suspect a production JVM is suffering from lock contention (threads spending significant time blocked waiting on a monitor). Which built-in JDK tool/approach is best suited to confirm and pinpoint this?",
+      "choices": [
+        { "id": "a", "text": "`javac -Xlint` to statically detect contended locks at compile time." },
+        { "id": "b", "text": "`jcmd <pid> Thread.print` for a quick thread-dump snapshot of BLOCKED threads and lock owners, or a Java Flight Recorder (JFR) recording (`jcmd <pid> JFR.start`) analyzed for `jdk.JavaMonitorEnter`/contention events for sustained profiling over time." },
+        { "id": "c", "text": "`jar -tf` to inspect the contents of the running JAR for synchronized methods." },
+        { "id": "d", "text": "Increasing `-Xmx` heap size, since lock contention is a heap-sizing problem." }
+      ],
+      "correct": ["b"],
+      "explanation": "`jcmd`'s `Thread.print` gives an immediate thread-dump (shows BLOCKED threads and which thread owns a given monitor), while JFR is the low-overhead, production-safe profiler built into the JDK for capturing lock-contention events (`jdk.JavaMonitorEnter`/`jdk.JavaMonitorWait`) over a sustained window — exactly the workflow for diagnosing contention. (a) is a compile-time linter unrelated to runtime behavior; (c) just lists JAR contents; (d) confuses heap sizing (GC pauses) with monitor/lock contention, a different performance problem entirely.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/specs/man/jcmd.html"
+    },
+    {
+      "id": "java-concurrency-and-memory-model-010",
+      "tags": ["concurrency-and-memory-model", "trade-offs"],
+      "type": "single",
+      "question": "What is the main throughput trade-off of constructing a `ReentrantLock` with `fair = true` (`new ReentrantLock(true)`) versus the default unfair mode?",
+      "choices": [
+        { "id": "a", "text": "Fair locks are always faster because they avoid retries." },
+        { "id": "b", "text": "A fair lock grants access strictly in FIFO arrival order (preventing starvation of long-waiting threads), at the cost of measurably lower overall throughput compared to the default unfair mode, which allows barging (a newly-arriving thread can win over a longer-waiting one) for better aggregate throughput." },
+        { "id": "c", "text": "Fairness only affects `tryLock()`, not `lock()`, so there is no meaningful trade-off for most code." },
+        { "id": "d", "text": "There is no difference in the JVM's default implementation; `fair` is a no-op hint." }
+      ],
+      "correct": ["b"],
+      "explanation": "Per the `ReentrantLock` javadoc, fair ordering is enforced by a FIFO wait policy that guarantees the longest-waiting thread is granted access — this eliminates the starvation risk of unfair mode, but the additional bookkeeping and reduced ability to opportunistically hand off the lock (barging) measurably reduces throughput under contention versus the default unfair mode. (a), (c), and (d) all misstate documented `ReentrantLock` behavior.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReentrantLock.html"
+    }
+  ]
+}

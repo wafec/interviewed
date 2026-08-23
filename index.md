@@ -19,3 +19,8 @@ for the exact per-question structure.
 - [SQL]({{ "/src/sql/" | relative_url }})
 - [Cloud]({{ "/src/cloud/" | relative_url }})
 - [.NET]({{ "/src/dotnet/" | relative_url }})
+
+## Test yourself
+
+[Take a quiz]({{ "/quiz/" | relative_url }}) — pick topics/tags, answer a random
+set of multiple-choice questions, and get scored with explanations at the end.

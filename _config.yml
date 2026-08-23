@@ -10,3 +10,4 @@ exclude:
   - README.md
   - .claude/
   - src/TEMPLATE.md
+  - src/QUIZ_TEMPLATE.json

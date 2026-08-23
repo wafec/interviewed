@@ -1,0 +1,155 @@
+{
+  "topic": "cloud",
+  "questions": [
+    {
+      "id": "cloud-scalability-and-resilience-patterns-001",
+      "tags": ["scalability-and-resilience-patterns", "internals"],
+      "type": "single",
+      "question": "By default, how long does an Application Load Balancer wait (deregistration delay) before forcibly closing in-flight connections to a target being deregistered?",
+      "choices": [
+        { "id": "a", "text": "0 seconds — connections are dropped immediately" },
+        { "id": "b", "text": "30 seconds" },
+        { "id": "c", "text": "300 seconds (5 minutes)" },
+        { "id": "d", "text": "3600 seconds (1 hour)" }
+      ],
+      "correct": ["c"],
+      "explanation": "The default deregistration delay for an ALB target group is 300 seconds, giving in-flight requests time to complete before the target is fully removed. 0 disables draining entirely (choice a), 30s (b) is a common but non-default tuned-down value, and 3600s (d) is the maximum allowed, not the default.",
+      "reference": "https://docs.aws.amazon.com/elasticloadbalancing/latest/application/deregistration-delay.html"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-002",
+      "tags": ["scalability-and-resilience-patterns", "internals"],
+      "type": "single",
+      "question": "According to the CAP theorem, when a network partition occurs, a distributed system must choose between which two properties?",
+      "choices": [
+        { "id": "a", "text": "Consistency and Availability" },
+        { "id": "b", "text": "Consistency and Durability" },
+        { "id": "c", "text": "Availability and Latency" },
+        { "id": "d", "text": "Partition tolerance and Durability" }
+      ],
+      "correct": ["a"],
+      "explanation": "CAP theorem states a distributed system can only guarantee two of Consistency, Availability, and Partition tolerance at once — and because partitions are a fact of life in real networks, the real-world trade-off during a partition is between Consistency and Availability. Durability and latency aren't part of the CAP trade-off itself.",
+      "reference": "https://en.wikipedia.org/wiki/CAP_theorem"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-003",
+      "tags": ["scalability-and-resilience-patterns", "internals", "trade-offs"],
+      "type": "single",
+      "question": "In the circuit breaker pattern, what does the 'half-open' state mean?",
+      "choices": [
+        { "id": "a", "text": "All requests are blocked and fail immediately" },
+        { "id": "b", "text": "All requests pass through with no monitoring" },
+        { "id": "c", "text": "A limited number of trial requests are allowed through to test if the downstream service has recovered" },
+        { "id": "d", "text": "The circuit breaker is being reconfigured and cannot serve requests" }
+      ],
+      "correct": ["c"],
+      "explanation": "Half-open is a probing state: after the open-state timeout elapses, the breaker lets a small number of requests through to test recovery. If they succeed, it transitions to closed (normal traffic); if they fail, it goes back to open. Choice (a) describes the open state, and (b) describes the closed state.",
+      "reference": "https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-004",
+      "tags": ["scalability-and-resilience-patterns", "internals"],
+      "type": "single",
+      "question": "What is the purpose of a cooldown period in EC2 Auto Scaling?",
+      "choices": [
+        { "id": "a", "text": "To delay health checks after an instance launches" },
+        { "id": "b", "text": "To prevent the Auto Scaling group from launching or terminating additional instances before previous scaling activities take effect" },
+        { "id": "c", "text": "To throttle API calls made to the Auto Scaling API" },
+        { "id": "d", "text": "To delay billing for newly launched instances" }
+      ],
+      "correct": ["b"],
+      "explanation": "The cooldown period pauses further scaling activity after one occurs, giving newly launched (or terminated) instances time to actually affect the group's metrics before the scaling policy reacts again — this prevents over-scaling from acting on stale metrics. Health check grace periods (a) are a related but distinct setting.",
+      "reference": "https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-scaling-simple.html"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-005",
+      "tags": ["scalability-and-resilience-patterns", "trade-offs"],
+      "type": "single",
+      "question": "What is the key difference between a blue/green deployment and a canary deployment?",
+      "choices": [
+        { "id": "a", "text": "Blue/green shifts all traffic to the new version at once (with instant rollback to the old environment); canary incrementally shifts a small percentage of traffic first" },
+        { "id": "b", "text": "Canary deployments require two identical environments; blue/green deployments do not" },
+        { "id": "c", "text": "Blue/green deployments cannot be rolled back; canary deployments can" },
+        { "id": "d", "text": "They are the same strategy with different names" }
+      ],
+      "correct": ["a"],
+      "explanation": "Blue/green maintains two full identical environments and cuts traffic over all at once (with the old environment kept warm for instant rollback); canary is a more risk-averse variant that routes a small percentage of traffic to the new version first, expanding gradually. Choice (b) is backwards — blue/green is the one requiring two environments.",
+      "reference": "https://docs.aws.amazon.com/whitepapers/latest/overview-deployment-options/canary-deployments.html"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-006",
+      "tags": ["scalability-and-resilience-patterns", "challenges"],
+      "type": "single",
+      "question": "What is the core discipline of Chaos Engineering, per the Principles of Chaos Engineering?",
+      "choices": [
+        { "id": "a", "text": "Randomly deleting production resources without a plan to build resilience through fear" },
+        { "id": "b", "text": "Experimenting on a system to build confidence in its capability to withstand turbulent conditions in production" },
+        { "id": "c", "text": "A load-testing technique focused purely on maximum throughput" },
+        { "id": "d", "text": "A code review checklist for distributed systems" }
+      ],
+      "correct": ["b"],
+      "explanation": "Chaos Engineering is formally defined as experimenting on a system to build confidence in its capability to withstand turbulent conditions in production — it's a disciplined, hypothesis-driven practice (define steady state, hypothesize it holds, inject a real-world fault, try to disprove the hypothesis), not random destruction.",
+      "reference": "https://principlesofchaos.org/"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-007",
+      "tags": ["scalability-and-resilience-patterns", "internals", "trade-offs"],
+      "type": "single",
+      "question": "What problem does consistent hashing primarily solve compared to naive modulo-based hashing when distributing keys across a set of nodes?",
+      "choices": [
+        { "id": "a", "text": "It makes hash computation faster" },
+        { "id": "b", "text": "It minimizes the number of keys that must be remapped when a node is added or removed" },
+        { "id": "c", "text": "It guarantees perfectly even key distribution with zero variance" },
+        { "id": "d", "text": "It eliminates the need for replication" }
+      ],
+      "correct": ["b"],
+      "explanation": "With naive `hash(key) % N`, changing N (adding/removing a node) remaps almost every key. Consistent hashing places nodes and keys on a hash ring so that adding/removing a node only remaps the keys in its immediate neighborhood, roughly K/N keys instead of nearly all of them — critical for minimizing cache/data movement during scaling events.",
+      "reference": "https://en.wikipedia.org/wiki/Consistent_hashing"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-008",
+      "tags": ["scalability-and-resilience-patterns", "internals"],
+      "type": "single",
+      "question": "In API Gateway's token bucket throttling model, what does the 'burst limit' control?",
+      "choices": [
+        { "id": "a", "text": "The sustained steady-state request rate the API can handle indefinitely" },
+        { "id": "b", "text": "The maximum bucket capacity — how many requests can be handled in a short spike beyond the steady-state rate" },
+        { "id": "c", "text": "The maximum payload size per request" },
+        { "id": "d", "text": "The number of API keys allowed per account" }
+      ],
+      "correct": ["b"],
+      "explanation": "In the token bucket model, the steady-state rate limit is how fast tokens refill (choice a describes that), while the burst limit is the bucket's capacity — how many tokens can accumulate and be spent at once, allowing short spikes above the steady-state rate without being throttled.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-009",
+      "tags": ["scalability-and-resilience-patterns", "challenges"],
+      "type": "multiple",
+      "question": "Which of the following are legitimate reasons an AWS SDK automatically retries a failed request? (select all that apply)",
+      "choices": [
+        { "id": "a", "text": "The request received a throttling error (e.g. HTTP 429)" },
+        { "id": "b", "text": "The request failed due to a transient network/connection error" },
+        { "id": "c", "text": "The request received a 400 Bad Request due to malformed input" },
+        { "id": "d", "text": "The service returned a 5xx server error" }
+      ],
+      "correct": ["a", "b", "d"],
+      "explanation": "AWS SDKs retry on throttling (a) and transient/server-side failures like connection errors (b) and 5xx responses (d), typically with exponential backoff and jitter, because these are conditions that may succeed on a later attempt. A 400 due to malformed input (c) is a client error that will fail identically on every retry, so SDKs do not retry it.",
+      "reference": "https://docs.aws.amazon.com/general/latest/gr/api-retries.html"
+    },
+    {
+      "id": "cloud-scalability-and-resilience-patterns-010",
+      "tags": ["scalability-and-resilience-patterns", "internals", "performance"],
+      "type": "single",
+      "question": "What problem does RDS Proxy primarily solve for applications with many short-lived compute instances (e.g. Lambda functions) connecting to a relational database?",
+      "choices": [
+        { "id": "a", "text": "It caches query results to avoid hitting the database" },
+        { "id": "b", "text": "It pools and multiplexes database connections so bursts of application instances don't exhaust the database's max connection limit" },
+        { "id": "c", "text": "It automatically shards the database across multiple instances" },
+        { "id": "d", "text": "It encrypts data at rest" }
+      ],
+      "correct": ["b"],
+      "explanation": "RDS Proxy sits between the application and the database, pooling and sharing a smaller set of actual database connections across many application-side connections — this is essential for Lambda-style workloads that can spin up many concurrent execution environments, each of which would otherwise open its own DB connection and risk exhausting `max_connections`.",
+      "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html"
+    }
+  ]
+}

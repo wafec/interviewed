@@ -151,6 +151,46 @@ This exists for two reasons:
 At least one reference link per question, more if multiple distinct claims
 in the answer need backing.
 
+## Quiz question bank
+
+`/quiz/` ([quiz.html](../quiz.html)) is a self-scoring multiple-choice quiz
+that runs entirely client-side (no backend, nothing persisted) against a
+per-topic question bank at `src/<topic>/quiz.json`. Schema and an example
+live in [`src/QUIZ_TEMPLATE.json`](QUIZ_TEMPLATE.json) (excluded from the
+Pages build, same as `TEMPLATE.md`).
+
+**Every time `/new-question` generates a new prose file, it must also
+contribute matching entries to `src/<topic>/quiz.json`** — create the file
+if it doesn't exist yet (`{"topic": "<topic>", "questions": []}`), otherwise
+append to it (never overwrite existing entries; keep `id`s unique). Aim for
+roughly 10 MCQ items per prose file, drawn from the same subtopic, each
+tagged with:
+- the file's subtopic slug (so the file and its quiz stay linked), and
+- one or more finer-grained tags (e.g. `performance`, `internals`,
+  `trade-offs`) so quizzes can also be composed across files.
+
+Each MCQ's `explanation` should cover why the correct choice(s) are right
+*and* why the wrong choices are plausible-but-wrong, and its `reference`
+should be a verified official-documentation link (same bar as the prose
+References section).
+
+### Linking a question-set page to its quiz
+
+Every generated `src/<topic>/NN-<topic>-interview-<subtopic>.md` file must
+end with a link that jumps straight into an auto-started quiz scoped to that
+file's subtopic:
+
+```markdown
+---
+
+**Test your knowledge:** [Take a quiz on this topic]({{ "/quiz/?topics=<topic>&tags=<subtopic>&autostart=1" | relative_url }})
+```
+
+`quiz.html` reads `topics` (comma-separated topic slugs), `tags`
+(comma-separated tags, ANY match), `count` (default 10), and `autostart=1`
+(skip the setup screen and jump straight into the sampled quiz) from the URL
+query string.
+
 ## Adding a new file
 
 Use the `/new-question <topic>` skill (e.g. `/new-question java`,
