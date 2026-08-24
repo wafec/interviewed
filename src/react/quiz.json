@@ -1,0 +1,1622 @@
+{
+  "topic": "react",
+  "questions": [
+    {
+      "id": "react-rendering-performance-and-reconciliation-001",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "internals"
+      ],
+      "type": "single",
+      "question": "During React's commit phase, if a re-render's JSX output leaves an <input> element unchanged while a sibling <h1> updates, what does React do to the <input>'s DOM node?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Unmounts and remounts it, resetting its value"
+        },
+        {
+          "id": "b",
+          "text": "Leaves it untouched, preserving its current value and focus"
+        },
+        {
+          "id": "c",
+          "text": "Re-renders it but keeps the value via a hidden diff snapshot"
+        },
+        {
+          "id": "d",
+          "text": "Removes its event listeners and reattaches them"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React only applies DOM changes for nodes whose rendered output actually differs from the previous commit; an unchanged <input> in the JSX is left completely alone, which is why its typed value and focus survive a sibling's update. (a) and (d) describe unnecessary work React explicitly avoids. (c) invents a mechanism that doesn't exist — there's no 'hidden diff snapshot'; the node is simply skipped.",
+      "reference": "https://react.dev/learn/render-and-commit"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-002",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Two sibling elements render the same <Counter /> component at the same tree position across renders, but with different `key` props (`key=\"a\"` then later `key=\"b\"`). What happens to the component's state when the key changes?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "State is preserved because it's the same component type at the same position"
+        },
+        {
+          "id": "b",
+          "text": "State is reset — React treats it as a different component instance"
+        },
+        {
+          "id": "c",
+          "text": "State is preserved only if the props are shallowly equal"
+        },
+        {
+          "id": "d",
+          "text": "React throws a warning and refuses to render"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "A different `key` overrides position-based identity and tells React this is a distinct instance, so its state is discarded and a fresh instance mounts — this is the documented mechanism for force-resetting state. (a) describes what happens WITHOUT a key change, which is the opposite scenario. (c) and (d) are not how keys work at all.",
+      "reference": "https://react.dev/learn/preserving-and-resetting-state"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-003",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "pitfalls"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are real problems caused by using an array index as the `key` prop in a reorderable list? (Select all that apply.)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A text input's value can appear attached to the wrong row after a reorder"
+        },
+        {
+          "id": "b",
+          "text": "React may do unnecessary DOM mutation/remount work instead of a cheap reorder"
+        },
+        {
+          "id": "c",
+          "text": "React throws a runtime TypeError during reconciliation"
+        },
+        {
+          "id": "d",
+          "text": "Per-item local state can appear to 'belong' to a different item after items are inserted/deleted"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "Index-as-key ties identity to position, not data, so any reorder/insert/delete before an item shifts its index and causes React to misattribute previous state/DOM to the wrong row — producing (a), (b), and (d). (c) is false: this is a silent correctness/perf bug, not a thrown error, which is exactly what makes it dangerous.",
+      "reference": "https://react.dev/learn/rendering-lists"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-004",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What core capability did the Fiber architecture (React 16+) add that the old stack reconciler lacked?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The ability to use hooks like useState"
+        },
+        {
+          "id": "b",
+          "text": "The ability to pause, prioritize, and resume rendering work"
+        },
+        {
+          "id": "c",
+          "text": "Automatic code-splitting of components"
+        },
+        {
+          "id": "d",
+          "text": "Server-side rendering support"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Fiber restructures rendering as an incremental, per-unit-of-work linked list, letting React pause a low-priority render to handle an urgent update and resume later — the old recursive stack reconciler ran to completion once started, with no way to yield. (a) hooks were introduced later and aren't inherently a Fiber capability. (c) and (d) are unrelated features not provided by Fiber itself.",
+      "reference": "https://github.com/acdlite/react-fiber-architecture"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-005",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "performance"
+      ],
+      "type": "single",
+      "question": "A component is wrapped in `memo`, but it still re-renders on every parent render even though its 'data' hasn't changed. The most likely cause is:",
+      "choices": [
+        {
+          "id": "a",
+          "text": "memo() only works on class components"
+        },
+        {
+          "id": "b",
+          "text": "A prop is a new object/array/function reference created fresh on every parent render"
+        },
+        {
+          "id": "c",
+          "text": "memo() has a maximum of 3 props it can compare"
+        },
+        {
+          "id": "d",
+          "text": "The component is missing a key prop"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "memo's default comparison is shallow, using Object.is per prop — a newly created object/array/inline function is never reference-equal to the previous render's, so the comparison reports 'changed' every time even with identical contents, defeating the memoization. (a), (c), and (d) are all fabricated constraints that don't exist in React.",
+      "reference": "https://react.dev/reference/react/memo"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-006",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "pitfalls",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A `useEffect` reads a prop `roomId` in its body but only lists `[serverUrl]` in its dependency array. What bug does this cause?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The Effect throws a compile-time error"
+        },
+        {
+          "id": "b",
+          "text": "A stale closure — the Effect keeps using the roomId value from when it was created, ignoring later changes"
+        },
+        {
+          "id": "c",
+          "text": "React automatically adds roomId to the array at runtime"
+        },
+        {
+          "id": "d",
+          "text": "The component fails to render entirely"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Every render creates a new closure over that render's values; an Effect that isn't re-run when roomId changes keeps referencing the old roomId captured at its creation — a classic stale closure. (a) and (d) are false (this is a silent logic bug, not a compile or render failure); (c) is false — React does not auto-add dependencies (though the linter can warn about missing ones).",
+      "reference": "https://react.dev/reference/react/useEffect"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-007",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In React 18, where does automatic batching of state updates apply, compared to React 17?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only inside React event handlers, same as React 17"
+        },
+        {
+          "id": "b",
+          "text": "Everywhere — including promises, setTimeout, and native event handlers — not just React event handlers"
+        },
+        {
+          "id": "c",
+          "text": "Only inside useEffect callbacks"
+        },
+        {
+          "id": "d",
+          "text": "Batching was removed entirely in React 18"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React 18 extended automatic batching to apply everywhere by default, whereas React 17 only batched updates inside React's own event handlers, treating setTimeout/promise/native-event updates as separate renders each. (a) describes React 17's more limited behavior, not 18's. (c) and (d) misstate the feature entirely.",
+      "reference": "https://react.dev/blog/2022/03/29/react-v18"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-008",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What is the key difference between wrapping a state update in `startTransition` versus not wrapping it?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "startTransition updates are guaranteed to apply before any other update"
+        },
+        {
+          "id": "b",
+          "text": "startTransition marks the update as interruptible/low-priority so urgent updates (like typing) aren't blocked by it"
+        },
+        {
+          "id": "c",
+          "text": "startTransition skips the render phase entirely and updates the DOM directly"
+        },
+        {
+          "id": "d",
+          "text": "startTransition disables Strict Mode double-rendering for that update"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "startTransition marks an update as non-urgent so React can interrupt/restart it if a higher-priority update (like a keystroke) arrives mid-render, keeping the UI responsive under expensive re-renders. (a) is the opposite of what transitions do — they're lower priority, not higher. (c) and (d) describe behaviors startTransition does not have.",
+      "reference": "https://react.dev/reference/react/startTransition"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-009",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A team fetches data inside a `useEffect` and expects a wrapping `<Suspense>` boundary to show its fallback while that fetch is in flight. What actually happens?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Suspense shows the fallback correctly, since useEffect is a recognized suspension trigger"
+        },
+        {
+          "id": "b",
+          "text": "Suspense never sees the fetch — it isn't a recognized suspension mechanism, so no fallback shows for it"
+        },
+        {
+          "id": "c",
+          "text": "React throws an error requiring the fetch to be moved into use()"
+        },
+        {
+          "id": "d",
+          "text": "The component unmounts until the fetch resolves"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Suspense only reacts to a specific set of recognized suspension triggers — lazy(), reading a Promise via use(), streaming SSR, and a few others — data fetched inside useEffect or an event handler is invisible to it. (a) is the common misconception this question targets. (c) and (d) describe behavior that doesn't occur; nothing errors or unmounts, the fallback simply never appears for that fetch.",
+      "reference": "https://react.dev/reference/react/Suspense"
+    },
+    {
+      "id": "react-rendering-performance-and-reconciliation-010",
+      "tags": [
+        "rendering-performance-and-reconciliation",
+        "pitfalls",
+        "internals"
+      ],
+      "type": "single",
+      "question": "When the value provided by a Context Provider changes, which consumers of that Context re-render?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only consumers that read the specific field of the value that changed"
+        },
+        {
+          "id": "b",
+          "text": "All consumers of that Context, regardless of which part of the value they actually use"
+        },
+        {
+          "id": "c",
+          "text": "Only consumers not wrapped in memo"
+        },
+        {
+          "id": "d",
+          "text": "None — Context reads are always memoized automatically"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Context has no per-field subscription model — every component calling useContext on that Context re-renders when its value changes, even if a given consumer only reads an unrelated part of the value, and even if the consumer is wrapped in memo (since the trigger isn't a prop change memo's comparison would catch). (a) describes fine-grained selector behavior Context does not have. (c) and (d) are false — memo does not shield a component from its own useContext-driven re-renders.",
+      "reference": "https://react.dev/learn/scaling-up-with-reducer-and-context"
+    },
+    {
+      "id": "react-hooks-and-state-management-001",
+      "tags": [
+        "hooks-and-state-management",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "Why does `setItems(items)` after `items.push(x)` fail to trigger a re-render?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "React batches the update and drops it because push() is asynchronous"
+        },
+        {
+          "id": "b",
+          "text": "The array reference is unchanged, so React's reference comparison sees no update"
+        },
+        {
+          "id": "c",
+          "text": "push() is not a valid method to call on state variables"
+        },
+        {
+          "id": "d",
+          "text": "setItems only re-renders when passed a new primitive value"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React compares the previous and new state by reference (Object.is-style). Mutating the array in place with push() keeps the same reference, so React can't detect a change and skips the re-render, even though the array's contents changed. (a) and (d) misdescribe how the comparison works; (c) is false — push() works fine as a JS operation, it's just invisible to React's change detection.",
+      "reference": "https://react.dev/learn/updating-objects-in-state"
+    },
+    {
+      "id": "react-hooks-and-state-management-002",
+      "tags": [
+        "hooks-and-state-management",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In React 18 (using createRoot), which of the following now gets batched into a single re-render that was NOT batched by default in React 17?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Multiple setState calls inside a single onClick handler"
+        },
+        {
+          "id": "b",
+          "text": "Multiple setState calls inside a setTimeout callback"
+        },
+        {
+          "id": "c",
+          "text": "Multiple setState calls inside componentDidMount"
+        },
+        {
+          "id": "d",
+          "text": "A single setState call by itself"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React 17 already batched updates inside React's own event handlers (like onClick), so (a) was already batched. React 18's automatic batching extends batching to setTimeout callbacks, promises, and native event handlers — contexts that were NOT batched before. (c) was also already batched pre-18 as part of React's lifecycle. (d) isn't a batching scenario at all since there's only one update.",
+      "reference": "https://react.dev/learn/queueing-a-series-of-state-updates"
+    },
+    {
+      "id": "react-hooks-and-state-management-003",
+      "tags": [
+        "hooks-and-state-management",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Internally, how does React associate a given `useState` call with its stored value across renders?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "By the variable name assigned to the returned state"
+        },
+        {
+          "id": "b",
+          "text": "By the position of the call in a linked list of hooks tied to the component's fiber"
+        },
+        {
+          "id": "c",
+          "text": "By hashing the initial value passed to useState"
+        },
+        {
+          "id": "d",
+          "text": "By the order hooks appear in the component's source file, resolved at build time"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React stores each component instance's hooks as a linked list on its fiber, and walks that list in call order on every render, handing each hook call the next node. It has no knowledge of variable names (a) or initial values as identifiers (c), and it's a runtime call-order mechanism, not a build-time source-order mechanism (d) — which is exactly why calling hooks conditionally breaks it.",
+      "reference": "https://react.dev/reference/rules/rules-of-hooks"
+    },
+    {
+      "id": "react-hooks-and-state-management-004",
+      "tags": [
+        "hooks-and-state-management",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A `useEffect(() => { setInterval(() => console.log(count), 1000) }, [])` always logs the initial value of `count`, never updated values. What's the cause?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "setInterval callbacks cannot read component state in React"
+        },
+        {
+          "id": "b",
+          "text": "The effect's closure captured `count` from the render it ran in, and never re-runs since the dependency array is empty"
+        },
+        {
+          "id": "c",
+          "text": "console.log is asynchronous and always logs stale data"
+        },
+        {
+          "id": "d",
+          "text": "count needs to be wrapped in useMemo to be readable inside setInterval"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "This is a classic stale closure: the effect callback closes over `count` as it was on the render when the effect ran (mount), and with an empty dependency array the effect never re-runs to create a fresh closure with the current `count`. (a) and (c) are false claims about JS/React behavior; (d) misapplies useMemo, which doesn't address closures over effect dependencies.",
+      "reference": "https://react.dev/learn/removing-effect-dependencies"
+    },
+    {
+      "id": "react-hooks-and-state-management-005",
+      "tags": [
+        "hooks-and-state-management",
+        "performance"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are legitimate reasons to reach for `useMemo` or `useCallback`? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The computation is measurably expensive to redo every render"
+        },
+        {
+          "id": "b",
+          "text": "A stable reference is required so a React.memo-wrapped child doesn't re-render unnecessarily"
+        },
+        {
+          "id": "c",
+          "text": "It's a best practice to wrap every value and function in a component with memoization by default"
+        },
+        {
+          "id": "d",
+          "text": "The value is used as a dependency in another hook's dependency array, and an unstable reference would cause that hook to fire every render"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "(a), (b), and (d) are the legitimate, documented reasons to memoize: real computational cost, downstream reference-stability requirements for memoized children, or stability needed by another hook's dependency array. (c) is explicitly the wrong instinct — reflexive memoization everywhere adds per-render comparison and memory cost without benefit when nothing downstream actually needs the stability, and React's own guidance is to add it where profiling shows it matters, not by default.",
+      "reference": "https://react.dev/reference/react/useMemo"
+    },
+    {
+      "id": "react-hooks-and-state-management-006",
+      "tags": [
+        "hooks-and-state-management",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "A component consumes a Context whose value is `{ user, theme, setTheme }`, but only destructures `theme`. If `user` changes (and the Provider passes a new value object), does this component re-render?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "No, because React only re-renders consumers for the specific fields they destructure"
+        },
+        {
+          "id": "b",
+          "text": "Yes, because useContext subscribes to the whole value object, and any new reference triggers all consumers to re-render"
+        },
+        {
+          "id": "c",
+          "text": "No, but only if the component is wrapped in React.memo"
+        },
+        {
+          "id": "d",
+          "text": "It depends on whether theme itself is a primitive or an object"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "useContext subscribes to the entire context value; React has no visibility into which fields a component destructures afterward. Any Provider re-render that produces a new reference for the value re-renders every consumer regardless of which fields they use. (a) describes a per-field granularity Context doesn't have; (c) is false — wrapping in React.memo doesn't change Context's own subscription behavior, since the re-render here is triggered directly by useContext, not by a prop change from a parent; (d) is irrelevant to this mechanism.",
+      "reference": "https://react.dev/learn/passing-data-deeply-with-context"
+    },
+    {
+      "id": "react-hooks-and-state-management-007",
+      "tags": [
+        "hooks-and-state-management",
+        "advanced-features",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What is the primary reason state-management libraries like Zustand often avoid Context's 'every consumer re-renders on any value change' problem?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They don't use React state at all, so React never re-renders the component"
+        },
+        {
+          "id": "b",
+          "text": "They use a subscription mechanism (often backed by useSyncExternalStore) with selectors, so a component only re-renders when its specifically selected slice changes"
+        },
+        {
+          "id": "c",
+          "text": "They automatically wrap every consumer in React.memo"
+        },
+        {
+          "id": "d",
+          "text": "They store state in localStorage instead of memory, avoiding React's render cycle entirely"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "These libraries implement fine-grained subscriptions with selector functions, typically via useSyncExternalStore since React 18, so a component only re-renders when the exact slice it selected actually changes — not on every store update. (a) and (d) are false; the libraries still integrate with React's render cycle, they just subscribe more precisely. (c) isn't how selector-based subscription works.",
+      "reference": "https://react.dev/reference/react/useSyncExternalStore"
+    },
+    {
+      "id": "react-hooks-and-state-management-008",
+      "tags": [
+        "hooks-and-state-management",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "`useEffect(() => { fetchItems(filters) }, [filters])` re-runs on every render even though `filters` 'looks the same' each time. What's the most likely cause?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "filters is created as a new object literal inline in the render body, so it has a new reference every render"
+        },
+        {
+          "id": "b",
+          "text": "useEffect always re-runs when the dependency array has more than zero items"
+        },
+        {
+          "id": "c",
+          "text": "fetchItems is not a pure function"
+        },
+        {
+          "id": "d",
+          "text": "The dependency comparison for objects uses deep equality by default, and something nested must actually differ"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "React compares dependency array entries by reference (Object.is), not deep equality — so (d) is false. An object literal created inline in the component body is a new reference on every render regardless of its contents, causing the effect to appear to 're-run for no reason.' (b) misdescribes how dependency arrays work generally; (c) is irrelevant to why the effect re-runs.",
+      "reference": "https://react.dev/learn/removing-effect-dependencies"
+    },
+    {
+      "id": "react-hooks-and-state-management-009",
+      "tags": [
+        "hooks-and-state-management",
+        "internals",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What problem is `useSyncExternalStore` specifically designed to prevent under concurrent rendering?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Memory leaks from forgotten event listener cleanup"
+        },
+        {
+          "id": "b",
+          "text": "Tearing — different parts of the UI showing inconsistent snapshots of the same external data within one render"
+        },
+        {
+          "id": "c",
+          "text": "Excessive bundle size from state-management libraries"
+        },
+        {
+          "id": "d",
+          "text": "Stale closures inside useEffect callbacks"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "useSyncExternalStore exists to prevent 'tearing' — inconsistent UI where different components read different snapshots of the same external store during a single render, a risk introduced by concurrent rendering's ability to interrupt/split render work. (a), (c), and (d) are real concerns but are not what this hook addresses.",
+      "reference": "https://react.dev/reference/react/useSyncExternalStore"
+    },
+    {
+      "id": "react-hooks-and-state-management-010",
+      "tags": [
+        "hooks-and-state-management",
+        "fundamentals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why does React's StrictMode intentionally call function components, state initializers, and reducers twice in development?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "To measure and report render performance more accurately"
+        },
+        {
+          "id": "b",
+          "text": "Because these functions are expected to be pure, so double-calling them surfaces impurity bugs (a pure function produces identical results either way)"
+        },
+        {
+          "id": "c",
+          "text": "To pre-warm the JS engine's JIT compiler for faster production builds"
+        },
+        {
+          "id": "d",
+          "text": "It's a leftover legacy behavior with no current purpose"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "StrictMode's double-invocation is a deliberate diagnostic: since these functions are supposed to be pure, calling them twice with the same inputs should produce no observable difference — if it does (duplicated side effects, doubled counters), that reveals an impurity bug in development rather than production. (a), (c), and (d) misstate its purpose; it's development-only and has no production runtime cost or effect.",
+      "reference": "https://react.dev/reference/react/StrictMode"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-001",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "In React 18, when is concurrent rendering enabled for a given update?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Always, automatically, for every update once you're on React 18"
+        },
+        {
+          "id": "b",
+          "text": "Only for updates triggered via concurrent-enabling APIs like startTransition, useDeferredValue, or Suspense-integrated data fetching"
+        },
+        {
+          "id": "c",
+          "text": "Only inside components wrapped in <StrictMode>"
+        },
+        {
+          "id": "d",
+          "text": "Only for the very first render of the app"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Concurrency in React 18 is opt-in per update, not a global mode. An app upgraded to React 18 without touching startTransition, useTransition, useDeferredValue, or Suspense-based fetching renders exactly as it did on React 17. StrictMode (c) only adds development-time checks and double-invocation, it doesn't itself enable concurrent rendering; (a) and (d) misdescribe the opt-in, per-update design.",
+      "reference": "https://react.dev/blog/2022/03/29/react-v18"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-002",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What does it mean for a component to \"suspend\" in React?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It throws a regular JS Error during render"
+        },
+        {
+          "id": "b",
+          "text": "It calls useEffect and starts a fetch"
+        },
+        {
+          "id": "c",
+          "text": "It throws (directly or via an API like use()) a Promise that hasn't resolved yet during render"
+        },
+        {
+          "id": "d",
+          "text": "It unmounts itself and waits to be remounted"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Suspending means throwing an unresolved Promise during render — React catches it, pauses that subtree, and shows the nearest Suspense boundary's fallback until the Promise resolves. A regular Error (a) is caught by an Error Boundary, not Suspense. Effects (b) run after commit, too late for Suspense to intercept. Suspending doesn't unmount the component (d) in the sense described — React discards the in-progress render, not an already-mounted tree.",
+      "reference": "https://react.dev/reference/react/Suspense"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-003",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why does data fetched inside a useEffect NOT activate a Suspense boundary, while data read via use() does?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "useEffect fetches are always synchronous, so there's nothing to suspend on"
+        },
+        {
+          "id": "b",
+          "text": "Suspense only detects suspensions that happen during render; useEffect runs after commit, when React can no longer swap in a fallback for that render"
+        },
+        {
+          "id": "c",
+          "text": "useEffect is deprecated in React 18 for data fetching"
+        },
+        {
+          "id": "d",
+          "text": "Suspense boundaries only work with GraphQL, not REST-style fetches"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Suspense catches Promises thrown during render, before commit. useEffect runs after the render has already committed, so by the time its fetch starts there's no render in progress for a Suspense boundary to intercept. (a), (c), and (d) are all false statements about React's fetching mechanisms.",
+      "reference": "https://react.dev/reference/react/use"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-004",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "You have a value you receive as a prop (you don't control its setState) and want to defer re-rendering an expensive child with it. Which API is the right fit?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "startTransition, wrapped around the parent's render"
+        },
+        {
+          "id": "b",
+          "text": "useDeferredValue, applied to the prop value"
+        },
+        {
+          "id": "c",
+          "text": "flushSync, applied to the prop value"
+        },
+        {
+          "id": "d",
+          "text": "useEffect with a debounce timer"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "useDeferredValue is specifically for values you consume but don't own the setter for — it returns a version of the value that may lag behind while a background re-render catches up. startTransition (a) wraps a setState call you control, which isn't the case here. flushSync (c) forces synchronous updates, the opposite of deferring. A debounce (d) delays the value going into state entirely rather than letting React interrupt/prioritize the render.",
+      "reference": "https://react.dev/reference/react/useDeferredValue"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-005",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "In `startTransition(async () => { await doSomething(); setPage('/about'); })`, is the `setPage` call after the `await` marked as part of the transition?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Yes, everything inside the callback passed to startTransition is always part of the transition"
+        },
+        {
+          "id": "b",
+          "text": "No — only the synchronous portion before the first await is tracked; code after await needs its own nested startTransition to be marked as a transition"
+        },
+        {
+          "id": "c",
+          "text": "Yes, but only if the awaited function itself calls startTransition internally"
+        },
+        {
+          "id": "d",
+          "text": "No, async callbacks are not allowed inside startTransition at all and this throws"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React tracks the transition scope synchronously; once execution crosses an await, it resumes as a separate continuation outside that tracked scope, so the setPage call after await is treated as an ordinary urgent update unless re-wrapped in its own startTransition. (a) is the common misconception this question targets; (c) and (d) misdescribe actual React behavior — async callbacks are explicitly supported, just with this caveat.",
+      "reference": "https://react.dev/reference/react/useTransition"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-006",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "performance"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are part of a valid workflow for diagnosing input jank caused by an expensive re-render, using React's tooling? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Record the interaction in the React DevTools Profiler and inspect the flame/ranked chart for long renders"
+        },
+        {
+          "id": "b",
+          "text": "Cross-reference with the browser's Performance panel to confirm a long task is blocking the main thread"
+        },
+        {
+          "id": "c",
+          "text": "Assume any component under 5 lines of JSX cannot be the cause and skip profiling it"
+        },
+        {
+          "id": "d",
+          "text": "After applying a fix (e.g. startTransition/useDeferredValue), re-profile to confirm render time dropped or was broken into smaller chunks"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "A real diagnosis workflow uses the Profiler to find long/expensive renders, the Performance panel to confirm actual main-thread blocking, and re-profiling after a fix to validate it worked. (c) is a bad heuristic — component render cost has nothing to do with JSX line count; a small component re-rendering very frequently, or one wrapping expensive logic, can absolutely be the culprit.",
+      "reference": "https://react.dev/learn/react-developer-tools"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-007",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "internals"
+      ],
+      "type": "single",
+      "question": "During streaming SSR with renderToPipeableStream, what does the `onShellReady` callback signal?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "That every Suspense boundary in the tree has fully resolved and rendered its real content"
+        },
+        {
+          "id": "b",
+          "text": "That the portion of the tree outside any Suspense boundary (the shell) has finished rendering and it's safe to start streaming the response"
+        },
+        {
+          "id": "c",
+          "text": "That hydration has completed on the client"
+        },
+        {
+          "id": "d",
+          "text": "That an error occurred before any HTML was sent"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "onShellReady fires once the shell (everything outside Suspense boundaries) is done rendering, which is when it's safe to begin piping the response — Suspense-wrapped content not yet ready streams in later as fallback-then-real-content. (a) describes onAllReady instead. (c) is a client-side concern unrelated to this server callback. (d) describes onShellError.",
+      "reference": "https://react.dev/reference/react-dom/server/renderToPipeableStream"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-008",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "Which statement correctly distinguishes Server Components from Client Components?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Server Components can use useState and useEffect; Client Components cannot"
+        },
+        {
+          "id": "b",
+          "text": "Server Components' code never ships to the browser and can await data directly; Client Components (marked \"use client\") run in the browser and provide interactivity"
+        },
+        {
+          "id": "c",
+          "text": "Server Components are just Client Components rendered with renderToString"
+        },
+        {
+          "id": "d",
+          "text": "There is no functional difference; the label is purely for documentation purposes"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Server Components render only on the server (or at build time); their code is never sent to the client, and they can directly await data (e.g. from a database) without client-side fetching. Interactive hooks like useState/useEffect require a Client Component, the opposite of (a). (c) and (d) are false — these are distinct component models with different capabilities and bundling behavior.",
+      "reference": "https://react.dev/reference/rsc/server-components"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-009",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What is \"tearing\" in the context of concurrent React rendering, and what hook is designed to prevent it for external stores?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A memory leak caused by unsubscribed event listeners; prevented by useEffect cleanup"
+        },
+        {
+          "id": "b",
+          "text": "Different components displaying inconsistent versions of the same external-store data within one render, because the store mutated mid-render; prevented by useSyncExternalStore"
+        },
+        {
+          "id": "c",
+          "text": "A CSS layout bug caused by concurrent rendering; prevented by useLayoutEffect"
+        },
+        {
+          "id": "d",
+          "text": "Duplicate network requests caused by Strict Mode double-invocation; prevented by useMemo"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Tearing happens when a mutable external store changes while a concurrent render is paused/in-progress, causing different components to read different values of the same data within a single render pass. useSyncExternalStore solves this by re-checking the store's snapshot right before committing and restarting as a blocking update if it changed, guaranteeing a consistent view. The other options describe real but unrelated React concerns.",
+      "reference": "https://react.dev/reference/react/useSyncExternalStore"
+    },
+    {
+      "id": "react-concurrent-features-and-suspense-010",
+      "tags": [
+        "concurrent-features-and-suspense",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why can't React truly preempt (interrupt mid-execution) a single component's expensive synchronous render function, even with concurrent rendering enabled?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Because React's scheduler only runs in development mode"
+        },
+        {
+          "id": "b",
+          "text": "Because JavaScript on the main thread is single-threaded and run-to-completion — React can only yield between discrete units of work (fibers), not in the middle of one running function"
+        },
+        {
+          "id": "c",
+          "text": "Because concurrent rendering was fully removed in React 18's stable release"
+        },
+        {
+          "id": "d",
+          "text": "Because only class components support interruption, not function components"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React's interruption is cooperative, not preemptive: it can pause between fibers (units of work) because that's where its work loop checks whether to yield, but it cannot interrupt a single already-running synchronous JS function partway through, since JS execution on the main thread runs to completion. (a), (c), and (d) are false statements about React's architecture.",
+      "reference": "https://github.com/facebook/react/tree/main/packages/react-reconciler/src"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-001",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What does React do when hydrateRoot detects that the client's first render output does not match the server-rendered HTML?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It patches only the mismatched DOM nodes in place, leaving the rest of the server HTML untouched"
+        },
+        {
+          "id": "b",
+          "text": "It clears the server-rendered HTML for the affected subtree and switches to a full client-side render"
+        },
+        {
+          "id": "c",
+          "text": "It throws a fatal error and refuses to render the app"
+        },
+        {
+          "id": "d",
+          "text": "It silently ignores the difference and keeps the server-rendered HTML permanently"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Per the React docs, there's no guarantee mismatched attributes/text get patched, and once React decides it needs to take over (root.render), it clears the server-rendered content for that subtree and falls back to a full client render — losing the SSR benefit for that part of the tree. (a) is wrong because patch-in-place isn't guaranteed behavior; (c) is wrong because React doesn't crash the whole app over a mismatch, it degrades gracefully (at a cost); (d) is wrong because React does not just ignore mismatches — it acts on them by re-rendering client-side.",
+      "reference": "https://react.dev/reference/react-dom/client/hydrateRoot"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-002",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What is the defining property of a React Server Component that distinguishes it from a component that is merely rendered during traditional SSR?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Its code never ships to the client bundle at all — only its rendered output is sent"
+        },
+        {
+          "id": "b",
+          "text": "It renders faster than a traditionally SSR'd component because it uses a different diffing algorithm"
+        },
+        {
+          "id": "c",
+          "text": "It automatically caches its output in the browser's localStorage"
+        },
+        {
+          "id": "d",
+          "text": "It can only be used inside class components, not function components"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A Server Component's source code and dependencies never ship to the client — this is the 'zero bundle size' property. A traditionally SSR'd component's code is still bundled and hydrated client-side even though the server also rendered it once. (b) is a fabricated claim (no different diffing algorithm is involved), (c) is not part of the RSC model, and (d) is false — Server Components are plain function components, class components aren't part of the RSC model at all.",
+      "reference": "https://react.dev/reference/rsc/server-components"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-003",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "internals"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are things a React Server Component CANNOT do? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use the useState hook"
+        },
+        {
+          "id": "b",
+          "text": "Directly await a database query"
+        },
+        {
+          "id": "c",
+          "text": "Access browser-only APIs like window or localStorage"
+        },
+        {
+          "id": "d",
+          "text": "Register an onClick event handler"
+        }
+      ],
+      "correct": [
+        "a",
+        "c",
+        "d"
+      ],
+      "explanation": "Server Components run only on the server and never re-render on the client, so they cannot use state hooks (a), browser APIs (c), or event handlers (d) — none of that makes sense in a server-only, non-interactive execution context. (b) is something Server Components explicitly CAN do — they can be async and directly await data access (e.g. a DB query) without an API layer, which is one of their main selling points.",
+      "reference": "https://react.dev/reference/rsc/server-components"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-004",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Where must the 'use client' directive be placed in a file for it to take effect?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Anywhere in the file, as long as it appears before the default export"
+        },
+        {
+          "id": "b",
+          "text": "At the very top of the file, before any imports or other code (comments excepted)"
+        },
+        {
+          "id": "c",
+          "text": "Inside the component function body, before the return statement"
+        },
+        {
+          "id": "d",
+          "text": "In a separate config file referencing the component's path"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "'use client' must be the very first statement in the file, before any imports — placing it later breaks its effect. It marks a module boundary at the file level, not the function level, so it can't live inside a component body (c) or a separate config file (d), and it can't come after imports (a).",
+      "reference": "https://react.dev/reference/rsc/use-client"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-005",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In renderToPipeableStream, which callback should you use to start streaming HTML to a normal user as fast as possible, letting Suspense fallbacks fill in progressively?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "onAllReady"
+        },
+        {
+          "id": "b",
+          "text": "onShellReady"
+        },
+        {
+          "id": "c",
+          "text": "onError"
+        },
+        {
+          "id": "d",
+          "text": "onShellError"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "onShellReady fires as soon as the non-suspended shell is ready, letting you pipe the response immediately while Suspense boundaries stream in their real content later. onAllReady (a) waits for everything, including suspended content, which is meant for crawlers/static generation, not fast streaming to regular users. onError/onShellError (c, d) are for handling render errors, not for deciding when to start a normal successful stream.",
+      "reference": "https://react.dev/reference/react-dom/server/renderToPipeableStream"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-006",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why is branching on `typeof window !== 'undefined'` directly inside a component's render logic a common cause of hydration mismatches?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Because window is always undefined on both server and client during SSR frameworks"
+        },
+        {
+          "id": "b",
+          "text": "Because it makes the render output differ between the server pass (window undefined) and the client pass (window defined), violating the requirement that both renders produce identical output"
+        },
+        {
+          "id": "c",
+          "text": "Because React forbids using the word 'window' as a variable name"
+        },
+        {
+          "id": "d",
+          "text": "Because it causes a memory leak in the component"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "On the server, window is undefined, so the branch renders one thing; on the client hydration pass, window exists, so it renders something else for the same component instance — directly violating hydration's requirement that server and client output match. (a) is false (window exists on the client), (c) and (d) are fabricated distractors unrelated to the actual mechanism.",
+      "reference": "https://react.dev/reference/react-dom/client/hydrateRoot"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-007",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "Why does React provide useId instead of recommending a simple incrementing counter for generating unique DOM ids in an app that uses SSR?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "An incrementing counter is slower to execute than useId"
+        },
+        {
+          "id": "b",
+          "text": "useId derives ids from the component's position in the tree, which is identical on server and client regardless of render/hydration order, avoiding hydration mismatches that a counter (whose value depends on execution order) could cause"
+        },
+        {
+          "id": "c",
+          "text": "Incrementing counters are not supported in JavaScript's strict mode"
+        },
+        {
+          "id": "d",
+          "text": "useId is required by the browser's HTML spec for all id attributes"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "A global counter's value depends on the order components are processed, which isn't guaranteed to match between server rendering and client hydration (especially with streaming/out-of-order Suspense resolution) — causing mismatched ids. useId instead derives from the stable parent-path position in the component tree, which is identical on both sides. (a), (c), and (d) are fabricated/false claims.",
+      "reference": "https://react.dev/reference/react/useId"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-008",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Should useId be used to generate the `key` prop for items in a rendered list?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Yes, it's the recommended way to guarantee unique keys"
+        },
+        {
+          "id": "b",
+          "text": "No — keys should be derived from the underlying data, since useId is based on tree position and doesn't track data identity across reorders/insertions"
+        },
+        {
+          "id": "c",
+          "text": "Yes, but only for lists rendered inside a Suspense boundary"
+        },
+        {
+          "id": "d",
+          "text": "It doesn't matter, both approaches behave identically"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The React docs explicitly warn against using useId for list keys. Keys need to track the identity of the underlying data item across re-renders (so reordering/insertion/deletion work correctly), but useId is derived from the component's position in the tree, not from the data — using it for keys breaks that data-identity guarantee.",
+      "reference": "https://react.dev/reference/react/useId"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-009",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What directive marks an async function as a Server Function that a Client Component can call directly (e.g. via a form's action prop)?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "'use client'"
+        },
+        {
+          "id": "b",
+          "text": "'use server'"
+        },
+        {
+          "id": "c",
+          "text": "'use strict'"
+        },
+        {
+          "id": "d",
+          "text": "'use action'"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "'use server' marks a function as a Server Function, executed only on the server but callable from Client Component code (e.g. passed to <form action={fn}>). 'use client' (a) marks module boundaries the other direction (client code). 'use strict' (c) is a standard unrelated JavaScript directive. 'use action' (d) is not a real React directive.",
+      "reference": "https://react.dev/reference/rsc/server-functions"
+    },
+    {
+      "id": "react-server-components-and-ssr-hydration-010",
+      "tags": [
+        "server-components-and-ssr-hydration",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Which scenario is a legitimate reason to prefer a plain client-side-rendered SPA over adopting SSR/React Server Components?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "An internal, authenticated admin dashboard with no SEO requirement and a team unfamiliar with server-runtime operations"
+        },
+        {
+          "id": "b",
+          "text": "A public marketing site that needs to rank well in search engines"
+        },
+        {
+          "id": "c",
+          "text": "A content-heavy blog that needs fast first paint for anonymous visitors"
+        },
+        {
+          "id": "d",
+          "text": "An app with several heavy server-only dependencies (e.g. a markdown parser) currently bloating the client bundle"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "An internal tool behind authentication gets little SEO/first-paint benefit from SSR (crawlers never see it, users already expect a load state post-login), while the team still pays real operational complexity adopting a server-runtime-dependent architecture — making CSR the pragmatic choice. (b), (c), and (d) are all cases where SSR/RSC's actual benefits (SEO, fast first paint, removing heavy dependencies from the client bundle) directly apply and argue FOR adopting it, not against.",
+      "reference": "https://react.dev/reference/rsc/server-components"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-001",
+      "tags": [
+        "component-architecture-and-patterns",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "By default, what comparison does React.memo perform on a component's props between renders?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Deep equality of all nested object/array contents"
+        },
+        {
+          "id": "b",
+          "text": "Shallow comparison using Object.is on each prop"
+        },
+        {
+          "id": "c",
+          "text": "JSON.stringify comparison of the entire props object"
+        },
+        {
+          "id": "d",
+          "text": "No comparison — memo always re-renders on any parent render"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React.memo's default comparator checks each prop with Object.is (reference equality), not deep equality. That's why passing a freshly-created object/array/function as a prop defeats memo even if its contents are unchanged. (a) is wrong because memo does not recurse into nested structures by default — you'd need a custom comparator for that. (c) is a real technique some teams hand-roll but is not what memo does internally. (d) is wrong since memo's entire purpose is to skip re-rendering when the shallow check passes.",
+      "reference": "https://react.dev/reference/react/memo"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-002",
+      "tags": [
+        "component-architecture-and-patterns",
+        "internals"
+      ],
+      "type": "single",
+      "question": "When a Context Provider's value changes, which components are forced to re-render as a direct consequence?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only the components that call useContext on that context"
+        },
+        {
+          "id": "b",
+          "text": "Every component in the subtree below the Provider, whether or not it reads the context"
+        },
+        {
+          "id": "c",
+          "text": "Only the Provider component itself"
+        },
+        {
+          "id": "d",
+          "text": "No components re-render unless they also have local state"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Only components that actually consume the context via useContext (or Context.Consumer) are forced to re-render when the value changes; intermediate non-consuming components are passed through without being forced to re-render on account of the context change itself. (b) is the common misconception this question targets. (c)/(d) are incorrect since the whole point of Context is to propagate the new value to its consumers.",
+      "reference": "https://react.dev/learn/passing-data-deeply-with-context"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-003",
+      "tags": [
+        "component-architecture-and-patterns",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In React, how do events triggered inside content rendered via createPortal propagate?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "According to the DOM tree only — ancestor DOM elements' handlers fire, React tree ancestors do not"
+        },
+        {
+          "id": "b",
+          "text": "They do not propagate/bubble at all; portals are isolated event boundaries"
+        },
+        {
+          "id": "c",
+          "text": "According to the React tree — an ancestor's onClick in the React tree fires even if its DOM node isn't an ancestor of the portal's DOM node"
+        },
+        {
+          "id": "d",
+          "text": "Propagation is configurable per-portal via a `bubblePolicy` prop"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "React explicitly documents that events from portals propagate according to the React (component) tree, not the DOM tree — so a click inside a portal fires an onClick handler on a React-tree ancestor even though that ancestor's actual DOM node doesn't contain the portal's DOM node. (a) has it backwards. (b) is false — they do bubble, just along the React tree. (d) — no such prop exists.",
+      "reference": "https://react.dev/reference/react-dom/createPortal"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-004",
+      "tags": [
+        "component-architecture-and-patterns",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What is required for React.lazy(() => import('./Chart.js')) to work correctly?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Chart.js must have a named export called `lazy`"
+        },
+        {
+          "id": "b",
+          "text": "The lazy call must be wrapped in a Suspense boundary somewhere in the tree, and the module must have the component as its default export"
+        },
+        {
+          "id": "c",
+          "text": "The component must be declared inside the parent component's function body"
+        },
+        {
+          "id": "d",
+          "text": "The bundler must be configured to disable code-splitting for that file"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React.lazy requires the imported module's component to be the default export, and any lazy component must be wrapped in a <Suspense fallback={...}> to provide a loading UI, or React throws. (a) is fabricated. (c) is actually the opposite of correct guidance — lazy() must be called at module scope, not inside a component body, or the import (and any state) resets every render. (d) is backwards — lazy relies on the bundler supporting code-splitting via dynamic import().",
+      "reference": "https://react.dev/reference/react/lazy"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-005",
+      "tags": [
+        "component-architecture-and-patterns",
+        "pitfalls"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are true about error boundaries in React today? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They must currently be implemented as class components"
+        },
+        {
+          "id": "b",
+          "text": "They catch errors thrown inside event handlers automatically"
+        },
+        {
+          "id": "c",
+          "text": "They do not catch errors from asynchronous code like setTimeout callbacks"
+        },
+        {
+          "id": "d",
+          "text": "Errors thrown inside a startTransition callback are still caught by error boundaries"
+        }
+      ],
+      "correct": [
+        "a",
+        "c",
+        "d"
+      ],
+      "explanation": "(a) True — there is currently no way to write an error boundary as a function component; libraries like react-error-boundary wrap a class internally. (b) False — event handler errors are explicitly NOT caught by error boundaries; you need a try/catch in the handler itself. (c) True — async code errors (setTimeout, unhandled promise rejections) are not caught. (d) True — this is an explicit documented exception, since transitions are still part of React's render/commit machinery.",
+      "reference": "https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-006",
+      "tags": [
+        "component-architecture-and-patterns",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A list of controlled <TextInput key={index}> rows is keyed by array index. The user deletes the first row. What is the most likely observable bug?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The app throws a runtime error because keys must be strings, not numbers"
+        },
+        {
+          "id": "b",
+          "text": "Every row's DOM node and component instance is destroyed and recreated from scratch"
+        },
+        {
+          "id": "c",
+          "text": "Remaining rows shift index, so React reuses component instances at each index — a row's local state (e.g. its typed text) appears to belong to the wrong data item"
+        },
+        {
+          "id": "d",
+          "text": "React automatically detects the deletion and re-keys all rows by their actual identity instead"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Because index is the key, deleting the first row shifts every subsequent row's index down by one. React matches elements by key, so it treats the (shifted) index-1 item as \"the same\" component instance as before, reusing its state — meaning a row's internal state visually appears attached to the wrong underlying data after the shift. (a) is false — numeric keys are valid (React coerces to string internally). (b) describes what happens with key={Math.random()}, not index. (d) is false — React has no way to infer 'actual identity' without a stable key being provided.",
+      "reference": "https://react.dev/learn/rendering-lists"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-007",
+      "tags": [
+        "component-architecture-and-patterns",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "According to React's own guidance, why does the library recommend composition over inheritance for component reuse?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Because JavaScript classes technically do not support the `extends` keyword"
+        },
+        {
+          "id": "b",
+          "text": "Because they found no use cases at scale where a component inheritance hierarchy was a better solution than props/composition"
+        },
+        {
+          "id": "c",
+          "text": "Because inheritance is disallowed by the JSX compiler"
+        },
+        {
+          "id": "d",
+          "text": "Because composition is required in order to use hooks"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "React's docs state that at their scale of usage, they found no use cases where they'd recommend creating component inheritance hierarchies, and that props and composition provide all the flexibility needed. (a) is factually false — JS classes do support extends. (c) is fabricated — JSX doesn't restrict this. (d) is unrelated; hooks and composition are separate concerns, and class components (which could use inheritance) simply can't use hooks, but that's not the stated reason for the composition recommendation.",
+      "reference": "https://legacy.reactjs.org/docs/composition-vs-inheritance.html"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-008",
+      "tags": [
+        "component-architecture-and-patterns",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "A parent passes an inline arrow function `onClick={() => save(id)}` to a child wrapped in React.memo. What's the effect on the child's re-render behavior?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The child still re-renders on every parent render, because a new function is created each render, failing memo's reference check"
+        },
+        {
+          "id": "b",
+          "text": "React automatically hoists inline arrow functions so memo works correctly without changes"
+        },
+        {
+          "id": "c",
+          "text": "memo ignores function-typed props entirely, so this has no effect either way"
+        },
+        {
+          "id": "d",
+          "text": "The child throws a warning and refuses to render"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "An inline arrow function literal creates a new function object on every render, so Object.is comparison on that prop always returns false, defeating memo's shallow comparison and causing the child to re-render regardless. The standard fix is wrapping the handler in useCallback with correct dependencies in the parent. (b)/(c)/(d) are fabricated — no such automatic hoisting or warning exists, and memo does compare function props like any other prop.",
+      "reference": "https://react.dev/reference/react/useCallback"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-009",
+      "tags": [
+        "component-architecture-and-patterns",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What is the main technical downside of higher-order components (HOCs) that custom hooks specifically solve?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "HOCs cannot be written in JavaScript, only TypeScript"
+        },
+        {
+          "id": "b",
+          "text": "Composing multiple HOCs can cause prop name collisions and produces deeply nested \"wrapper hell\" in the component tree, with props whose origin is hard to trace"
+        },
+        {
+          "id": "c",
+          "text": "HOCs are deprecated and throw a runtime error in modern React"
+        },
+        {
+          "id": "d",
+          "text": "HOCs cannot accept any configuration arguments"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The well-documented downsides of HOCs are prop collisions between multiple injected props of the same name, wrapper-hell from nesting several HOCs, and indirect/hard-to-trace prop origins — all of which custom hooks avoid since return values are named explicitly at the call site with no extra component layer. (a), (c), and (d) are all fabricated/false — HOCs are plain JS functions, still work today (memo and forwardRef are themselves HOC-like), and commonly do accept configuration arguments (e.g. withRouter, connect(mapStateToProps)).",
+      "reference": "https://legacy.reactjs.org/docs/higher-order-components.html"
+    },
+    {
+      "id": "react-component-architecture-and-patterns-010",
+      "tags": [
+        "component-architecture-and-patterns",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In the React DevTools Profiler, a component shows actualDuration roughly equal to baseDuration on every commit. What does this most likely indicate?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The component is perfectly optimized and memoization is working as intended"
+        },
+        {
+          "id": "b",
+          "text": "Memoization for that component/subtree is either absent or not effective — React is doing the full render-cost work every commit"
+        },
+        {
+          "id": "c",
+          "text": "The component has a memory leak"
+        },
+        {
+          "id": "d",
+          "text": "The Profiler is malfunctioning, since these two values should never be equal"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "baseDuration is React's estimate of the worst-case render cost without memoization; actualDuration is the actual time the last render took. If they're consistently roughly equal, no memoization is meaningfully reducing render cost for that subtree on that commit — a well-memoized, unaffected component should show actualDuration far below baseDuration (or not re-render at all). (a) is the inverse of the correct interpretation. (c)/(d) are unrelated/false — equal values are a normal (if suboptimal) Profiler reading, not a bug.",
+      "reference": "https://legacy.reactjs.org/docs/profiler.html"
+    }
+  ]
+}

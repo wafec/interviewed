@@ -19,6 +19,7 @@ for the exact per-question structure.
 - [SQL]({{ "/src/sql/" | relative_url }})
 - [Cloud]({{ "/src/cloud/" | relative_url }})
 - [.NET]({{ "/src/dotnet/" | relative_url }})
+- [React]({{ "/src/react/" | relative_url }})
 
 ## Test yourself
 

@@ -210,3 +210,4 @@ Use the `/new-question <topic>` skill (e.g. `/new-question java`,
 - `sql/` — Query design, indexing, execution plans, transactions, isolation levels.
 - `cloud/` — Cloud infra, networking, IAM, scaling, resilience, cost/perf trade-offs.
 - `dotnet/` — C#/.NET runtime (CLR), ASP.NET Core, async/await, GC, EF Core, performance diagnosis.
+- `react/` — React internals (fiber/reconciliation), hooks, rendering performance, state management, SSR/hydration.
