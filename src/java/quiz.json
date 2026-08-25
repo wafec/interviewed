@@ -1621,6 +1621,656 @@
       ],
       "explanation": "With Retry outside CircuitBreaker, every retry attempt passes through the breaker individually, so the breaker's failure-rate tracking reflects real per-call outcomes and can trip mid-burst. If CircuitBreaker were outer instead, it would only see one final outcome per logical operation after all retries already ran inside it — which is the opposite of what's desired, and CallNotPermittedException is not automatically suppressed by Retry.",
       "reference": "https://resilience4j.readme.io/docs/retry"
+    },
+    {
+      "id": "java-generics-and-type-system-001",
+      "tags": [
+        "generics-and-type-system",
+        "internals",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What does the Java compiler do to `List<String>` during type erasure?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Generates a specialized `StringList` class at compile time"
+        },
+        {
+          "id": "b",
+          "text": "Leaves it unchanged, since erasure only touches primitive type arguments"
+        },
+        {
+          "id": "c",
+          "text": "Replaces it with raw `List`, inserting casts at the read sites"
+        },
+        {
+          "id": "d",
+          "text": "Converts it into an `Object[]`-backed record type internally"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Type erasure replaces every type parameter with its bound (Object if unbounded), so List<String> and List<Integer> both compile to the raw List, with compiler-inserted casts preserving type safety at call sites. (a) describes reification, which Java deliberately does not do (that's how C# generics work, not Java's). (b) is wrong — erasure applies to reference type arguments too, which is the whole point. (d) confuses erasure with how varargs desugar to arrays, a different mechanism.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/erasure.html"
+    },
+    {
+      "id": "java-generics-and-type-system-002",
+      "tags": [
+        "generics-and-type-system",
+        "internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why does `new T[10]` fail to compile inside a generic class `Box<T>`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The JVM needs a concrete runtime element type to safely create an array"
+        },
+        {
+          "id": "b",
+          "text": "Array literals only accept primitive element types in Java"
+        },
+        {
+          "id": "c",
+          "text": "Generic classes cannot declare any method that returns an array"
+        },
+        {
+          "id": "d",
+          "text": "`T` would first need an explicit cast to `Object` before array use"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Array creation requires a concrete runtime component type (it's embedded in the array object, enabling ArrayStoreException checks); erasure means T isn't known at runtime, so the compiler rejects it outright rather than let it become an unsound runtime hazard. (b) is false — array literals work with any reference type, not just primitives. (c) is false — generic classes can return arrays, just not create them directly from a type parameter. (d) misdescribes the actual issue as a missing cast rather than erasure.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/restrictions.html"
+    },
+    {
+      "id": "java-generics-and-type-system-003",
+      "tags": [
+        "generics-and-type-system",
+        "internals",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "A subclass overrides a generic superclass method with a more specific parameter type. What does the compiler generate to keep polymorphism working after erasure?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A duplicate copy of the subclass method under a mangled name"
+        },
+        {
+          "id": "b",
+          "text": "A compile-time error requiring an explicit cast in the override"
+        },
+        {
+          "id": "c",
+          "text": "Nothing — the JVM resolves the mismatch via reflection at call time"
+        },
+        {
+          "id": "d",
+          "text": "A synthetic bridge method matching the erased superclass signature"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "The compiler generates a bridge method matching the erased superclass signature (e.g. Object) that delegates to the subclass's actual, more specific override, preserving polymorphic dispatch. (a) invents a mechanism Java doesn't use. (b) is false; this compiles cleanly precisely because the bridge method is generated automatically. (c) is wrong — this is resolved statically at compile time via bytecode generation, not reflection at runtime.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/bridgeMethods.html"
+    },
+    {
+      "id": "java-generics-and-type-system-004",
+      "tags": [
+        "generics-and-type-system",
+        "fundamentals",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Per the PECS principle, how should you bound a method parameter that the method only ever reads elements from?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "With an unbounded wildcard `?`, since reading needs no bound at all"
+        },
+        {
+          "id": "b",
+          "text": "With `? extends T` — an upper-bounded wildcard"
+        },
+        {
+          "id": "c",
+          "text": "With an exact type parameter `T`, never a wildcard"
+        },
+        {
+          "id": "d",
+          "text": "With `? super T` — a lower-bounded wildcard"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "PECS: a producer (read-only) parameter is bounded with extends, letting the method accept any subtype and read it safely as T. (a) would only let you read as Object, losing the type information the extends bound preserves. (c) unnecessarily narrows the caller's options to exactly T, which PECS specifically advises against for a pure producer. (d) is backwards — super is for consumer (write-only) parameters.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/wildcardGuidelines.html"
+    },
+    {
+      "id": "java-generics-and-type-system-005",
+      "tags": [
+        "generics-and-type-system",
+        "performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What's the main runtime cost of using `List<Integer>` instead of a primitive `int[]` for a large collection of numbers?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Extra synchronization overhead added by the `Integer` wrapper"
+        },
+        {
+          "id": "b",
+          "text": "One heap allocation per boxed element, increasing GC pressure"
+        },
+        {
+          "id": "c",
+          "text": "A mandatory reflective call triggered on every `get()`/`add()`"
+        },
+        {
+          "id": "d",
+          "text": "Slower compile times only, with identical runtime performance"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Autoboxing allocates a heap object per boxed Integer (outside the small cached range), adding real GC pressure versus an inline int[]. (a) is false; Integer isn't synchronized and boxing adds no locking. (c) is false — get/add on ArrayList don't use reflection at all. (d) is wrong — this is a runtime cost, not a compile-time one, and runtime performance clearly differs.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Integer.html#valueOf(int)"
+    },
+    {
+      "id": "java-generics-and-type-system-006",
+      "tags": [
+        "generics-and-type-system",
+        "pitfalls",
+        "real-world"
+      ],
+      "type": "single",
+      "question": "Why does Java still allow raw types like `List list = new ArrayList();` decades after generics were introduced?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Some JDK collection implementations still require raw-type declarations"
+        },
+        {
+          "id": "b",
+          "text": "Generics can only be applied to interfaces, not concrete classes"
+        },
+        {
+          "id": "c",
+          "text": "Raw types run measurably faster at runtime than parameterized ones"
+        },
+        {
+          "id": "d",
+          "text": "Purely for backward compatibility with pre-generics code and bytecode"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Raw types exist solely so pre-Java-5 code and compiled bytecode keep compiling/linking against generic libraries; there's no other reason to use them in new code. (a) is false — every JDK collection fully supports generic declaration. (b) is false; generics apply to concrete classes just as much as interfaces. (c) is false — erasure means raw and parameterized types have identical runtime performance for reference types.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/rawTypes.html"
+    },
+    {
+      "id": "java-generics-and-type-system-007",
+      "tags": [
+        "generics-and-type-system",
+        "pitfalls",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A generic varargs method like `static <T> void m(List<T>... lists)` triggers an unchecked-warning. What's the underlying cause?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "`List<T>...` is only legal syntax inside interface default methods"
+        },
+        {
+          "id": "b",
+          "text": "Varargs methods cannot combine `static` with a type parameter safely"
+        },
+        {
+          "id": "c",
+          "text": "The compiler is unable to infer `T` whenever varargs are involved"
+        },
+        {
+          "id": "d",
+          "text": "Varargs desugar to an array, and generic array creation is unchecked"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "T... desugars to T[], and since generic array creation isn't directly allowed, the compiler creates an erased array anyway — an unchecked, potentially heap-polluting operation, hence the warning. (a) is fabricated; there's no such interface-only restriction. (b) is false — static generic varargs methods are exactly where @SafeVarargs is legal. (c) is false; T is inferred normally from the arguments passed.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/nonReifiableVarargsType.html"
+    },
+    {
+      "id": "java-generics-and-type-system-008",
+      "tags": [
+        "generics-and-type-system",
+        "internals",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why does `Object[] arr = new String[3]; arr[0] = 42;` compile but throw at runtime, while the generic equivalent fails at compile time instead?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "`Object[]` and `String[]` are actually the same erased type at runtime"
+        },
+        {
+          "id": "b",
+          "text": "This is a JVM bug specific to array-backed collections, not a design choice"
+        },
+        {
+          "id": "c",
+          "text": "Arrays don't support autoboxing, so the store silently no-ops instead"
+        },
+        {
+          "id": "d",
+          "text": "Arrays are covariant with a runtime store check; generics are invariant and caught earlier"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Arrays are covariant (String[] treated as a subtype of Object[]) for historical reasons predating generics, so unsound stores are caught at runtime via ArrayStoreException; generics are invariant by default, so the equivalent mismatch is a compile-time error instead, needing no runtime check. (a) is false; arrays retain their actual component type at runtime, which is exactly what makes the ArrayStoreException check possible. (b) mischaracterizes a deliberate language design trade-off as a bug. (c) is false — this has nothing to do with autoboxing; the failure is a type mismatch, not a boxing failure.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ArrayStoreException.html"
+    },
+    {
+      "id": "java-generics-and-type-system-009",
+      "tags": [
+        "generics-and-type-system",
+        "advanced",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "`java.lang.Enum` is declared as `Enum<E extends Enum<E>>`. What does this self-bounded pattern accomplish?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It lets the JVM skip erasure specifically for enum type parameters"
+        },
+        {
+          "id": "b",
+          "text": "It restricts `compareTo` to enum constants of the same enum type"
+        },
+        {
+          "id": "c",
+          "text": "It allows one enum instance to belong to several enum types at once"
+        },
+        {
+          "id": "d",
+          "text": "It makes `Enum` instances mutable after construction, unlike other generics"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The recursive bound ties Comparable<E>'s compareTo(E) to the same concrete enum type, so cross-enum comparisons are rejected at compile time — e.g. Color.RED.compareTo(Size.SMALL) won't compile. (a) is false — Enum's type parameter erases the same way any other type parameter does. (c) describes nothing this pattern does or enables. (d) is unrelated to mutability; enum constants are effectively immutable regardless of this bound.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Enum.html"
+    },
+    {
+      "id": "java-generics-and-type-system-010",
+      "tags": [
+        "generics-and-type-system",
+        "internals",
+        "real-world"
+      ],
+      "type": "single",
+      "question": "Why can't `if (obj instanceof List<String>)` compile, and what's the compiler-accepted replacement if you just need to confirm it's some kind of List?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Replace it with `instanceof List<String>[]`, which stays reifiable"
+        },
+        {
+          "id": "b",
+          "text": "The syntax is legal but always evaluates to `false`, silently, not an error"
+        },
+        {
+          "id": "c",
+          "text": "`List<String>` is non-reifiable after erasure; use `instanceof List<?>` instead"
+        },
+        {
+          "id": "d",
+          "text": "`instanceof` doesn't support interface types at all; check `getClass()` instead"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "List<String> is a non-reifiable parameterized type (its element-type info is erased), so the JVM has nothing to check it against at runtime; List<?> uses the reifiable unbounded wildcard, which the compiler accepts. (a) is fabricated — that syntax isn't valid and array reifiability is a separate, unrelated topic. (b) is false; this is a compile-time error, not a silently-false runtime check. (d) is false — instanceof works fine with interfaces generally, just not with a non-reifiable parameterized type argument.",
+      "reference": "https://docs.oracle.com/javase/tutorial/java/generics/restrictions.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-001",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What does the NIO model let a thread do that classic java.io streams don't?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Check channel readiness before acting, instead of blocking on every call"
+        },
+        {
+          "id": "b",
+          "text": "Read files without ever opening a file descriptor"
+        },
+        {
+          "id": "c",
+          "text": "Skip character encoding entirely for all text I/O"
+        },
+        {
+          "id": "d",
+          "text": "Guarantee zero garbage collection during any I/O operation"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "NIO channels can be made non-blocking and registered with a Selector, so a thread asks 'is this ready?' instead of blocking per call — that's the core architectural shift. B, C, and D aren't true of NIO at all.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/package-summary.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-002",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What does a Selector's select() call actually delegate to under the hood on Linux?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A Java-level loop that polls each registered channel in turn"
+        },
+        {
+          "id": "b",
+          "text": "A new OS thread spawned per registered channel"
+        },
+        {
+          "id": "c",
+          "text": "The kernel's epoll readiness-notification facility"
+        },
+        {
+          "id": "d",
+          "text": "A fixed polling interval configured via -Xss"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Selector.select() blocks while the JVM delegates readiness detection to the OS's native facility — epoll on Linux, kqueue on BSD/macOS — rather than polling each channel in a Java loop, which is what makes it scale to many channels.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/Selector.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-003",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Why can FileChannel.transferTo() outperform a manual read-into-buffer-then-write loop?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It runs the copy on a background GC thread instead of the caller"
+        },
+        {
+          "id": "b",
+          "text": "It can let the OS move bytes from page cache to the target without a user-space copy"
+        },
+        {
+          "id": "c",
+          "text": "It automatically compresses the data before sending it"
+        },
+        {
+          "id": "d",
+          "text": "It bypasses TCP entirely and writes raw Ethernet frames"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The javadoc notes many OSes can transfer bytes directly from the filesystem cache to the target channel without copying through user space — a sendfile-style zero-copy path. A, C, and D don't describe what transferTo does.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/FileChannel.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-004",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "A thread-per-connection server fails to accept new connections under load while CPU stays low. What best explains this?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The garbage collector is stuck in a full collection cycle"
+        },
+        {
+          "id": "b",
+          "text": "Native OS thread/stack resources are exhausted by too many blocked threads"
+        },
+        {
+          "id": "c",
+          "text": "The JIT compiler hasn't warmed up the hot code paths yet"
+        },
+        {
+          "id": "d",
+          "text": "TCP checksums are failing under high packet volume"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Each blocked connection thread reserves a fixed OS stack and consumes a scarce native-thread slot; hitting that ceiling produces exactly this symptom (connection failures, low CPU, many threads parked in blocking I/O) — a classic C10K-style exhaustion, not GC, JIT, or network-layer failure.",
+      "reference": "http://www.kegel.com/c10k.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-005",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What does pinning mean for a virtual thread performing blocking I/O?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The virtual thread is destroyed and a new one is created for the retry"
+        },
+        {
+          "id": "b",
+          "text": "The scheduler permanently assigns that virtual thread to one CPU core"
+        },
+        {
+          "id": "c",
+          "text": "It can't unmount from its carrier, so the carrier's OS thread blocks directly"
+        },
+        {
+          "id": "d",
+          "text": "The JIT disables optimizations for that thread's call stack"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Pinning happens inside synchronized blocks or native calls, where a virtual thread can't unmount during blocking — so the underlying carrier OS thread blocks just like old thread-per-connection code, undermining virtual threads' scalability benefit for that code path.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-006",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "After channel.read(buf) fills a buffer, why does channel.write(buf) right afterward write the wrong data?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "write() requires a separate buffer object from the one used for read()"
+        },
+        {
+          "id": "b",
+          "text": "Buffers can't be reused between a read and a write call at all"
+        },
+        {
+          "id": "c",
+          "text": "flip() was never called, so position/limit still point past the data just read"
+        },
+        {
+          "id": "d",
+          "text": "The channel must be closed and reopened between a read and a write"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "After a read, position sits at the end of the written data and limit is still at capacity; without flip() (limit=position, position=0), a write sends the empty remainder instead of the data just read. A, B, and D aren't real NIO constraints.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/ByteBuffer.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-007",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A non-blocking SocketChannel.write(buffer) returns having written fewer bytes than the buffer held. What should the caller do?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Retry writing only the unwritten remainder, resuming on OP_WRITE readiness"
+        },
+        {
+          "id": "b",
+          "text": "Treat it as an error and close the channel immediately"
+        },
+        {
+          "id": "c",
+          "text": "Re-send the entire original buffer content from the start"
+        },
+        {
+          "id": "d",
+          "text": "Switch the channel back to blocking mode for the rest of the write"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A partial write is normal, expected behavior for non-blocking channels (the send buffer may be full) — the caller tracks the unwritten remainder via the buffer's position and resumes when notified the channel is writable again, rather than erroring, resending from scratch, or switching modes.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/SelectionKey.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-008",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why can't a FileChannel be registered with a Selector the way a SocketChannel can?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "FileChannel doesn't implement SelectableChannel; local file readiness doesn't fit the OS event model sockets use"
+        },
+        {
+          "id": "b",
+          "text": "Selectors are limited to exactly one channel type per instance"
+        },
+        {
+          "id": "c",
+          "text": "File channels must always run on the main thread"
+        },
+        {
+          "id": "d",
+          "text": "Registering a FileChannel would require administrator privileges"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "FileChannel doesn't implement SelectableChannel because local-file readiness doesn't map onto epoll/kqueue-style notification the way socket readiness does — that's why async file I/O instead uses the completion-based AsynchronousFileChannel model.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/SelectableChannel.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-009",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What's the key difference between AsynchronousFileChannel's CompletionHandler model and Selector-based NIO?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "CompletionHandler only works with UDP, Selector only works with TCP"
+        },
+        {
+          "id": "b",
+          "text": "CompletionHandler is completion-based (callback fires when done); Selector is readiness-based (you poll, then act)"
+        },
+        {
+          "id": "c",
+          "text": "CompletionHandler requires native code; Selector is pure Java"
+        },
+        {
+          "id": "d",
+          "text": "They are functionally identical, just different method names"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Selector-based I/O tells you a channel is ready and you perform the operation yourself; CompletionHandler-based async I/O has the runtime perform the operation and invoke your callback once it finishes — a fundamentally different (push vs. pull) model. The other options misdescribe both mechanisms.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/channels/CompletionHandler.html"
+    },
+    {
+      "id": "java-io-nio-and-networking-performance-010",
+      "tags": [
+        "io-nio-and-networking-performance",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Direct ByteBuffers (allocateDirect) skip a copy into user space for native I/O, but what's the trade-off?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They cannot be used with any Selector-based channel"
+        },
+        {
+          "id": "b",
+          "text": "They are always slower to read from than heap buffers"
+        },
+        {
+          "id": "c",
+          "text": "Higher allocation/deallocation cost, best amortized over large, long-lived or pooled buffers"
+        },
+        {
+          "id": "d",
+          "text": "They silently truncate any data over 64KB"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "The javadoc notes direct buffers have higher allocation/deallocation cost than heap buffers and recommends them for large, long-lived, natively-I/O-bound use — allocating many short-lived direct buffers can end up slower than plain heap buffers, not faster.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/nio/ByteBuffer.html"
     }
   ]
 }
