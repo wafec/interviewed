@@ -7,12 +7,12 @@
       "type": "single",
       "question": "What data structure does PostgreSQL use for its default index type?",
       "choices": [
-        { "id": "a", "text": "Hash table" },
-        { "id": "b", "text": "B-tree" },
-        { "id": "c", "text": "Linked list" },
-        { "id": "d", "text": "Trie" }
+        { "id": "a", "text": "B-tree" },
+        { "id": "b", "text": "Hash table" },
+        { "id": "c", "text": "Trie" },
+        { "id": "d", "text": "Linked list" }
       ],
-      "correct": ["b"],
+      "correct": ["a"],
       "explanation": "PostgreSQL's default index type is B-tree because it supports both equality and range/ordering operators. A hash table (hash index) only supports equality lookups and can't answer range queries or ORDER BY. Linked lists and tries aren't standard general-purpose index structures in relational databases.",
       "reference": "https://www.postgresql.org/docs/current/indexes-types.html"
     },
@@ -22,13 +22,13 @@
       "type": "single",
       "question": "Why do B-tree indexes support efficient range queries (BETWEEN, <, >) while hash indexes do not?",
       "choices": [
-        { "id": "a", "text": "Hash indexes are always physically smaller on disk" },
-        { "id": "b", "text": "B-tree leaf nodes are stored in sorted, linked order, while a hash index scatters keys by hash value with no relationship to their original order" },
-        { "id": "c", "text": "Hash indexes only work on integer columns" },
+        { "id": "a", "text": "Hash indexes are always physically smaller on disk than B-trees" },
+        { "id": "b", "text": "Hash indexes only work on columns with an integer data type" },
+        { "id": "c", "text": "B-tree leaves are stored in sorted, linked order for range scans" },
         { "id": "d", "text": "B-trees don't actually support equality lookups, only ranges" }
       ],
-      "correct": ["b"],
-      "explanation": "A B-tree's leaf nodes are sorted and linked, so once you locate the start of a range you can walk sequentially to collect the rest. A hash function deliberately scatters similar keys into unrelated buckets, destroying any notion of 'next value,' so a hash index can only answer exact-match lookups. B-trees fully support equality too (option D is wrong), and index size/type isn't determined by column data type (option C is wrong).",
+      "correct": ["c"],
+      "explanation": "A B-tree's leaf nodes are sorted and linked, so once you locate the start of a range you can walk sequentially to collect the rest. A hash function deliberately scatters similar keys into unrelated buckets, destroying any notion of 'next value,' so a hash index can only answer exact-match lookups. B-trees fully support equality lookups too, hash indexes aren't restricted to integer columns, and on-disk size isn't determined by index type — so the other three options are each wrong for a different reason.",
       "reference": "https://www.postgresql.org/docs/current/indexes-types.html"
     },
     {
@@ -53,11 +53,11 @@
       "question": "Which PostgreSQL extension tracks aggregate execution statistics (calls, total/mean time, rows, I/O) per normalized query, and is the standard tool for finding your worst-performing queries in production?",
       "choices": [
         { "id": "a", "text": "pg_stat_activity" },
-        { "id": "b", "text": "pg_stat_statements" },
-        { "id": "c", "text": "pg_stat_user_indexes" },
-        { "id": "d", "text": "pg_buffercache" }
+        { "id": "b", "text": "pg_buffercache" },
+        { "id": "c", "text": "pg_stat_statements" },
+        { "id": "d", "text": "pg_stat_user_indexes" }
       ],
-      "correct": ["b"],
+      "correct": ["c"],
       "explanation": "pg_stat_statements aggregates per-normalized-query execution statistics over time, which is exactly what you need to find top offenders by total_exec_time or mean_exec_time. pg_stat_activity only shows currently-running sessions (a live snapshot, not history). pg_stat_user_indexes tracks index usage counts, not query timing. pg_buffercache inspects shared buffer contents, unrelated to query-level stats.",
       "reference": "https://www.postgresql.org/docs/current/pgstatstatements.html"
     },
@@ -67,12 +67,12 @@
       "type": "single",
       "question": "In PostgreSQL's MVCC model, why doesn't a long-running SELECT block a concurrent UPDATE on the same rows (and vice versa)?",
       "choices": [
-        { "id": "a", "text": "PostgreSQL doesn't support concurrent writes to the same table" },
-        { "id": "b", "text": "Readers see a consistent snapshot of an appropriate row version, so they never need to acquire a lock that would conflict with a writer's lock" },
-        { "id": "c", "text": "SELECT statements never acquire any lock of any kind" },
-        { "id": "d", "text": "UPDATEs are automatically queued until every open SELECT finishes" }
+        { "id": "a", "text": "Readers see a snapshot row version, so no writer-conflicting lock is needed" },
+        { "id": "b", "text": "PostgreSQL takes a full table-level lock during any UPDATE statement" },
+        { "id": "c", "text": "SELECT statements acquire the same locks as UPDATE statements always" },
+        { "id": "d", "text": "UPDATEs wait until every currently open SELECT transaction commits" }
       ],
-      "correct": ["b"],
+      "correct": ["a"],
       "explanation": "MVCC gives readers a consistent snapshot instead of blocking them — an UPDATE creates a new row version while the old one stays visible to transactions that started earlier. Since readers just look at an appropriately-visible version rather than acquiring a writer-conflicting lock, reads and writes don't block each other. (Two concurrent writers to the *same* row can still block each other, since MVCC doesn't solve the writer-vs-writer conflict.)",
       "reference": "https://www.postgresql.org/docs/current/mvcc-intro.html"
     },
@@ -82,12 +82,12 @@
       "type": "single",
       "question": "An index exists on orders(created_at), but `WHERE DATE(created_at) = '2026-08-01'` triggers a sequential scan instead of using it. Why?",
       "choices": [
-        { "id": "a", "text": "DATE() is not a valid PostgreSQL function" },
-        { "id": "b", "text": "Wrapping the column in a function means the planner can't map the condition to a contiguous range in the standard index on the raw column" },
-        { "id": "c", "text": "The index is corrupted and needs a REINDEX" },
-        { "id": "d", "text": "PostgreSQL always prefers a sequential scan on timestamp columns" }
+        { "id": "a", "text": "DATE() cannot be used inside a WHERE clause in PostgreSQL at all" },
+        { "id": "b", "text": "The existing index has become corrupted and needs a REINDEX pass" },
+        { "id": "c", "text": "PostgreSQL's planner never chooses an index over a timestamp column" },
+        { "id": "d", "text": "Wrapping the column in a function breaks the sargable index match" }
       ],
-      "correct": ["b"],
+      "correct": ["d"],
       "explanation": "A standard B-tree index stores the raw column value in sorted order; wrapping the column in a function means the database would have to compute the function for every row to check a match, defeating the index, so the planner falls back to a scan. The fix is either to rewrite the condition on the raw column (a sargable range) or to create an expression/functional index on DATE(created_at) itself, which PostgreSQL supports.",
       "reference": "https://www.postgresql.org/docs/current/indexes-expressional.html"
     },
@@ -97,12 +97,12 @@
       "type": "single",
       "question": "What is a partial index in PostgreSQL?",
       "choices": [
-        { "id": "a", "text": "An index that only covers half of a table's columns" },
-        { "id": "b", "text": "An index that only includes rows matching a specified predicate, instead of every row in the table" },
-        { "id": "c", "text": "An index that is stored entirely in memory and never persisted to disk" },
-        { "id": "d", "text": "A deprecated index type replaced by expression indexes" }
+        { "id": "a", "text": "An index built only over rows matching a given predicate" },
+        { "id": "b", "text": "An index that stores only half of a table's declared columns" },
+        { "id": "c", "text": "An index kept entirely in memory and never written to disk" },
+        { "id": "d", "text": "A legacy index type fully replaced by expression indexes" }
       ],
-      "correct": ["b"],
+      "correct": ["a"],
       "explanation": "A partial index is built over only the rows satisfying a given WHERE predicate (e.g. WHERE status = 'pending'), which is much smaller and cheaper to maintain than indexing the whole table when queries consistently only care about that subset. It's unrelated to column count, memory-only storage, or deprecation.",
       "reference": "https://www.postgresql.org/docs/current/indexes-partial.html"
     },
@@ -112,12 +112,12 @@
       "type": "single",
       "question": "In InnoDB (MySQL), why is a large random UUID commonly considered a poor primary key choice?",
       "choices": [
-        { "id": "a", "text": "InnoDB does not support UUID as a data type at all" },
-        { "id": "b", "text": "The primary key is the clustered index (it defines physical row storage order), so random insert order causes frequent mid-tree page splits and destroys locality of reference" },
-        { "id": "c", "text": "MySQL silently converts UUID primary keys to auto-increment integers" },
-        { "id": "d", "text": "Random UUIDs prevent secondary indexes from being created on the table" }
+        { "id": "a", "text": "InnoDB has no native support for storing UUID values at all" },
+        { "id": "b", "text": "MySQL silently rewrites UUID primary keys into integers" },
+        { "id": "c", "text": "As the clustered index, random UUID order causes frequent page splits" },
+        { "id": "d", "text": "Random UUIDs stop you from adding any secondary indexes" }
       ],
-      "correct": ["b"],
+      "correct": ["c"],
       "explanation": "Because InnoDB's clustered index *is* the table's physical storage, sequential inserts (like auto-increment) land at the edge of the tree and pages fill efficiently. Random UUIDs scatter new rows across the whole keyspace, forcing costly page splits, leaving pages half-empty, and destroying the locality that keeps recently-written data cached — a much bigger throughput hit than the extra bytes each secondary index carries.",
       "reference": "https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html"
     },
@@ -127,10 +127,10 @@
       "type": "multiple",
       "question": "Which of the following are true reasons a PostgreSQL table or index can suffer from bloat? (select all that apply)",
       "choices": [
-        { "id": "a", "text": "MVCC leaves old row versions ('dead tuples') behind after UPDATE/DELETE until they're reclaimed" },
-        { "id": "b", "text": "A long-running or idle-in-transaction session can block VACUUM from reclaiming dead tuples cluster-wide" },
-        { "id": "c", "text": "Standard VACUUM always shrinks the table's file size on disk immediately" },
-        { "id": "d", "text": "Autovacuum thresholds scale with table size, so very large tables can accumulate a large absolute number of dead tuples before autovacuum triggers again" }
+        { "id": "a", "text": "MVCC leaves old row versions behind after UPDATE/DELETE until they are reclaimed" },
+        { "id": "b", "text": "A long-running or idle-in-transaction session can block VACUUM from reclaiming space" },
+        { "id": "c", "text": "Standard VACUUM immediately shrinks the table's on-disk file size" },
+        { "id": "d", "text": "Autovacuum's size-scaled thresholds let large tables accumulate many dead tuples first" }
       ],
       "correct": ["a", "b", "d"],
       "explanation": "A, B, and D are all accurate: MVCC's dead tuples are the root cause of bloat; a long-running transaction holds back the 'xmin horizon' that VACUUM needs to safely reclaim space cluster-wide; and autovacuum's scale-factor-based thresholds mean bloat can accumulate substantially on huge tables before a cleanup triggers. C is false — standard VACUUM marks space free for reuse but generally does NOT return space to the operating system or shrink the file (only VACUUM FULL rewrites the table to reclaim disk space).",
@@ -142,10 +142,10 @@
       "type": "single",
       "question": "Why wouldn't you just always use SERIALIZABLE isolation 'to be safe'?",
       "choices": [
-        { "id": "a", "text": "PostgreSQL does not actually support SERIALIZABLE isolation" },
-        { "id": "b", "text": "SERIALIZABLE uses predicate locking and can abort transactions that would violate serializability, trading throughput/concurrency (and requiring application-level retry logic) for stronger correctness guarantees" },
-        { "id": "c", "text": "SERIALIZABLE disables all indexes for the duration of the transaction" },
-        { "id": "d", "text": "SERIALIZABLE only applies to SELECT statements, never to writes" }
+        { "id": "a", "text": "PostgreSQL does not actually implement SERIALIZABLE isolation at all" },
+        { "id": "b", "text": "SERIALIZABLE can abort conflicting transactions, trading throughput for correctness" },
+        { "id": "c", "text": "SERIALIZABLE disables every index for the duration of a transaction" },
+        { "id": "d", "text": "SERIALIZABLE isolation only ever applies to SELECT statements" }
       ],
       "correct": ["b"],
       "explanation": "Stronger isolation isn't free: SERIALIZABLE in PostgreSQL detects and aborts transactions that would violate a serial execution order, meaning the application must be prepared to retry on serialization errors, and higher isolation levels generally mean more lock contention/aborts under concurrent load. Most applications default to Read Committed and only reach for stronger levels where the guarantee is actually needed.",

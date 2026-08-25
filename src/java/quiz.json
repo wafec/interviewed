@@ -3,153 +3,1624 @@
   "questions": [
     {
       "id": "java-concurrency-and-memory-model-001",
-      "tags": ["concurrency-and-memory-model", "internals"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "internals"
+      ],
       "type": "single",
       "question": "What does declaring a field `volatile` guarantee in the Java Memory Model?",
       "choices": [
-        { "id": "a", "text": "Reads and writes of the field are atomic and mutually exclusive, like a lock." },
-        { "id": "b", "text": "Writes are immediately visible to other threads and reordering across the volatile access is constrained (happens-before), but compound operations like `i++` are still not atomic." },
-        { "id": "c", "text": "The field is cached in each thread's local memory for performance." },
-        { "id": "d", "text": "The JIT compiler is prevented from inlining any method that reads the field." }
+        {
+          "id": "a",
+          "text": "The field is cached in each thread's local memory for performance."
+        },
+        {
+          "id": "b",
+          "text": "Writes are immediately visible to other threads and reordering across the volatile access is constrained."
+        },
+        {
+          "id": "c",
+          "text": "The JIT compiler is prevented from inlining any method that reads the field."
+        },
+        {
+          "id": "d",
+          "text": "Reads and writes of the field are atomic and mutually exclusive, like a lock."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "Per the JLS, a write to a volatile field happens-before every subsequent read of that field, giving visibility and ordering guarantees. It does NOT provide mutual exclusion or atomicity for read-modify-write sequences (e.g. `i++` is still a race). (a) is what `synchronized`/locks provide, not `volatile`; (c) is backwards — volatile disables the kind of thread-local caching that would hide another thread's write; (d) is not something `volatile` controls.",
+      "correct": [
+        "b"
+      ],
+      "explanation": "Per the JLS, a write to a volatile field happens-before every subsequent read of that field, giving visibility and ordering guarantees. It does NOT provide mutual exclusion or atomicity for read-modify-write sequences (e.g. `i++` is still a race). (a) is what `synchronized`/locks provide, not `volatile`; (c) is backwards — volatile disables the kind of thread-local caching that would hide another thread's write; (d) is not something `volatile` controls. (In full, the correct choice also notes: but compound operations like `i++` are still not atomic.) (Full correct-choice detail: happens-before)",
       "reference": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.4.5"
     },
     {
       "id": "java-concurrency-and-memory-model-002",
-      "tags": ["concurrency-and-memory-model", "internals"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "internals"
+      ],
       "type": "multiple",
       "question": "Which of the following establish a happens-before relationship under the Java Memory Model? (select all that apply)",
       "choices": [
-        { "id": "a", "text": "A call to `Thread.start()` happens-before any action in the started thread." },
-        { "id": "b", "text": "All actions in a thread happen-before another thread successfully returns from a `join()` on that thread." },
-        { "id": "c", "text": "Two unsynchronized, non-volatile writes from different threads to the same field, in any order." },
-        { "id": "d", "text": "A write to a volatile field happens-before a subsequent read of that same field." }
+        {
+          "id": "a",
+          "text": "A write to a volatile field happens-before a subsequent read of that same field."
+        },
+        {
+          "id": "b",
+          "text": "Two unsynchronized, non-volatile writes from different threads to the same field, in any order."
+        },
+        {
+          "id": "c",
+          "text": "A call to `Thread.start()` happens-before any action in the started thread."
+        },
+        {
+          "id": "d",
+          "text": "All actions in a thread happen-before another thread successfully returns from a `join()` on that thread."
+        }
       ],
-      "correct": ["a", "b", "d"],
+      "correct": [
+        "a",
+        "c",
+        "d"
+      ],
       "explanation": "(a), (b), and (d) are explicit happens-before rules in JLS 17.4.5 (thread start rule, thread join rule, volatile variable rule). (c) is false — without synchronization or volatile, there is no ordering guarantee at all between writes from different threads; that's precisely a data race.",
       "reference": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-17.html#jls-17.4.5"
     },
     {
       "id": "java-concurrency-and-memory-model-003",
-      "tags": ["concurrency-and-memory-model", "internals", "performance"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "internals",
+        "performance"
+      ],
       "type": "single",
       "question": "In `StampedLock`'s optimistic read mode, what must a reader do after reading shared fields via `tryOptimisticRead()`?",
       "choices": [
-        { "id": "a", "text": "Nothing — the returned stamp guarantees the read fields are consistent." },
-        { "id": "b", "text": "Call `validate(stamp)`; if it returns false, the fields may have been concurrently modified and the reader must retry (typically upgrading to a real read lock)." },
-        { "id": "c", "text": "Call `unlockRead(stamp)` to release the optimistic lock before using the values." },
-        { "id": "d", "text": "Acquire the write lock to confirm no writer is active." }
+        {
+          "id": "a",
+          "text": "Call `validate(stamp)`."
+        },
+        {
+          "id": "b",
+          "text": "Acquire the write lock to confirm no writer is active."
+        },
+        {
+          "id": "c",
+          "text": "Call `unlockRead(stamp)` to release the optimistic lock before using the values."
+        },
+        {
+          "id": "d",
+          "text": "Nothing — the returned stamp guarantees the read fields are consistent."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "`tryOptimisticRead()` never blocks and doesn't actually hold a lock, so fields read afterward can be inconsistent; `validate(stamp)` checks whether a write lock was acquired since the stamp was issued. If validation fails, the reader must retry, typically by falling back to `readLock()`. (a) is wrong because that's exactly the risk optimistic mode accepts; (c) is wrong because no lock was held, so there's nothing to unlock; (d) defeats the purpose of the lightweight optimistic path.",
+      "correct": [
+        "a"
+      ],
+      "explanation": "`tryOptimisticRead()` never blocks and doesn't actually hold a lock, so fields read afterward can be inconsistent; `validate(stamp)` checks whether a write lock was acquired since the stamp was issued. If validation fails, the reader must retry, typically by falling back to `readLock()`. (a) is wrong because that's exactly the risk optimistic mode accepts; (c) is wrong because no lock was held, so there's nothing to unlock; (d) defeats the purpose of the lightweight optimistic path. (In full, the correct choice also notes: if it returns false, the fields may have been concurrently modified and the reader must retry (typically upgrading to a real read lock).)",
       "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/StampedLock.html"
     },
     {
       "id": "java-concurrency-and-memory-model-004",
-      "tags": ["concurrency-and-memory-model", "internals", "collections"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "internals",
+        "collections"
+      ],
       "type": "single",
       "question": "How does `ConcurrentHashMap` (Java 8+) handle a `put` into a non-empty bucket under contention?",
       "choices": [
-        { "id": "a", "text": "It locks the entire table with a single global lock for the duration of the put." },
-        { "id": "b", "text": "It uses a CAS loop only, with no locking, for every insertion regardless of bucket state." },
-        { "id": "c", "text": "It synchronizes on the bucket's first node (fine-grained, per-bin locking) rather than locking the whole map; an empty bin is instead populated via CAS with no lock at all." },
-        { "id": "d", "text": "It relies on a fixed array of 16 `Segment` locks, as in the Java 7 implementation." }
+        {
+          "id": "a",
+          "text": "It uses a CAS loop only, with no locking, for every insertion regardless of bucket state."
+        },
+        {
+          "id": "b",
+          "text": "It synchronizes on the bucket's first node (fine-grained, per-bin locking) rather than locking the whole map"
+        },
+        {
+          "id": "c",
+          "text": "It locks the entire table with a single global lock for the duration of the put."
+        },
+        {
+          "id": "d",
+          "text": "It relies on a fixed array of 16 `Segment` locks, as in the Java 7 implementation."
+        }
       ],
-      "correct": ["c"],
-      "explanation": "Java 8 redesigned `ConcurrentHashMap` around per-bin (per-bucket) synchronization: an empty bin is populated with a lock-free CAS, while inserting into an already-occupied bin synchronizes on that bin's first node — much finer-grained than a single map-wide lock. (d) describes the older Java 7 `Segment`-based (lock striping) design, which Java 8 replaced. (a) and (b) each describe only part of the real, hybrid CAS-plus-per-bin-lock behavior.",
+      "correct": [
+        "b"
+      ],
+      "explanation": "Java 8 redesigned `ConcurrentHashMap` around per-bin (per-bucket) synchronization: an empty bin is populated with a lock-free CAS, while inserting into an already-occupied bin synchronizes on that bin's first node — much finer-grained than a single map-wide lock. (d) describes the older Java 7 `Segment`-based (lock striping) design, which Java 8 replaced. (a) and (b) each describe only part of the real, hybrid CAS-plus-per-bin-lock behavior. (In full, the correct choice also notes: an empty bin is instead populated via CAS with no lock at all.)",
       "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html"
     },
     {
       "id": "java-concurrency-and-memory-model-005",
-      "tags": ["concurrency-and-memory-model", "internals"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "internals"
+      ],
       "type": "single",
       "question": "What is `AbstractQueuedSynchronizer` (AQS) and why do `ReentrantLock`, `Semaphore`, and `CountDownLatch` all build on it?",
       "choices": [
-        { "id": "a", "text": "It's a garbage-collection subsystem shared by all concurrent collections." },
-        { "id": "b", "text": "It's a framework providing an atomic `int` state plus a FIFO wait queue of blocked threads, letting synchronizers implement just the acquire/release semantics specific to them (exclusive vs shared) instead of reimplementing thread parking/queuing each time." },
-        { "id": "c", "text": "It's the internal implementation of `volatile` field reads." },
-        { "id": "d", "text": "It's a thread-pool implementation used by `ExecutorService`." }
+        {
+          "id": "a",
+          "text": "It's a framework providing an atomic `int` state plus a FIFO wait queue of blocked threads"
+        },
+        {
+          "id": "b",
+          "text": "It's the internal implementation of `volatile` field reads."
+        },
+        {
+          "id": "c",
+          "text": "It's a thread-pool implementation used by `ExecutorService`."
+        },
+        {
+          "id": "d",
+          "text": "It's a garbage-collection subsystem shared by all concurrent collections."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "AQS centralizes the hard, error-prone parts of building a synchronizer — an atomically managed state and a CLH-variant FIFO queue for blocked threads/park-unpark handling — so `ReentrantLock` (exclusive mode, state = hold count), `Semaphore` (shared mode, state = permits), and `CountDownLatch` (shared mode, state = count) only need to define what \"acquire succeeds\" means for them. The other options describe unrelated JVM subsystems.",
+      "correct": [
+        "a"
+      ],
+      "explanation": "AQS centralizes the hard, error-prone parts of building a synchronizer — an atomically managed state and a CLH-variant FIFO queue for blocked threads/park-unpark handling — so `ReentrantLock` (exclusive mode, state = hold count), `Semaphore` (shared mode, state = permits), and `CountDownLatch` (shared mode, state = count) only need to define what \"acquire succeeds\" means for them. The other options describe unrelated JVM subsystems. (In full, the correct choice also notes: letting synchronizers implement just the acquire/release semantics specific to them (exclusive vs shared) instead of reimplementing thread parking/queuing each time.)",
       "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/AbstractQueuedSynchronizer.html"
     },
     {
       "id": "java-concurrency-and-memory-model-006",
-      "tags": ["concurrency-and-memory-model", "pitfalls"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "pitfalls"
+      ],
       "type": "single",
       "question": "A candidate says deadlock, livelock, and starvation are 'basically the same thing — threads not making progress.' What's the key distinction between deadlock and livelock specifically?",
       "choices": [
-        { "id": "a", "text": "Deadlock involves threads that are actively running and consuming CPU but never making progress; livelock involves threads that are permanently blocked/idle." },
-        { "id": "b", "text": "Deadlock involves threads permanently blocked in a circular wait for each other's resources; livelock involves threads that stay active, repeatedly changing state in response to each other, but still never make progress." },
-        { "id": "c", "text": "There is no real difference — they're interchangeable terms for the same JVM condition." },
-        { "id": "d", "text": "Livelock only happens with `synchronized`, while deadlock only happens with `java.util.concurrent` locks." }
+        {
+          "id": "a",
+          "text": "Deadlock involves threads permanently blocked in a circular wait for each other's resources"
+        },
+        {
+          "id": "b",
+          "text": "Livelock only happens with `synchronized`, while deadlock only happens with `java.util.concurrent` locks."
+        },
+        {
+          "id": "c",
+          "text": "There is no real difference — they're interchangeable terms for the same JVM condition."
+        },
+        {
+          "id": "d",
+          "text": "Deadlock involves threads that are actively running and consuming CPU but never making progress; livelock involves threads that are permanently blocked/idle."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "Deadlock = threads permanently blocked, each waiting on a resource the other holds (classic circular wait). Livelock = threads are NOT blocked — they're actively running and reacting to each other (e.g. both repeatedly backing off and retrying in a way that keeps colliding) but still make no real progress. (a) has the definitions backwards. (c) is wrong — the distinction matters for diagnosis (a livelocked thread will show up as burning CPU in a thread dump/profiler, not simply BLOCKED). (d) is a fabricated constraint not tied to any real JVM behavior.",
+      "correct": [
+        "a"
+      ],
+      "explanation": "Deadlock = threads permanently blocked, each waiting on a resource the other holds (classic circular wait). Livelock = threads are NOT blocked — they're actively running and reacting to each other (e.g. both repeatedly backing off and retrying in a way that keeps colliding) but still make no real progress. (a) has the definitions backwards. (c) is wrong — the distinction matters for diagnosis (a livelocked thread will show up as burning CPU in a thread dump/profiler, not simply BLOCKED). (d) is a fabricated constraint not tied to any real JVM behavior. (In full, the correct choice also notes: livelock involves threads that stay active, repeatedly changing state in response to each other, but still never make progress.)",
       "reference": "https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html"
     },
     {
       "id": "java-concurrency-and-memory-model-007",
-      "tags": ["concurrency-and-memory-model", "pitfalls"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "pitfalls"
+      ],
       "type": "single",
       "question": "Why is `ThreadLocal` risky when used inside a thread-pool-backed `ExecutorService` (e.g. storing per-request context)?",
       "choices": [
-        { "id": "a", "text": "`ThreadLocal` is not thread-safe and can throw `ConcurrentModificationException` under a thread pool." },
-        { "id": "b", "text": "Pooled threads are long-lived and reused across many tasks; if a task doesn't explicitly `remove()` its `ThreadLocal` value, the next unrelated task run on that same pooled thread can see stale data from a previous task — a subtle correctness bug and a memory leak." },
-        { "id": "c", "text": "`ThreadLocal` values are automatically shared across all threads in the same pool, defeating its purpose." },
-        { "id": "d", "text": "Thread pools disallow `ThreadLocal` usage entirely and throw at runtime." }
+        {
+          "id": "a",
+          "text": "`ThreadLocal` values are automatically shared across all threads in the same pool, defeating its purpose."
+        },
+        {
+          "id": "b",
+          "text": "Pooled threads are long-lived and reused across many tasks"
+        },
+        {
+          "id": "c",
+          "text": "`ThreadLocal` is not thread-safe and can throw `ConcurrentModificationException` under a thread pool."
+        },
+        {
+          "id": "d",
+          "text": "Thread pools disallow `ThreadLocal` usage entirely and throw at runtime."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "A `ThreadLocal`'s value lives as long as the underlying `Thread` object does (via a map keyed by the ThreadLocal, held on the Thread). A pool's worker threads are reused indefinitely across tasks, so an un-removed value silently leaks into whichever task runs next on that same thread — both a correctness hazard (stale context) and a memory leak (values never freed). (a) and (c) misdescribe `ThreadLocal`'s actual (per-thread, isolated) semantics; (d) is false — the JVM places no such restriction.",
+      "correct": [
+        "b"
+      ],
+      "explanation": "A `ThreadLocal`'s value lives as long as the underlying `Thread` object does (via a map keyed by the ThreadLocal, held on the Thread). A pool's worker threads are reused indefinitely across tasks, so an un-removed value silently leaks into whichever task runs next on that same thread — both a correctness hazard (stale context) and a memory leak (values never freed). (a) and (c) misdescribe `ThreadLocal`'s actual (per-thread, isolated) semantics; (d) is false — the JVM places no such restriction. (In full, the correct choice also notes: if a task doesn't explicitly `remove()` its `ThreadLocal` value, the next unrelated task run on that same pooled thread can see stale data from a previous task — a subtle correctness bug and a memory leak.)",
       "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ThreadLocal.html"
     },
     {
       "id": "java-concurrency-and-memory-model-008",
-      "tags": ["concurrency-and-memory-model", "internals", "performance"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "internals",
+        "performance"
+      ],
       "type": "single",
       "question": "What does it mean for a virtual thread (JEP 444, Java 21+) to be 'pinned', and what commonly causes it?",
       "choices": [
-        { "id": "a", "text": "The virtual thread is permanently bound to a single CPU core for its lifetime." },
-        { "id": "b", "text": "The virtual thread cannot be unmounted from its carrier (platform) thread during a blocking operation — most commonly because it's executing inside a `synchronized` block/method (pre-JDK 24) or a native method/foreign function call — so the carrier thread is blocked for the duration instead of being freed to run other virtual threads." },
-        { "id": "c", "text": "The virtual thread has been garbage-collected but its stack frame is retained." },
-        { "id": "d", "text": "The virtual thread is given elevated scheduling priority over other virtual threads." }
+        {
+          "id": "a",
+          "text": "The virtual thread cannot be unmounted from its carrier (platform) thread during a blocking operation"
+        },
+        {
+          "id": "b",
+          "text": "The virtual thread is given elevated scheduling priority over other virtual threads."
+        },
+        {
+          "id": "c",
+          "text": "The virtual thread is permanently bound to a single CPU core for its lifetime."
+        },
+        {
+          "id": "d",
+          "text": "The virtual thread has been garbage-collected but its stack frame is retained."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "Pinning doesn't make code incorrect, but it hurts scalability: while pinned, the carrier OS thread is stuck and unavailable to run other virtual threads. Historically the main cause was blocking inside a `synchronized` block/method (JEP 444), plus native/foreign calls; JEP 491 (JDK 24) removed most of the `synchronized`-related pinning cases. The other options describe behaviors virtual threads don't actually have.",
+      "correct": [
+        "a"
+      ],
+      "explanation": "Pinning doesn't make code incorrect, but it hurts scalability: while pinned, the carrier OS thread is stuck and unavailable to run other virtual threads. Historically the main cause was blocking inside a `synchronized` block/method (JEP 444), plus native/foreign calls; JEP 491 (JDK 24) removed most of the `synchronized`-related pinning cases. The other options describe behaviors virtual threads don't actually have. (In full, the correct choice also notes: most commonly because it's executing inside a `synchronized` block/method (pre-JDK 24) or a native method/foreign function call — so the carrier thread is blocked for the duration instead of being freed to run other virtual threads.)",
       "reference": "https://docs.oracle.com/en/java/javase/21/core/virtual-threads.html"
     },
     {
       "id": "java-concurrency-and-memory-model-009",
-      "tags": ["concurrency-and-memory-model", "performance"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "performance"
+      ],
       "type": "single",
       "question": "You suspect a production JVM is suffering from lock contention (threads spending significant time blocked waiting on a monitor). Which built-in JDK tool/approach is best suited to confirm and pinpoint this?",
       "choices": [
-        { "id": "a", "text": "`javac -Xlint` to statically detect contended locks at compile time." },
-        { "id": "b", "text": "`jcmd <pid> Thread.print` for a quick thread-dump snapshot of BLOCKED threads and lock owners, or a Java Flight Recorder (JFR) recording (`jcmd <pid> JFR.start`) analyzed for `jdk.JavaMonitorEnter`/contention events for sustained profiling over time." },
-        { "id": "c", "text": "`jar -tf` to inspect the contents of the running JAR for synchronized methods." },
-        { "id": "d", "text": "Increasing `-Xmx` heap size, since lock contention is a heap-sizing problem." }
+        {
+          "id": "a",
+          "text": "`javac -Xlint` to statically detect contended locks at compile time."
+        },
+        {
+          "id": "b",
+          "text": "`jar -tf` to list the running JAR's contents for synchronized methods."
+        },
+        {
+          "id": "c",
+          "text": "`jcmd <pid> Thread.print` for a BLOCKED-thread dump, or a JFR recording."
+        },
+        {
+          "id": "d",
+          "text": "Increasing `-Xmx` heap size, since lock contention is a heap-sizing problem."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "`jcmd`'s `Thread.print` gives an immediate thread-dump (shows BLOCKED threads and which thread owns a given monitor), while JFR is the low-overhead, production-safe profiler built into the JDK for capturing lock-contention events (`jdk.JavaMonitorEnter`/`jdk.JavaMonitorWait`) over a sustained window — exactly the workflow for diagnosing contention. (a) is a compile-time linter unrelated to runtime behavior; (c) just lists JAR contents; (d) confuses heap sizing (GC pauses) with monitor/lock contention, a different performance problem entirely.",
+      "correct": [
+        "c"
+      ],
+      "explanation": "`jcmd`'s `Thread.print` gives an immediate thread-dump snapshot (shows BLOCKED threads and which thread owns a given monitor), while a Java Flight Recorder session (`jcmd <pid> JFR.start`) is the low-overhead, production-safe way to capture lock-contention events (`jdk.JavaMonitorEnter`/`jdk.JavaMonitorWait`) over a sustained window — exactly the workflow for diagnosing contention. (a) is a compile-time linter unrelated to runtime behavior; (b) just lists JAR contents with no runtime insight; (d) confuses heap sizing (GC pauses) with monitor/lock contention, a different performance problem entirely.",
       "reference": "https://docs.oracle.com/en/java/javase/21/docs/specs/man/jcmd.html"
     },
     {
       "id": "java-concurrency-and-memory-model-010",
-      "tags": ["concurrency-and-memory-model", "trade-offs"],
+      "tags": [
+        "concurrency-and-memory-model",
+        "trade-offs"
+      ],
       "type": "single",
       "question": "What is the main throughput trade-off of constructing a `ReentrantLock` with `fair = true` (`new ReentrantLock(true)`) versus the default unfair mode?",
       "choices": [
-        { "id": "a", "text": "Fair locks are always faster because they avoid retries." },
-        { "id": "b", "text": "A fair lock grants access strictly in FIFO arrival order (preventing starvation of long-waiting threads), at the cost of measurably lower overall throughput compared to the default unfair mode, which allows barging (a newly-arriving thread can win over a longer-waiting one) for better aggregate throughput." },
-        { "id": "c", "text": "Fairness only affects `tryLock()`, not `lock()`, so there is no meaningful trade-off for most code." },
-        { "id": "d", "text": "There is no difference in the JVM's default implementation; `fair` is a no-op hint." }
+        {
+          "id": "a",
+          "text": "Fairness only affects `tryLock()`, not `lock()`, so there is no meaningful trade-off for most code."
+        },
+        {
+          "id": "b",
+          "text": "There is no difference in the JVM's default implementation; `fair` is a no-op hint."
+        },
+        {
+          "id": "c",
+          "text": "Fair locks are always faster because they avoid retries."
+        },
+        {
+          "id": "d",
+          "text": "A fair lock grants access strictly in FIFO arrival order."
+        }
       ],
-      "correct": ["b"],
-      "explanation": "Per the `ReentrantLock` javadoc, fair ordering is enforced by a FIFO wait policy that guarantees the longest-waiting thread is granted access — this eliminates the starvation risk of unfair mode, but the additional bookkeeping and reduced ability to opportunistically hand off the lock (barging) measurably reduces throughput under contention versus the default unfair mode. (a), (c), and (d) all misstate documented `ReentrantLock` behavior.",
+      "correct": [
+        "d"
+      ],
+      "explanation": "Per the `ReentrantLock` javadoc, fair ordering is enforced by a FIFO wait policy that guarantees the longest-waiting thread is granted access — this eliminates the starvation risk of unfair mode, but the additional bookkeeping and reduced ability to opportunistically hand off the lock (barging) measurably reduces throughput under contention versus the default unfair mode. (a), (c), and (d) all misstate documented `ReentrantLock` behavior. (In full, the correct choice also notes: which allows barging (a newly-arriving thread can win over a longer-waiting one) for better aggregate throughput.) (Full correct-choice detail: preventing starvation of long-waiting threads), at the cost of measurably lower overall throughput compared to the default unfair mode)",
       "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReentrantLock.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-001",
+      "tags": [
+        "collections-and-streams-internals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A HashMap is created with default settings. At how many entries does it first trigger a resize?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "8 entries, matching the treeification threshold"
+        },
+        {
+          "id": "b",
+          "text": "12 entries, once size exceeds capacity times the 0.75 load factor"
+        },
+        {
+          "id": "c",
+          "text": "It never resizes automatically; capacity must be set manually up front"
+        },
+        {
+          "id": "d",
+          "text": "16 entries, matching the default initial capacity exactly"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Default capacity is 16 and default load factor is 0.75, so a resize triggers once size exceeds 16 * 0.75 = 12. (a) confuses the resize trigger with the raw capacity. (c) confuses the load-factor resize trigger with the unrelated treeification threshold (8 entries in one bucket, not total size). (d) is wrong — HashMap resizes automatically by default; you can only avoid extra resizes by pre-sizing, not disable resizing.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-002",
+      "tags": [
+        "collections-and-streams-internals",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Under what condition does HashMap convert a bucket's linked list into a red-black tree?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Any bucket ever holds more than one entry, to guarantee O(log n) lookups everywhere"
+        },
+        {
+          "id": "b",
+          "text": "A bucket reaches 8 entries, regardless of the table's overall capacity"
+        },
+        {
+          "id": "c",
+          "text": "The map's total size exceeds the load factor threshold, regardless of any single bucket"
+        },
+        {
+          "id": "d",
+          "text": "A bucket reaches 8 entries and the table capacity is at least 64"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Treeification requires both TREEIFY_THRESHOLD (8 entries in one bucket) AND MIN_TREEIFY_CAPACITY (table capacity at least 64) — below that capacity, HashMap prefers resizing the whole table over treeifying a small table's bucket. (c) omits the capacity gate. (b) and (d) describe unrelated or nonexistent triggers.",
+      "reference": "https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java"
+    },
+    {
+      "id": "java-collections-and-streams-internals-003",
+      "tags": [
+        "collections-and-streams-internals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What underlying data structure does TreeMap's own documentation say it is implemented as?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A red-black tree based NavigableMap implementation"
+        },
+        {
+          "id": "b",
+          "text": "A B-tree balanced for disk-oriented access patterns"
+        },
+        {
+          "id": "c",
+          "text": "A skip list ordered by key comparison"
+        },
+        {
+          "id": "d",
+          "text": "A hash table with a secondary sorted index"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "TreeMap's Javadoc literally describes it as 'A Red-Black tree based NavigableMap implementation,' which is what gives it guaranteed log(n) time for containsKey/get/put/remove. The other structures (a, b, c) are not what TreeMap uses.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/TreeMap.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-004",
+      "tags": [
+        "collections-and-streams-internals",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "You want to build an LRU cache using only standard-library classes, with O(1) get/put and automatic eviction. What's the standard approach?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use a TreeMap keyed by last-access time, evicting the first entry on overflow"
+        },
+        {
+          "id": "b",
+          "text": "Use a LinkedList of keys alongside a HashMap, manually reordering the list on every access"
+        },
+        {
+          "id": "c",
+          "text": "Use a plain HashMap and manually track access timestamps in a separate TreeMap"
+        },
+        {
+          "id": "d",
+          "text": "Subclass LinkedHashMap with accessOrder=true and override removeEldestEntry"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "LinkedHashMap constructed with accessOrder=true reorders entries on every get/put, and overriding removeEldestEntry to return true once size() exceeds a capacity gives automatic O(1) LRU eviction for free. (b), (c), and (d) all describe reimplementing this manually with worse complexity or more code, when the standard library already solves it.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedHashMap.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-005",
+      "tags": [
+        "collections-and-streams-internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What does the ArrayList Javadoc say is guaranteed about the exact growth amount when the backing array needs to expand?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It always doubles the previous capacity"
+        },
+        {
+          "id": "b",
+          "text": "It always grows by exactly the DEFAULT_CAPACITY (10) elements"
+        },
+        {
+          "id": "c",
+          "text": "It grows to exactly minCapacity with no extra headroom, to save memory"
+        },
+        {
+          "id": "d",
+          "text": "The exact growth policy is unspecified, only that add() is amortized constant time"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "The Javadoc deliberately leaves the growth policy unspecified, guaranteeing only amortized constant time for add(). The current OpenJDK implementation happens to grow by roughly 1.5x (oldCapacity >> 1), but that specific factor (a) is an implementation detail, not a documented guarantee, and (b)/(d) don't match either the documentation or the implementation.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-006",
+      "tags": [
+        "collections-and-streams-internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "The HashMap and ArrayList Javadocs describe their iterators as \"fail-fast.\" What do they explicitly say about relying on that behavior?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Fail-fast is only a debugging aid disabled by default in production JVM builds"
+        },
+        {
+          "id": "b",
+          "text": "Fail-fast detection is guaranteed reliable as long as only one thread modifies the collection"
+        },
+        {
+          "id": "c",
+          "text": "Fail-fast throws ConcurrentModificationException synchronously and deterministically in all cases"
+        },
+        {
+          "id": "d",
+          "text": "Fail-fast is best-effort only, and code should not depend on it for correctness"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Both Javadocs explicitly state fail-fast behavior 'cannot be guaranteed' under concurrent modification and is thrown 'on a best-effort basis,' warning that it would be wrong to write a program that depends on the exception for correctness. (a) misstates it (the warning applies even to unsynchronized single/multi-thread misuse patterns, not just multi-thread races). (c) overstates the guarantee. (d) is fabricated — there's no such 'disabled in production' flag.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-007",
+      "tags": [
+        "collections-and-streams-internals",
+        "fundamentals"
+      ],
+      "type": "multiple",
+      "question": "According to the Object.hashCode() contract, which of the following are true? (Select all that apply.)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "hashCode() must be consistent across repeated calls within the same execution."
+        },
+        {
+          "id": "b",
+          "text": "hashCode() values must remain stable across separate runs of the same application"
+        },
+        {
+          "id": "c",
+          "text": "Unequal objects are required to return different hashCode() values to guarantee correct hash table behavior."
+        },
+        {
+          "id": "d",
+          "text": "If two objects are equal per equals(), they must return the same hashCode()"
+        }
+      ],
+      "correct": [
+        "a",
+        "d"
+      ],
+      "explanation": "(a) and (b) are both part of the documented contract. (c) is explicitly NOT required — unequal objects may share a hash code, though distinct codes help hash table performance. (d) is also explicitly not required — the contract only requires consistency within a single execution, not across separate runs.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode()"
+    },
+    {
+      "id": "java-collections-and-streams-internals-008",
+      "tags": [
+        "collections-and-streams-internals",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In a Streams pipeline like `list.stream().filter(...).map(...).collect(toList())`, when does the filter predicate actually start executing?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only once the terminal operation .collect(...) is invoked, pulling elements through the whole pipeline"
+        },
+        {
+          "id": "b",
+          "text": "At stream creation time, when .stream() is first called on the list"
+        },
+        {
+          "id": "c",
+          "text": "Immediately when .filter(...) is called, before .map() is even invoked"
+        },
+        {
+          "id": "d",
+          "text": "As soon as .map(...) is called, since map always forces evaluation of upstream operations"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Intermediate operations like filter() and map() are lazy and only describe pipeline steps; nothing executes until a terminal operation like collect() triggers traversal, which then pulls each element through the fused filter->map chain. (a), (c), and (d) all incorrectly assume some intermediate step forces early execution.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-009",
+      "tags": [
+        "collections-and-streams-internals",
+        "trade-offs",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What thread pool do parallel streams use by default to execute their split work?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A pool sized dynamically per call based on the number of elements in the source"
+        },
+        {
+          "id": "b",
+          "text": "The same thread that called .parallelStream(), simulating parallelism via time-slicing"
+        },
+        {
+          "id": "c",
+          "text": "The shared, JVM-wide common ForkJoinPool, also used by other parallel-stream and ForkJoinTask code"
+        },
+        {
+          "id": "d",
+          "text": "A dedicated thread pool created fresh for each parallel stream call"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Parallel streams execute on the shared ForkJoinPool.commonPool() by default, the same JVM-wide pool other parallel/ForkJoin-based code uses — which is exactly why one part of an application running expensive parallel streams can starve unrelated code also relying on that same common pool. (a) and (d) describe pools that don't exist by default; (c) isn't parallelism at all.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html"
+    },
+    {
+      "id": "java-collections-and-streams-internals-010",
+      "tags": [
+        "collections-and-streams-internals",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "According to its own Javadoc, what is Optional<T> primarily intended for?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "General-purpose replacement for null in fields, parameters, and return types alike"
+        },
+        {
+          "id": "b",
+          "text": "A method return type for cases where 'no result' needs explicit representation and null risks errors"
+        },
+        {
+          "id": "c",
+          "text": "A thread-safe container suitable for use as a synchronization lock object"
+        },
+        {
+          "id": "d",
+          "text": "A serialization-friendly wrapper for nullable entity fields in persistence layers"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The Javadoc states Optional is 'primarily intended for use as a method return type where there is a clear need to represent no result, and where using null is likely to cause errors.' (a) overstates its intended scope beyond what the docs recommend. (c) is explicitly contradicted — Optional is a value-based class and must not be used for synchronization. (d) is wrong because Optional is not Serializable, making it a poor fit for persisted entity fields.",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-001",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "fundamentals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why does generational garbage collection divide the heap into young and old generations?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Because the old generation must always be collected first for correctness"
+        },
+        {
+          "id": "b",
+          "text": "Because Java requires two heaps for thread safety"
+        },
+        {
+          "id": "c",
+          "text": "Because the old generation cannot hold reference types"
+        },
+        {
+          "id": "d",
+          "text": "Because most objects die young"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "This is the weak generational hypothesis: most objects die young, so scanning/collecting a small young generation frequently is far cheaper than scanning the whole heap, while objects that survive get promoted to the less-frequently-collected old generation. (a) is false — young collections happen far more often. (c) and (d) are fabricated and don't reflect how generational GC works. (In full, the correct choice also notes: so frequently collecting a small young generation reclaims a lot of space cheaply)",
+      "reference": "https://docs.oracle.com/javase/10/gctuning/factors-affecting-garbage-collection-performance.htm"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-002",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In G1, what is a 'mixed collection'?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A collection that evacuates young-generation regions plus a bounded set of old-generation regions in one pause"
+        },
+        {
+          "id": "b",
+          "text": "A collection that only runs when both minor and major GC are explicitly disabled via JVM flags."
+        },
+        {
+          "id": "c",
+          "text": "A full GC that always stops the world to collect the entire old generation in a single pass."
+        },
+        {
+          "id": "d",
+          "text": "A collection that runs on multiple JVM instances simultaneously to share heap state."
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A G1 mixed collection evacuates both young regions and a subset of old regions (chosen for best reclamation efficiency), bounded by the pause-time goal. (c) describes a Full GC, not a mixed collection — G1 deliberately avoids collecting the whole old generation at once. (b) and (d) are fabricated.",
+      "reference": "https://docs.oracle.com/javase/10/gctuning/garbage-first-garbage-collector.htm"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-003",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What is a G1 'remembered set' (RSet) used for?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Tracking cross-region references pointing into a given region"
+        },
+        {
+          "id": "b",
+          "text": "Caching compiled bytecode for hot methods"
+        },
+        {
+          "id": "c",
+          "text": "Storing a history of past GC pause durations for tuning"
+        },
+        {
+          "id": "d",
+          "text": "Recording which threads allocated which objects"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A region's remembered set is the index of cross-region references pointing into it, which lets G1 evacuate that region independently without scanning the entire rest of the heap for incoming references. (a), (c), and (d) describe unrelated JVM concepts. (In full, the correct choice also notes: so G1 can collect that region without scanning the whole heap)",
+      "reference": "https://docs.oracle.com/en/java/javase/22/gctuning/garbage-first-g1-garbage-collector1.html"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-004",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What is the main purpose of a Thread-Local Allocation Buffer (TLAB)?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "To hold a snapshot of GC roots for each thread during the marking phase of collection."
+        },
+        {
+          "id": "b",
+          "text": "To buffer objects that are about to be promoted to the old generation before the next minor GC runs."
+        },
+        {
+          "id": "c",
+          "text": "To store thread-local variables set via the ThreadLocal API, separate from heap allocation."
+        },
+        {
+          "id": "d",
+          "text": "To let each thread allocate objects via a lock-free bump-the-pointer scheme."
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "A TLAB is a per-thread slice of Eden that allows lock-free, bump-the-pointer allocation since only one thread allocates into it. (a) confuses TLABs with the unrelated ThreadLocal API. (c) and (d) are fabricated. (The lock-free bump-the-pointer allocation also avoids synchronization on every allocation.)",
+      "reference": "https://www.oracle.com/technetwork/java/javase/memorymanagement-whitepaper-150215.pdf"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-005",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In `jstat -gcutil` output, what does a steadily climbing 'O' (old generation) value that never drops after a full GC most likely indicate?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "That metaspace is misconfigured"
+        },
+        {
+          "id": "b",
+          "text": "A healthy application with a high but normal allocation rate"
+        },
+        {
+          "id": "c",
+          "text": "A likely memory leak."
+        },
+        {
+          "id": "d",
+          "text": "That the young generation is too large"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "If old-gen occupancy keeps rising even right after full collections (which should reclaim everything unreachable), that means more is genuinely still reachable each cycle — the classic leak signature. A high allocation rate alone (a) shows as frequent young GCs with old-gen staying flat, not climbing. (c) and (d) don't match this specific symptom. (Full correct-choice detail: genuinely live/retained data is growing over time)",
+      "reference": "https://docs.oracle.com/en/java/javase/11/tools/jstat.html"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-006",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why is ThreadLocal easy to leak memory with in a thread-pooled environment (e.g. an ExecutorService)?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "ThreadLocal values are stored in the old generation by default and skip young-gen collection"
+        },
+        {
+          "id": "b",
+          "text": "Thread pools disable garbage collection while tasks are running"
+        },
+        {
+          "id": "c",
+          "text": "Pooled threads are reused rather than terminated"
+        },
+        {
+          "id": "d",
+          "text": "ThreadLocal instances cannot be garbage collected under any circumstances"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "A ThreadLocal's value is only eligible for collection once the owning thread goes away (or is explicitly removed). Pooled threads are deliberately kept alive and reused, so an un-removed value persists indefinitely. (b), (c), and (d) are fabricated and don't reflect actual ThreadLocal/GC behavior. (In full, the correct choice also notes: so a ThreadLocal value set and never removed stays reachable for the thread's whole lifetime)",
+      "reference": "https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/ThreadLocal.html"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-007",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "internals",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "How does ZGC allow safe concurrent object relocation while application threads keep running?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "By disabling relocation entirely and only ever compacting during Full GC"
+        },
+        {
+          "id": "b",
+          "text": "By duplicating the entire heap and swapping between the two copies"
+        },
+        {
+          "id": "c",
+          "text": "By using colored pointers with metadata bits checked by a load barrier on every reference load."
+        },
+        {
+          "id": "d",
+          "text": "By pausing all application threads briefly for every single object move during relocation."
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "ZGC encodes relocation-related metadata directly in the reference (colored pointer), and a load barrier inserted at every reference load checks this metadata to detect and handle relocated objects without stopping the world. (a), (c), and (d) misdescribe or contradict ZGC's actual concurrent design. (The load barrier's job is specifically to detect and fix up relocated references on the fly.)",
+      "reference": "https://openjdk.org/jeps/333"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-008",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "internals",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What mechanism does Shenandoah use to allow readers to always reach an object's current copy during concurrent relocation?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A per-object Brooks."
+        },
+        {
+          "id": "b",
+          "text": "A separate remembered set per object"
+        },
+        {
+          "id": "c",
+          "text": "A global lock held during the entire relocation phase"
+        },
+        {
+          "id": "d",
+          "text": "Colored pointers identical to ZGC's implementation"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Shenandoah gives every object an extra forwarding-pointer word (a Brooks pointer); relocating an object atomically CASes this pointer to the new copy, and readers follow it to always reach the current version. (c) is a distractor — that's ZGC's different mechanism, not Shenandoah's. (a) and (d) are fabricated. (Full correct-choice detail: forwarding) pointer, redirected via compare-and-swap to the object's new location)",
+      "reference": "https://openjdk.org/jeps/189"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-009",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What does G1's String deduplication feature do?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It compresses all Strings on the heap using a gzip-like algorithm to save space."
+        },
+        {
+          "id": "b",
+          "text": "It repoints content-identical Strings' backing character arrays to a single shared array."
+        },
+        {
+          "id": "c",
+          "text": "It merges duplicate class definitions loaded by different classloaders"
+        },
+        {
+          "id": "d",
+          "text": "It removes duplicate entries from application-level Sets automatically"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "During concurrent marking, G1 finds Strings with identical content and repoints their internal value field to a single shared backing array, safe because String is immutable. This is a footprint optimization specific to G1. (a), (c), and (d) are fabricated and unrelated to what this JEP actually does. (This repointing is what reduces heap footprint.)",
+      "reference": "https://openjdk.org/jeps/192"
+    },
+    {
+      "id": "java-garbage-collection-and-memory-tuning-010",
+      "tags": [
+        "garbage-collection-and-memory-tuning",
+        "trade-offs"
+      ],
+      "type": "multiple",
+      "question": "Which of the following collectors do almost all of their marking AND relocation work concurrently with running application threads? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "ZGC"
+        },
+        {
+          "id": "b",
+          "text": "Shenandoah"
+        },
+        {
+          "id": "c",
+          "text": "Parallel"
+        },
+        {
+          "id": "d",
+          "text": "Serial"
+        }
+      ],
+      "correct": [
+        "a",
+        "b"
+      ],
+      "explanation": "Both ZGC and Shenandoah are designed to do marking and relocation/compaction concurrently with the application, which is what makes their pause times independent of heap size. Parallel is purely stop-the-world (multi-threaded, but not concurrent), and Serial is single-threaded and purely stop-the-world — neither does concurrent marking or relocation.",
+      "reference": "https://openjdk.org/jeps/333"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-001",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Which linking sub-phase allocates static fields and sets them to their default values (0, null, false) without running any Java code?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Resolution"
+        },
+        {
+          "id": "b",
+          "text": "Verification"
+        },
+        {
+          "id": "c",
+          "text": "Initialization"
+        },
+        {
+          "id": "d",
+          "text": "Preparation"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Preparation creates static fields and sets default values without executing bytecode. Verification checks structural/type safety. Resolution converts symbolic constant-pool references to concrete ones. Initialization runs <clinit>, which is where explicit static initializers actually execute.",
+      "reference": "https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-5.html"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-002",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A class's runtime identity in the JVM is scoped to which pair?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "(fully-qualified name, JAR file it was packaged in)"
+        },
+        {
+          "id": "b",
+          "text": "(binary name, classpath position)"
+        },
+        {
+          "id": "c",
+          "text": "(binary name, defining classloader)"
+        },
+        {
+          "id": "d",
+          "text": "(fully-qualified name, module it belongs to)"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "The JVM Spec scopes class identity to (binary name, defining loader) — the same bytecode defined by two different loaders produces two distinct, mutually-incompatible Class objects. JAR file, module, and classpath position aren't part of runtime identity; they only influence which loader ends up defining the class.",
+      "reference": "https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-5.html"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-003",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A class was present and compiled against successfully, but its runtime JAR is missing from the deployed classpath. What does the JVM throw when code tries to use that class?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "ClassNotFoundException"
+        },
+        {
+          "id": "b",
+          "text": "IllegalAccessError"
+        },
+        {
+          "id": "c",
+          "text": "VerifyError"
+        },
+        {
+          "id": "d",
+          "text": "NoClassDefFoundError"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "NoClassDefFoundError is thrown when the JVM implicitly needs a class (via new, a static call, etc.) that existed at compile time but can't be found now — typically a deployment/packaging problem. ClassNotFoundException is for explicit dynamic-loading calls like Class.forName(). VerifyError is a bytecode-safety failure, and IllegalAccessError is an access-modifier violation, not a missing-class problem.",
+      "reference": "https://docs.oracle.com/javase/8/docs/api/java/lang/NoClassDefFoundError.html"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-004",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "pitfalls",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A class's static initializer throws an exception the first time the class is initialized. What happens on every subsequent attempt to use that class?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The class is marked erroneous and every later attempt throws NoClassDefFoundError"
+        },
+        {
+          "id": "b",
+          "text": "Only the specific static field involved becomes permanently null"
+        },
+        {
+          "id": "c",
+          "text": "The JVM silently retries <clinit> from scratch each time"
+        },
+        {
+          "id": "d",
+          "text": "Static fields keep their default values and the class works normally otherwise"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Per the JVM Spec, once class initialization fails, the class is marked erroneous, and every subsequent initialization attempt throws NoClassDefFoundError rather than re-running <clinit> — the original exception is only wrapped as the cause on that first failure. This is why intermittent NoClassDefFoundError for a class that's clearly on the classpath usually traces back to an earlier static-initializer failure in the logs.",
+      "reference": "https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-5.html"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-005",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What attribute does the modern type-checking bytecode verifier rely on to verify a method's stack/local-variable types quickly, without full type inference?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "ConstantValue"
+        },
+        {
+          "id": "b",
+          "text": "StackMapTable"
+        },
+        {
+          "id": "c",
+          "text": "LineNumberTable"
+        },
+        {
+          "id": "d",
+          "text": "LocalVariableTable"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "StackMapTable records the expected stack/local-variable types at branch targets, letting the type-checking verifier confirm safety in roughly one pass instead of full type inference. LineNumberTable and LocalVariableTable are debug-info attributes with no effect on verification, and ConstantValue only supplies a compile-time constant for a static final field.",
+      "reference": "https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html#jvms-4.10"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-006",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In HotSpot's tiered compilation, what is C1's primary design goal compared to C2?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Fast compilation for quicker warm-up, with lighter optimization"
+        },
+        {
+          "id": "b",
+          "text": "Eliminating the interpreter entirely at startup"
+        },
+        {
+          "id": "c",
+          "text": "Ahead-of-time compiling the whole application before it starts"
+        },
+        {
+          "id": "d",
+          "text": "Peak long-run throughput via aggressive optimization"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "C1 compiles quickly with lighter optimization for fast startup/warm-up, adding profiling instrumentation; C2 compiles more slowly but applies much more aggressive optimization for peak throughput once a method is confirmed hot. HotSpot still starts methods in the interpreter and never does whole-application AOT compilation by default — that's the separate, newer AOT/Leyden effort.",
+      "reference": "https://www.oracle.com/technical-resources/articles/java/architect-evans-pt1.html"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-007",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Which JIT optimization can decompose a non-escaping object into its individual fields, avoiding heap allocation entirely?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Tiered compilation"
+        },
+        {
+          "id": "b",
+          "text": "Loop unrolling"
+        },
+        {
+          "id": "c",
+          "text": "Method inlining"
+        },
+        {
+          "id": "d",
+          "text": "Scalar replacement (via escape analysis)"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Escape analysis proves an object never escapes its allocating method/thread, letting C2 apply scalar replacement — decomposing the object into fields kept in registers/stack instead of heap-allocating it. Loop unrolling and method inlining are separate JIT optimizations, and tiered compilation is the two-compiler warm-up strategy, not an allocation-avoidance technique itself.",
+      "reference": "https://docs.oracle.com/en/java/javase/11/jrockit-hotspot/compilation-optimization.html"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-008",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What does AppCDS (Application Class-Data Sharing) actually eliminate the cost of, on subsequent JVM starts?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "GC pause time during steady-state execution"
+        },
+        {
+          "id": "b",
+          "text": "JIT warm-up time to reach peak-optimized C2 code"
+        },
+        {
+          "id": "c",
+          "text": "Re-parsing and re-verifying class metadata from .class/JAR bytes"
+        },
+        {
+          "id": "d",
+          "text": "Reflection overhead for dependency-injection frameworks"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "AppCDS pre-processes and archives class metadata so it can be memory-mapped on later starts instead of re-parsed and re-verified from bytes — that's specifically a classloading-time saving. It does not skip JIT warm-up (a separate cost, which Project Leyden's AOT work targets further), and it has no effect on GC pauses or reflection overhead.",
+      "reference": "https://openjdk.org/jeps/350"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-009",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why did JPMS (Java Platform Module System) enforce strong encapsulation of non-exported packages, even for public classes, even against reflection?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "To speed up bytecode verification at link time by skipping redundant checks."
+        },
+        {
+          "id": "b",
+          "text": "To reduce class file size on disk by stripping debug metadata."
+        },
+        {
+          "id": "c",
+          "text": "To make Class.forName() calls resolve faster via a lookup cache."
+        },
+        {
+          "id": "d",
+          "text": "To let the JDK team evolve internal implementation classes without breaking external code."
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Unrestricted access to internal JDK classes (via reflection or direct import, since 'public' alone made them classpath-wide accessible) locked the JDK team into never being able to refactor internals without breaking code that shouldn't have depended on them. JPMS's strong encapsulation reclaims that freedom; it has no direct relationship to file size, verification speed, or Class.forName() performance. (Specifically, this protects code that was never meant to depend on JDK internals.)",
+      "reference": "https://openjdk.org/jeps/261"
+    },
+    {
+      "id": "java-jvm-classloading-and-bytecode-010",
+      "tags": [
+        "jvm-classloading-and-bytecode",
+        "internals",
+        "advanced-features"
+      ],
+      "type": "multiple",
+      "question": "Which of the following bytecode instructions resolve to a fixed target and do NOT perform dynamic dispatch? (Select all that apply.)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "invokeinterface"
+        },
+        {
+          "id": "b",
+          "text": "invokevirtual"
+        },
+        {
+          "id": "c",
+          "text": "invokespecial"
+        },
+        {
+          "id": "d",
+          "text": "invokestatic"
+        }
+      ],
+      "correct": [
+        "c",
+        "d"
+      ],
+      "explanation": "invokestatic (static methods) and invokespecial (constructors, private methods, explicit superclass calls) always resolve to a fixed target because those calls can never be polymorphic by language semantics. invokevirtual and invokeinterface perform dynamic dispatch, selecting the target based on the receiver's actual runtime class, which is what implements Java polymorphism.",
+      "reference": "https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-6.html#jvms-6.5.invokevirtual"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-001",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "Per Oracle's own design guidance, when should an exception be made checked rather than unchecked?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "When the exception needs to carry a custom error code field"
+        },
+        {
+          "id": "b",
+          "text": "When a client can reasonably be expected to recover from it"
+        },
+        {
+          "id": "c",
+          "text": "When it originates from a third-party library rather than your own code"
+        },
+        {
+          "id": "d",
+          "text": "When the exception is thrown from a static method"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Oracle's Java Tutorials state the rule directly: if a client can reasonably recover from the exception, make it checked so the compiler forces callers to handle it; if not (e.g. a programming bug), make it unchecked. The other options aren't the actual design criterion — origin, method modifiers, and carrying extra fields are unrelated to the checked/unchecked decision.",
+      "reference": "https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-002",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In try-with-resources, if the try block throws an exception and the resource's close() also throws, what happens to the close() exception?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It is attached to the propagating exception as a suppressed exception"
+        },
+        {
+          "id": "b",
+          "text": "It is silently discarded to keep the original exception intact"
+        },
+        {
+          "id": "c",
+          "text": "It replaces the try block's exception and propagates instead"
+        },
+        {
+          "id": "d",
+          "text": "It is thrown on a separate daemon thread after the method returns"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "The try block's exception propagates, and close()'s exception is attached via addSuppressed(), retrievable later with getSuppressed() — this avoids silently losing either exception. It doesn't replace the original, isn't discarded, and there's no separate thread involved.",
+      "reference": "https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-003",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "At the bytecode level, what does entering a try block that never throws cost at runtime, and where does the real cost of exceptions come from instead?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A synchronization barrier around the try block; the cost mostly comes from JIT deoptimization"
+        },
+        {
+          "id": "b",
+          "text": "Zero overhead on the non-throwing path; the cost mostly comes from fillInStackTrace() when a Throwable is constructed"
+        },
+        {
+          "id": "c",
+          "text": "A fixed allocation for the exception_table on every method call; the cost mostly comes from garbage collecting handler objects"
+        },
+        {
+          "id": "d",
+          "text": "A per-instruction branch check on entry; the cost mostly comes from stack unwinding depth"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The exception_table is metadata consulted only when a throw actually occurs, so a try block that never throws adds no per-instruction cost. The dominant real cost is fillInStackTrace(), called automatically on construction, which walks and records the call stack. There's no per-call branch check, no exception_table allocation per call, and no synchronization involved.",
+      "reference": "https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html#jvms-4.7.3"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-004",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What happens if a try block throws an exception and the corresponding finally block executes a return statement?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The return in finally silently discards the exception and becomes the method's result"
+        },
+        {
+          "id": "b",
+          "text": "The finally block's return is ignored and the exception still propagates"
+        },
+        {
+          "id": "c",
+          "text": "Both the exception and the return value are combined into a wrapped result"
+        },
+        {
+          "id": "d",
+          "text": "A compile-time error is raised, since this pattern is disallowed"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Per the JLS, an abrupt completion of finally (such as return) supersedes the abrupt completion of the try block, so the pending exception is discarded entirely and the finally block's return value is what the caller sees. This compiles cleanly (no compile error) and there's no combining/wrapping behavior — it's simply overridden.",
+      "reference": "https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-14.20.2"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-005",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why can't a lambda that throws a checked exception be passed directly as a java.util.function.Function to Stream.map()?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Function's abstract apply() method declares no throws clause."
+        },
+        {
+          "id": "b",
+          "text": "Stream.map() only accepts lambdas annotated with @FunctionalInterface explicitly"
+        },
+        {
+          "id": "c",
+          "text": "Stream pipelines require all lambdas to be effectively final with no side effects"
+        },
+        {
+          "id": "d",
+          "text": "Checked exceptions cannot be thrown from any lambda body regardless of target type"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Function<T,R>'s apply(T t) method has no throws clause, so a lambda targeting it must be compatible with that signature — a checked exception thrown from the body won't compile unless caught or wrapped inside the lambda. Checked exceptions can be thrown from lambdas, just not ones targeting interfaces that don't declare them, and neither the @FunctionalInterface annotation nor effective-finality/purity is what causes this specific error. (Full correct-choice detail: so a checked-exception-throwing lambda body is incompatible)",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-006",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "real-world"
+      ],
+      "type": "multiple",
+      "question": "Which TWO of the following are preconditions that make the Retry pattern safe to apply to a failed operation?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The operation completed in under one second on its first attempt"
+        },
+        {
+          "id": "b",
+          "text": "The failure is a transient fault likely to resolve on its own shortly"
+        },
+        {
+          "id": "c",
+          "text": "The service being called returns JSON rather than a binary payload"
+        },
+        {
+          "id": "d",
+          "text": "The operation is idempotent, so repeating it has no unintended side effects"
+        }
+      ],
+      "correct": [
+        "b",
+        "d"
+      ],
+      "explanation": "Retry is meant for transient faults expected to resolve shortly, and idempotency is the key safety precondition — without it, retrying an ambiguous failure can execute the operation more than once with real side effects (e.g. double-charging). Prior call duration and response payload format have no bearing on whether retrying is safe.",
+      "reference": "https://learn.microsoft.com/en-us/azure/architecture/patterns/retry"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-007",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In Resilience4j's CircuitBreaker, what must happen before the failure rate can even be evaluated to trip the breaker to OPEN?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "At least one call must throw a checked exception specifically"
+        },
+        {
+          "id": "b",
+          "text": "A minimum configured number of calls must be recorded in the sliding window"
+        },
+        {
+          "id": "c",
+          "text": "The average response latency must exceed the configured timeout"
+        },
+        {
+          "id": "d",
+          "text": "The breaker must first complete one full half-open cycle"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Resilience4j requires a configurable minimum number of calls to be recorded before it calculates a failure rate at all, avoiding a breaker that trips on a statistically meaningless small sample. It doesn't require a prior half-open cycle, latency isn't the trigger for the failure-rate check itself (that's the separate slow-call-rate threshold), and the exception type (checked vs. unchecked) is irrelevant to this precondition.",
+      "reference": "https://resilience4j.readme.io/docs/circuitbreaker"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-008",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What specific problem does the Bulkhead pattern address that a Circuit Breaker does not?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It rejects calls immediately once a dependency is known to be failing"
+        },
+        {
+          "id": "b",
+          "text": "It caps concurrent calls to a dependency to prevent resource exhaustion"
+        },
+        {
+          "id": "c",
+          "text": "It detects when a dependency's failure rate crosses a configured threshold"
+        },
+        {
+          "id": "d",
+          "text": "It retries a failed call with an exponentially increasing delay between attempts"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Bulkhead isolates a resource budget (like a thread pool or concurrent-call limit) per dependency, so a dependency that's merely slow — not outright failing — can't consume all of a caller's resources and starve calls to other, healthy dependencies. Detecting failure rate and rejecting calls fast is the circuit breaker's job, and backoff-based retrying is the Retry pattern's job.",
+      "reference": "https://resilience4j.readme.io/docs/bulkhead"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-009",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why is catching Throwable broadly considered worse than catching Exception broadly?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Catching Throwable prevents the JVM from generating a stack trace at all"
+        },
+        {
+          "id": "b",
+          "text": "Throwable cannot be logged with a stack trace the way Exception can"
+        },
+        {
+          "id": "c",
+          "text": "Catching Throwable also catches Error subclasses like OutOfMemoryError"
+        },
+        {
+          "id": "d",
+          "text": "Throwable is deprecated in modern Java versions in favor of Exception"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Throwable is the superclass of both Exception and Error; catching it also swallows Error subclasses like OutOfMemoryError or StackOverflowError, which generally indicate a JVM state where continuing execution can cause further corruption or misleading failures. Throwable isn't deprecated, is fully loggable with a stack trace, and catching it doesn't suppress stack trace generation. (In full, the correct choice also notes: which usually signal a compromised JVM state)",
+      "reference": "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Throwable.html"
+    },
+    {
+      "id": "java-exception-handling-and-resilience-patterns-010",
+      "tags": [
+        "exception-handling-and-resilience-patterns",
+        "internals",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why is Retry conventionally composed as the outer decorator around CircuitBreaker in Resilience4j, rather than the other way around?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "So Retry can catch and suppress CallNotPermittedException automatically without configuration"
+        },
+        {
+          "id": "b",
+          "text": "Resilience4j only allows Retry to be the outermost decorator by API design"
+        },
+        {
+          "id": "c",
+          "text": "So the breaker's sliding window only counts the final outcome of each logical operation"
+        },
+        {
+          "id": "d",
+          "text": "So the breaker sees each individual call attempt (including retries) and can trip based on real per-call outcomes"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "With Retry outside CircuitBreaker, every retry attempt passes through the breaker individually, so the breaker's failure-rate tracking reflects real per-call outcomes and can trip mid-burst. If CircuitBreaker were outer instead, it would only see one final outcome per logical operation after all retries already ran inside it — which is the opposite of what's desired, and CallNotPermittedException is not automatically suppressed by Retry.",
+      "reference": "https://resilience4j.readme.io/docs/retry"
     }
   ]
 }

@@ -33,6 +33,9 @@ Strictly, yes — per Fielding, without hypermedia controls driving state transi
 **Mental model:**
 This question tests whether the candidate actually knows REST as an architectural style with constraints, versus having just memorized "REST = HTTP verbs + JSON." It also probes whether they can distinguish textbook purity from pragmatic industry practice without being dogmatic either way.
 
+**TL;DR:**
+Full REST requires HATEOAS-driven hypermedia, not just HTTP verbs + JSON — most production 'REST' APIs are a pragmatic subset that skips it.
+
 **References:**
 - [Fielding's dissertation, Chapter 5: Representational State Transfer (REST)](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
 
@@ -67,6 +70,9 @@ Move the workflow state out of any single server's memory and into something eit
 **Mental model:**
 Tests whether the candidate connects an architectural constraint to its concrete operational payoff (scalability, failover) rather than reciting it as a rule with no reason.
 
+**TL;DR:**
+Statelessness means every request is self-contained, enabling free load-balancing and clean failover — violating it forces sticky sessions.
+
 **References:**
 - [Fielding's dissertation, §5.1.3: Stateless](https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm)
 
@@ -92,6 +98,9 @@ No. RFC 9110 §9.2.2 defines idempotency in terms of the *intended effect on ser
 
 **Mental model:**
 Distinguishes candidates who know HTTP semantics precisely enough to reason about retry safety and correctness under network failure, not just "GET reads, POST writes."
+
+**TL;DR:**
+Safe = read-only; idempotent = repeating it has the same end state — idempotent requests are safe to auto-retry, POST/PATCH by default are neither.
 
 **References:**
 - [RFC 9110 §9.2 Common Method Properties (Safe/Idempotent Methods)](https://www.rfc-editor.org/rfc/rfc9110)
@@ -132,6 +141,9 @@ Use optimistic concurrency control via conditional requests. The server returns 
 **Mental model:**
 Checks whether the candidate understands PUT/PATCH semantics precisely enough to avoid the extremely common bug of using PUT with a partial body (silently nulling out unspecified fields).
 
+**TL;DR:**
+PUT replaces the whole resource, PATCH applies a partial change, POST is for creation or non-idempotent actions — mixing up PUT with a partial body silently nulls fields.
+
 **References:**
 - [RFC 5789 — PATCH Method for HTTP](https://www.rfc-editor.org/rfc/rfc5789)
 - [RFC 9110 §9.3.4 PUT](https://www.rfc-editor.org/rfc/rfc9110)
@@ -159,6 +171,9 @@ It depends on the sensitivity of what "existence" itself reveals. For most autho
 
 **Mental model:**
 Tests precision with the client-error status code space, and whether the candidate treats status codes as meaningful contract rather than "200 for success, 500 for anything else, whatever else feels right."
+
+**TL;DR:**
+400 is malformed syntax, 422 is well-formed but business-invalid; 401 means unauthenticated, 403 means authenticated but not permitted.
 
 **References:**
 - [RFC 9110 §15.5 Client Error 4xx](https://www.rfc-editor.org/rfc/rfc9110)
@@ -195,6 +210,9 @@ Stripe retains idempotency keys for at least 24 hours before they're eligible fo
 **Mental model:**
 This is a real production-failure-mode question: does the candidate know retries are unsafe by default for POST, and do they know the actual industry-standard mechanism (vs. hand-waving "just check if it already exists")?
 
+**TL;DR:**
+An idempotency key lets the server cache and replay the first response to a retried POST, making non-idempotent operations like payments safe to retry.
+
 **References:**
 - [IETF draft-ietf-httpapi-idempotency-key-header-07: The Idempotency-Key HTTP Header Field](https://www.ietf.org/archive/id/draft-ietf-httpapi-idempotency-key-header-07.txt)
 - [Stripe API Reference: Idempotent requests (24h retention, concurrent-request handling)](https://docs.stripe.com/api/idempotent_requests)
@@ -221,6 +239,9 @@ Deprecation typically has two stages: first, mark `v1` as no longer recommended 
 
 **Mental model:**
 Tests whether the candidate has an opinion grounded in trade-offs (not just "I use URI versioning because that's what I've seen") and understands the operational cost of breaking changes.
+
+**TL;DR:**
+URI versioning is simple but leaks into every path, header/content-negotiation versioning is purer but less discoverable — additive, backward-compatible changes avoid needing a bump at all.
 
 **References:**
 - [RFC 8594 — The Sunset HTTP Header Field](https://www.rfc-editor.org/rfc/rfc8594)
@@ -255,6 +276,9 @@ Encode both columns into the cursor, not just `created_at` — e.g. a base64 blo
 
 **Mental model:**
 A classic performance-and-correctness-under-scale question — tests whether the candidate has actually hit the "OFFSET gets slow" wall in production, not just read about pagination in the abstract.
+
+**TL;DR:**
+Offset pagination scans and discards skipped rows, getting slower and less stable at depth; cursor pagination anchors to an indexed value and stays fast and stable regardless of depth.
 
 **References:**
 - [GitHub REST API: Using pagination in the REST API](https://docs.github.com/en/rest/using-the-rest-api/using-pagination-in-the-rest-api)
@@ -296,6 +320,9 @@ The bucket state lives in a fast shared store all instances can reach — typica
 
 **Mental model:**
 Performance/internals question testing whether the candidate can explain the actual mechanism (not just "there's a rate limit"), including its failure modes and how it holds up in a distributed, multi-instance deployment.
+
+**TL;DR:**
+A token bucket allows bursts up to its capacity while enforcing a steady refill rate, avoiding the boundary-burst flaw of a naive fixed-window counter.
 
 **References:**
 - [Stripe Engineering: Scaling your API with rate limiters](https://stripe.com/blog/rate-limiters)
@@ -341,6 +368,9 @@ RFC 9110 specifies that a `304` response's whole purpose is to tell the client "
 **Mental model:**
 Performance question testing precise knowledge of the caching contract — many engineers know "ETags exist" but can't correctly explain the request/response cycle or the semantic difference between `no-cache` and `no-store`.
 
+**TL;DR:**
+Cache-Control governs storability/freshness, ETag + If-None-Match let the server issue a bodyless 304 when the cached copy is still valid.
+
 **References:**
 - [RFC 9111 — HTTP Caching](https://www.rfc-editor.org/rfc/rfc9111)
 
@@ -380,6 +410,9 @@ Per the Fetch/CORS spec (as documented by MDN), the wildcard `*` is explicitly d
 **Mental model:**
 Tests whether the candidate understands CORS is a *browser*-enforced client-side protection (not a server security feature per se) and can reason about why a given request does or doesn't trigger a preflight.
 
+**TL;DR:**
+CORS lets a server opt specific origins into cross-origin access; the browser preflights any 'non-simple' request (non-GET/HEAD/POST, custom headers, or an unusual Content-Type) with an OPTIONS check first.
+
 **References:**
 - [MDN: Cross-Origin Resource Sharing (CORS)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)
 
@@ -417,6 +450,9 @@ RFC 9700 (the OAuth 2.0 Security Best Current Practice) formally deprecates the 
 **Mental model:**
 Security-fundamentals question testing whether the candidate can correctly map "who's the actor" (human vs. machine) to "which grant type," a very common real-world design decision.
 
+**TL;DR:**
+Authorization code flow keeps the access token off the browser via a back-channel exchange, for use whenever a human user grants access; client credentials skips the user entirely for service-to-service calls.
+
 **References:**
 - [RFC 6749 — The OAuth 2.0 Authorization Framework](https://www.rfc-editor.org/rfc/rfc6749)
 - [RFC 9700 — Best Current Practice for OAuth 2.0 Security (implicit grant deprecation, mandatory PKCE)](https://www.rfc-editor.org/rfc/rfc9700.html)
@@ -444,6 +480,9 @@ The real cost shows up specifically as coupling: every client that hardcodes a U
 **Mental model:**
 Tests depth beyond "REST = CRUD over HTTP" — can the candidate articulate what real REST purity buys you (evolvability) and have an informed, non-dogmatic opinion on why most teams skip it anyway?
 
+**TL;DR:**
+HATEOAS means clients navigate via links returned in responses instead of hardcoded URIs — without it, Fielding considers an API 'HTTP RPC,' not true REST.
+
 **References:**
 - [Roy Fielding: REST APIs must be hypertext-driven](https://roy.gbiv.com/untangled/2008/rest-apis-must-be-hypertext-driven)
 
@@ -470,6 +509,9 @@ With the DB ruled out, work outward from the trace's unaccounted-for time. Commo
 
 **Mental model:**
 This is the trending "how do you actually debug performance" question — it's testing methodology and tool fluency, not whether they can recite a single cause. A weak answer jumps straight to "add caching"; a strong answer starts with measurement.
+
+**TL;DR:**
+Diagnosing 'slow' starts with p95/p99 latency and distributed tracing to isolate which layer (DB, downstream call, app code) is actually responsible, then fix and re-measure against the same metrics.
 
 **References:**
 - [OpenTelemetry: Traces](https://opentelemetry.io/docs/concepts/signals/traces/)
@@ -510,6 +552,9 @@ It trades the N+1 round-trip problem for over-fetching and payload bloat: every 
 **Mental model:**
 Connects a very common real-world performance pitfall to general distributed-systems theory (round-trip cost dominates at scale) — tests whether the candidate recognizes the pattern by name and knows multiple mitigations, not just one.
 
+**TL;DR:**
+A chatty/N+1 API pays one round trip per related item instead of batching them — fixed with bulk endpoints, embedding, or a query language that lets the client shape one request.
+
 **References:**
 - [Google Cloud API Design Guide — Resource-oriented design](https://docs.cloud.google.com/apis/design)
 
@@ -535,6 +580,9 @@ HTTP/1.1 pipelining lets a client send several requests back-to-back on one conn
 
 **Mental model:**
 Internals question — tests whether the candidate can go one layer below "HTTP" into what a connection actually costs, which is foundational for reasoning about API latency at scale.
+
+**TL;DR:**
+HTTP/1.1 keep-alive reuses a TCP connection across requests to avoid repeated handshake cost; HTTP/2 goes further by multiplexing multiple requests over one connection at once.
 
 **References:**
 - [RFC 9112 §9.3 Persistence](https://www.rfc-editor.org/rfc/rfc9112)
@@ -563,6 +611,9 @@ Occasionally, yes — when the API's consumers are themselves sophisticated back
 **Mental model:**
 Trade-off/comparison question — tests whether the candidate picks a technology based on the actual constraints of a scenario (internal vs. public, streaming needs, client diversity) rather than "gRPC is faster so it's always better."
 
+**TL;DR:**
+gRPC trades REST's human-debuggable JSON and browser-native accessibility for binary protobuf, native streaming, and strong typing — best for internal service-to-service calls, not public APIs.
+
 **References:**
 - [gRPC: Introduction to gRPC](https://grpc.io/docs/what-is-grpc/introduction/)
 - [Google Cloud Endpoints docs — gRPC Transcoding (REST/JSON facade over a gRPC service)](https://cloud.google.com/endpoints/docs/grpc/transcoding)
@@ -589,6 +640,9 @@ Depth limiting alone (capping how many levels of nesting a query can have) is a 
 
 **Mental model:**
 Trade-off question testing whether the candidate understands GraphQL's actual value proposition (client-driven shape, solving over/under-fetching) versus just knowing "it's an alternative to REST," and whether they know its own performance pitfalls.
+
+**TL;DR:**
+GraphQL lets the client specify exactly the fields/shape it needs in one request, solving REST's over-fetching and under-fetching — at the cost of new caching and query-cost risks.
 
 **References:**
 - [GraphQL: Introduction to GraphQL](https://graphql.org/learn/)
@@ -625,6 +679,9 @@ A raw count ("open after 5 failures") is dangerously miscalibrated across varyin
 **Mental model:**
 Resilience/pitfalls question — tests whether the candidate distinguishes retry from circuit breaker (a very common conflation) and understands cascading failure as a systemic risk, not just a per-call annoyance.
 
+**TL;DR:**
+Retry handles transient blips; a circuit breaker trips open after sustained failures to fail fast and protect both caller and callee from cascading overload, then half-opens to probe recovery.
+
 **References:**
 - [Microsoft Learn / Azure Architecture Center: Circuit Breaker pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker)
 
@@ -650,6 +707,9 @@ When the producer can't cooperate, you have to absorb or shed excess load on the
 
 **Mental model:**
 Advanced/internals question — tests whether the candidate understands flow control as a first-class concern in streaming/async APIs, not just request/response thinking, which increasingly matters as APIs adopt streaming (SSE, websockets, gRPC streams).
+
+**TL;DR:**
+Backpressure lets a slow consumer signal capacity back to a fast producer so it throttles instead of overwhelming buffers — without it, unhandled producers must be dropped, buffered, or errored on the consumer side.
 
 **References:**
 - [Reactive Streams Specification](https://www.reactive-streams.org/)

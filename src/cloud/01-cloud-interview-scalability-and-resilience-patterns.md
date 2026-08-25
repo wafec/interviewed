@@ -43,6 +43,9 @@ Externalize session state (a shared store like ElastiCache/Redis instead of in-p
 **Mental model:**
 Tests whether the candidate reflexively reaches for "bigger machine" or understands that horizontal scaling is a design constraint (statelessness) as much as an infrastructure choice — a common gap between junior and senior thinking.
 
+**TL;DR:**
+Vertical scaling has a hard ceiling and a single point of failure; horizontal scaling adds nodes with no ceiling and better availability, but requires the app to be stateless.
+
 **References:**
 - [Horizontal scaling — AWS Well-Architected Framework](https://wa.aws.amazon.com/wellarchitected/2020-07-02T19-33-23/wat.concept.horizontal-scaling.en.html)
 
@@ -76,6 +79,9 @@ When would `least_outstanding_requests` cause worse behavior than `round_robin`?
 **Mental model:**
 Checks whether the candidate can explain a "boring" piece of infrastructure at the mechanism level instead of "it just balances load" — this is the internals angle interviewers use to filter for real production experience.
 
+**TL;DR:**
+An ALB routes via a configurable algorithm (round robin, least-outstanding-requests) and stops sending new traffic to a target once it fails enough consecutive health checks.
+
 **References:**
 - [How Elastic Load Balancing works](https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/how-elastic-load-balancing-works.html)
 - [Target groups for your Application Load Balancers](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html)
@@ -104,6 +110,9 @@ Take repeated thread dumps (`jstack` / `jcmd <pid> Thread.print`) during the slo
 **Mental model:**
 This is the performance-methodology question that's now standard across every technology track — the interviewer wants a systematic narrowing process (metrics → traces → profiler/EXPLAIN → root cause → validated fix), not a list of tool names.
 
+**TL;DR:**
+Diagnose a latency regression by correlating metrics with the deploy, then distributed tracing to isolate the layer (app, DB, downstream), then a profiler/EXPLAIN for root cause, and validate against the same p95/p99 dashboard.
+
 **References:**
 - [AWS X-Ray concepts](https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html)
 
@@ -129,6 +138,9 @@ Without an active partition, CAP doesn't force a choice — a system can, in pri
 
 **Mental model:**
 Probes whether the candidate treats CAP as a slogan ("pick two") or actually understands it constrains behavior only under partition — and can connect the abstract theorem to a concrete AWS service's consistency knobs, which is the "SE theory + practice" blend interviewers look for.
+
+**TL;DR:**
+CAP forces a consistency-vs-availability trade-off only during a network partition; DynamoDB's eventually-consistent reads favor availability, its strongly-consistent option favors correctness.
 
 **References:**
 - [Brewer's CAP Theorem — Baeldung on Computer Science](https://www.baeldung.com/cs/brewers-cap-theorem)
@@ -174,6 +186,9 @@ Base the failure-rate threshold on the dependency's normal baseline error rate p
 **Mental model:**
 Tests understanding of resilience patterns as a response to a *real* production failure mode (cascading resource exhaustion), not as a checkbox pattern to name-drop.
 
+**TL;DR:**
+A circuit breaker trips open after a failure threshold to fail fast and stop cascading resource exhaustion, then half-opens to test recovery before fully closing again.
+
 **References:**
 - [Circuit breaker pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html)
 
@@ -209,6 +224,9 @@ A total retry budget: cap system-wide retries as a fraction of overall request v
 **Mental model:**
 This is a classic "looks correct but isn't" pitfall question — most candidates know "add exponential backoff" but miss that naive backoff without jitter reproduces the same synchronized-spike problem at a different timescale.
 
+**TL;DR:**
+Synchronized retry schedules cause repeated traffic spikes (thundering herd); jitter randomizes the backoff delay so retries spread out instead of firing together.
+
 **References:**
 - [Exponential Backoff and Jitter — AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/)
 - [Retry behavior — AWS SDKs and Tools](https://docs.aws.amazon.com/sdkref/latest/guide/feature-retry-behavior.html)
@@ -235,6 +253,9 @@ The deregistration delay (default 300s, configurable 0–3600s) puts a scaling-i
 
 **Mental model:**
 Probes whether the candidate understands autoscaling as a control-loop stability problem (avoiding oscillation/thrashing), which is a general control-systems concept applied to cloud infra — not just "AWS scales instances up and down."
+
+**TL;DR:**
+ASG cooldown pauses further scaling until the last action's effect is measurable; scale-in is more conservative than scale-out because premature termination risks latency spikes and thrashing.
 
 **References:**
 - [Available warm-up and cooldown settings — Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/consolidated-view-of-warm-up-and-cooldown-settings.html)
@@ -263,6 +284,9 @@ Compare the forecast against actual historical load for the same recurring windo
 **Mental model:**
 Tests whether the candidate can match a scaling strategy to the actual shape of the traffic problem, rather than defaulting to "just add more reactive scaling" — a real trade-off/judgment question, not a definitions question.
 
+**TL;DR:**
+Reactive target-tracking scaling only reacts after a metric breach, causing lag on predictable spikes; predictive scaling forecasts recurring patterns from history and scales ahead of time.
+
 **References:**
 - [Predictive scaling for Amazon EC2 Auto Scaling](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-predictive-scaling.html)
 
@@ -288,6 +312,9 @@ RTO (max acceptable downtime) drives how "warm" the standby needs to be and how 
 
 **Mental model:**
 Checks whether the candidate can reason about availability in terms of concrete failure domains and their real costs, instead of treating "more redundancy" as strictly better regardless of cost/complexity.
+
+**TL;DR:**
+Multi-AZ protects against a single data-center failure with low latency cost; Multi-Region protects against a regional outage but adds real replication latency and complexity.
 
 **References:**
 - [AWS Fault Isolation Boundaries](https://docs.aws.amazon.com/whitepapers/latest/aws-fault-isolation-boundaries/abstract-and-introduction.html)
@@ -315,6 +342,9 @@ Size each pool from the dependency's realistic sustainable throughput and observ
 
 **Mental model:**
 Wants a concrete failure scenario, not just the ship metaphor — separates candidates who've actually debugged a resource-exhaustion incident from those reciting a pattern name.
+
+**TL;DR:**
+The bulkhead pattern isolates resource pools (threads, connections) per dependency so one failing dependency's exhaustion can't starve calls to healthy ones.
 
 **References:**
 - [REL10-BP03 Use bulkhead architectures to limit scope of impact — AWS Well-Architected Framework](https://docs.aws.amazon.com/wellarchitected/latest/framework/rel_fault_isolation_use_bulkhead.html)
@@ -359,6 +389,9 @@ Give each API key its own token-bucket state (rate + burst) rather than one shar
 **Mental model:**
 Tests fundamental algorithm knowledge tied to a real, nameable AWS mechanism — a "what happens internally" question dressed as a rate-limiting question.
 
+**TL;DR:**
+A token bucket allows bursts up to its capacity while enforcing a steady refill rate; API Gateway applies this per-account/per-method via its rate and burst limits.
+
 **References:**
 - [Throttle requests to your REST APIs — Amazon API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html)
 - [Usage plans and API keys for REST APIs in API Gateway](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-api-usage-plans.html)
@@ -400,6 +433,9 @@ The second concurrent request's conditional `PutItem` fails, because the first r
 **Mental model:**
 Tests whether the candidate connects the abstract distributed-systems concept (idempotency, at-least-once delivery) to a concrete implementation mechanism — a classic "theory mixed with practice" question, and a favorite for payments/e-commerce interviews specifically.
 
+**TL;DR:**
+Idempotency means retrying an operation with the same key produces the same result without repeating the side effect — implemented via a conditional write that claims the key before executing.
+
 **References:**
 - [Idempotency — Powertools for AWS Lambda (Python)](https://docs.aws.amazon.com/powertools/python/latest/utilities/idempotency/)
 
@@ -425,6 +461,9 @@ Lambda SnapStart (Java 11+, .NET 8+, and Python 3.12+) attacks cold starts diffe
 
 **Mental model:**
 A performance-internals question specific to serverless — tests whether the candidate understands cold start as a lifecycle event, not a vague "serverless is sometimes slow" impression, and can reason about the limits of the standard fix.
+
+**TL;DR:**
+A cold start is the latency of creating a fresh execution environment (code load, runtime init); provisioned concurrency keeps environments pre-warmed but only up to its provisioned count.
 
 **References:**
 - [Configuring provisioned concurrency for a function — AWS Lambda](https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html)
@@ -453,6 +492,9 @@ Anything relying on session-scoped state — `SET`-configured session variables,
 **Mental model:**
 A very common "Lambda + RDS" gotcha in real production systems — tests whether the candidate has actually hit this failure mode or is naming the product without understanding the mechanism it fixes.
 
+**TL;DR:**
+RDS Proxy pools and multiplexes many app-side connections onto a smaller, stable set of DB connections, protecting the database from a connection-count spike under Lambda-driven traffic bursts.
+
 **References:**
 - [Amazon RDS Proxy — RDS User Guide](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html)
 - [Avoiding pinning an RDS Proxy](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy-pinning.html)
@@ -480,6 +522,9 @@ At minimum: a 5xx/error-rate alarm scoped specifically to the canary target grou
 **Mental model:**
 A trade-off/comparison question that also tests whether the candidate connects the strategy choice to risk tolerance for the specific domain (payments = minimize blast radius), not just definitions.
 
+**TL;DR:**
+Blue-green cuts all traffic over after separate validation; canary shifts a small percentage of real traffic first and can auto-rollback on a metric breach, limiting blast radius for high-risk services.
+
 **References:**
 - [CodeDeploy blue/green deployments for Amazon ECS](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/deployment-type-bluegreen.html)
 
@@ -505,6 +550,9 @@ A hot partition happens when reads/writes concentrate disproportionately on one 
 
 **Mental model:**
 A classic distributed-systems internals question — tests whether the candidate can reason from first principles about *why* a naive approach fails at scale, then connect it to a real system's design lineage.
+
+**TL;DR:**
+Naive modulo hashing remaps nearly every key when the node count changes; consistent hashing maps nodes and keys onto a ring so only a small neighboring range of keys moves on scale events.
 
 **References:**
 - [DynamoDB Deep Dive for System Design Interviews — Hello Interview](https://www.hellointerview.com/learn/system-design/deep-dives/dynamodb)
@@ -541,6 +589,9 @@ Set the visibility timeout to at least the consumer's expected maximum processin
 **Mental model:**
 Tests understanding of queues as a backpressure/resilience mechanism (not just "a list of messages"), plus the specific real-world failure mode (poison messages) that every queue-based system eventually hits in production.
 
+**TL;DR:**
+SQS's visibility timeout hides a received message until it's deleted or the timeout expires, giving at-least-once redelivery; a dead-letter queue removes a repeatedly-failing 'poison' message after a max receive count.
+
 **References:**
 - [Amazon SQS visibility timeout](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-visibility-timeout.html)
 - [Using dead-letter queues in Amazon SQS](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
@@ -568,6 +619,9 @@ Staging usually can't reproduce production's real traffic volume/shape, real dat
 **Mental model:**
 An advanced/challenges question — separates candidates who've only read about resilience patterns from those who've validated resilience empirically, and tests whether they instinctively think about experiment safety (blast radius, stop conditions), not just "break things."
 
+**TL;DR:**
+Chaos engineering deliberately injects failure to verify resilience mechanisms actually work, using a measurable steady state, a hypothesis, and automated stop conditions to bound the blast radius.
+
 **References:**
 - [Resources — Chaos engineering on AWS — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/chaos-engineering-on-aws/resources.html)
 
@@ -593,6 +647,9 @@ On the two-minute interruption notice (surfaced via instance metadata, or an Eve
 
 **Mental model:**
 A cost-vs-performance/reliability trade-off question — tests whether the candidate treats cost optimization as free money or understands it as a real architectural commitment (design-for-interruption) with engineering cost.
+
+**TL;DR:**
+Spot Instances trade a 2-minute reclaim notice for up to 90% cost savings — safe use requires stateless/checkpointed workloads, resumable work, and diversification across instance types/AZs.
 
 **References:**
 - [Spot Instance interruptions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-interruptions.html)
@@ -621,6 +678,9 @@ The sidecar's retry mechanism must be scoped to what's actually safe to retry �
 
 **Mental model:**
 A synthesis question that ties the whole set together — tests architectural judgment about where resilience logic belongs, not just knowledge of individual patterns in isolation; this is the kind of question that surfaces at the senior/staff level.
+
+**TL;DR:**
+Generic, mechanical resilience patterns (retries, circuit breaking, rate limiting) push down well into infrastructure; retry-safety decisions and business-aware bulkheads still need application-level knowledge.
 
 **References:**
 - [Circuit breaker pattern — AWS Prescriptive Guidance](https://docs.aws.amazon.com/prescriptive-guidance/latest/cloud-design-patterns/circuit-breaker.html)

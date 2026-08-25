@@ -27,7 +27,7 @@ Generates a new interview question set file under `src/<topic>/`.
    skill must make every run), and read `src/TEMPLATE.md`, the canonical
    per-question structure (front matter, Question / Good answer / optional
    Code example / Follow-up question / Follow-up good answer / Glossary /
-   Mental model / References, plus the mandatory "Test your knowledge" quiz
+   Mental model / TL;DR / References, plus the mandatory "Test your knowledge" quiz
    link footer). Also read `src/QUIZ_TEMPLATE.json` for the exact MCQ schema.
    Every file you generate must match these shapes exactly.
 
@@ -88,7 +88,7 @@ Generates a new interview question set file under `src/<topic>/`.
    - Exactly 20 questions, each following the mandatory structure from
      `src/README.md` (`### Q<N>. ...` with Question / Good answer / optional
      Code example / Follow-up question / Follow-up good answer / Glossary /
-     Mental model / References subsections).
+     Mental model / TL;DR / References subsections).
    - Every question ends with a **References** section containing at least
      one verified official-documentation link covering both the main answer
      and the follow-up answer.
@@ -113,6 +113,10 @@ Generates a new interview question set file under `src/<topic>/`.
      append.
    - `explanation` must cover both why the correct choice(s) are right and
      why the wrong choices are plausible-but-wrong distractors.
+   - No answer-length or phrasing tells: keep every choice similar in
+     length/detail/hedging so the correct one isn't identifiable just by
+     being the longest or most qualified choice, and vary which position
+     ("a"/"b"/"c"/"d") holds the correct answer across questions.
    - `reference` must be a verified official-documentation link, checked
      online the same way as the prose References (reuse a link already
      verified in step 5 when it supports the same claim).

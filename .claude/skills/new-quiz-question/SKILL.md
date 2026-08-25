@@ -39,6 +39,10 @@ prose interview-question file with matching quiz questions, use
      who half-knows the material could plausibly pick.
    - `explanation` covers why the correct choice(s) are right and why each
      wrong choice is wrong.
+   - No answer-length or phrasing tells: keep every choice similar in
+     length/detail/hedging so the correct one isn't identifiable just by
+     being the longest or most qualified choice, and vary which position
+     ("a"/"b"/"c"/"d") holds the correct answer across questions.
    - Tag appropriately (the subtopic/theme plus finer-grained tags like
      `performance`, `internals`, `trade-offs`).
    - Give it a unique `id` (`<topic>-<focus-slug>-NNN`).

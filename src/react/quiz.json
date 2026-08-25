@@ -114,7 +114,7 @@
         },
         {
           "id": "b",
-          "text": "The ability to pause, prioritize, and resume rendering work"
+          "text": "Interruptible, priority-based rendering"
         },
         {
           "id": "c",
@@ -146,7 +146,7 @@
         },
         {
           "id": "b",
-          "text": "A prop is a new object/array/function reference created fresh on every parent render"
+          "text": "A prop gets a new reference every parent render"
         },
         {
           "id": "c",
@@ -179,7 +179,7 @@
         },
         {
           "id": "b",
-          "text": "A stale closure — the Effect keeps using the roomId value from when it was created, ignoring later changes"
+          "text": "A stale closure over the initial roomId value"
         },
         {
           "id": "c",
@@ -211,7 +211,7 @@
         },
         {
           "id": "b",
-          "text": "Everywhere — including promises, setTimeout, and native event handlers — not just React event handlers"
+          "text": "Everywhere — promises, setTimeout, native handlers too"
         },
         {
           "id": "c",
@@ -243,7 +243,7 @@
         },
         {
           "id": "b",
-          "text": "startTransition marks the update as interruptible/low-priority so urgent updates (like typing) aren't blocked by it"
+          "text": "It marks the update low-priority so urgent updates aren't blocked"
         },
         {
           "id": "c",
@@ -275,7 +275,7 @@
         },
         {
           "id": "b",
-          "text": "Suspense never sees the fetch — it isn't a recognized suspension mechanism, so no fallback shows for it"
+          "text": "Suspense doesn't detect it — useEffect isn't a suspension mechanism"
         },
         {
           "id": "c",
@@ -308,7 +308,7 @@
         },
         {
           "id": "b",
-          "text": "All consumers of that Context, regardless of which part of the value they actually use"
+          "text": "All consumers of that Context, regardless of which field they use"
         },
         {
           "id": "c",
@@ -340,7 +340,7 @@
         },
         {
           "id": "b",
-          "text": "The array reference is unchanged, so React's reference comparison sees no update"
+          "text": "The array reference is unchanged, so React sees no update"
         },
         {
           "id": "c",
@@ -405,7 +405,7 @@
         },
         {
           "id": "b",
-          "text": "By the position of the call in a linked list of hooks tied to the component's fiber"
+          "text": "By call position in a linked list of hooks tied to the fiber"
         },
         {
           "id": "c",
@@ -437,7 +437,7 @@
         },
         {
           "id": "b",
-          "text": "The effect's closure captured `count` from the render it ran in, and never re-runs since the dependency array is empty"
+          "text": "It closed over that render's `count`; it never re-runs (empty deps)"
         },
         {
           "id": "c",
@@ -504,7 +504,7 @@
         },
         {
           "id": "b",
-          "text": "Yes, because useContext subscribes to the whole value object, and any new reference triggers all consumers to re-render"
+          "text": "Yes — a new value reference re-renders every consumer, whole-object subscription"
         },
         {
           "id": "c",
@@ -537,7 +537,7 @@
         },
         {
           "id": "b",
-          "text": "They use a subscription mechanism (often backed by useSyncExternalStore) with selectors, so a component only re-renders when its specifically selected slice changes"
+          "text": "Selector-based subscriptions (often useSyncExternalStore) re-render only on relevant changes"
         },
         {
           "id": "c",
@@ -602,7 +602,7 @@
         },
         {
           "id": "b",
-          "text": "Tearing — different parts of the UI showing inconsistent snapshots of the same external data within one render"
+          "text": "Tearing — inconsistent UI snapshots of external data"
         },
         {
           "id": "c",
@@ -635,7 +635,7 @@
         },
         {
           "id": "b",
-          "text": "Because these functions are expected to be pure, so double-calling them surfaces impurity bugs (a pure function produces identical results either way)"
+          "text": "These functions must be pure; double-calling surfaces impurity bugs"
         },
         {
           "id": "c",
@@ -667,7 +667,7 @@
         },
         {
           "id": "b",
-          "text": "Only for updates triggered via concurrent-enabling APIs like startTransition, useDeferredValue, or Suspense-integrated data fetching"
+          "text": "Only for updates via startTransition, useDeferredValue, or Suspense fetching"
         },
         {
           "id": "c",
@@ -703,7 +703,7 @@
         },
         {
           "id": "c",
-          "text": "It throws (directly or via an API like use()) a Promise that hasn't resolved yet during render"
+          "text": "It throws (via use() or directly) an unresolved Promise mid-render"
         },
         {
           "id": "d",
@@ -731,7 +731,7 @@
         },
         {
           "id": "b",
-          "text": "Suspense only detects suspensions that happen during render; useEffect runs after commit, when React can no longer swap in a fallback for that render"
+          "text": "Suspense only detects suspending during render, not after commit in useEffect"
         },
         {
           "id": "c",
@@ -795,7 +795,7 @@
         },
         {
           "id": "b",
-          "text": "No — only the synchronous portion before the first await is tracked; code after await needs its own nested startTransition to be marked as a transition"
+          "text": "No — only code before the first await is tracked as part of the transition"
         },
         {
           "id": "c",
@@ -861,7 +861,7 @@
         },
         {
           "id": "b",
-          "text": "That the portion of the tree outside any Suspense boundary (the shell) has finished rendering and it's safe to start streaming the response"
+          "text": "That the shell (everything outside Suspense) is done, and it's safe to start streaming"
         },
         {
           "id": "c",
@@ -893,7 +893,7 @@
         },
         {
           "id": "b",
-          "text": "Server Components' code never ships to the browser and can await data directly; Client Components (marked \"use client\") run in the browser and provide interactivity"
+          "text": "Server Component code never ships to the browser; Client Components run there"
         },
         {
           "id": "c",
@@ -925,7 +925,7 @@
         },
         {
           "id": "b",
-          "text": "Different components displaying inconsistent versions of the same external-store data within one render, because the store mutated mid-render; prevented by useSyncExternalStore"
+          "text": "Inconsistent external-store reads mid-render; useSyncExternalStore prevents it"
         },
         {
           "id": "c",
@@ -957,7 +957,7 @@
         },
         {
           "id": "b",
-          "text": "Because JavaScript on the main thread is single-threaded and run-to-completion — React can only yield between discrete units of work (fibers), not in the middle of one running function"
+          "text": "JS runs to completion on the main thread — React yields only between fibers"
         },
         {
           "id": "c",
@@ -989,7 +989,7 @@
         },
         {
           "id": "b",
-          "text": "It clears the server-rendered HTML for the affected subtree and switches to a full client-side render"
+          "text": "It clears the server HTML for the affected subtree and falls back to a full client render"
         },
         {
           "id": "c",
@@ -1087,7 +1087,7 @@
         },
         {
           "id": "b",
-          "text": "At the very top of the file, before any imports or other code (comments excepted)"
+          "text": "At the very top of the file, before imports (comments aside)"
         },
         {
           "id": "c",
@@ -1151,7 +1151,7 @@
         },
         {
           "id": "b",
-          "text": "Because it makes the render output differ between the server pass (window undefined) and the client pass (window defined), violating the requirement that both renders produce identical output"
+          "text": "Server render (window undefined) and client render (defined) produce different output"
         },
         {
           "id": "c",
@@ -1183,7 +1183,7 @@
         },
         {
           "id": "b",
-          "text": "useId derives ids from the component's position in the tree, which is identical on server and client regardless of render/hydration order, avoiding hydration mismatches that a counter (whose value depends on execution order) could cause"
+          "text": "Counters depend on execution order (can differ server/client); useId doesn't"
         },
         {
           "id": "c",
@@ -1215,7 +1215,7 @@
         },
         {
           "id": "b",
-          "text": "No — keys should be derived from the underlying data, since useId is based on tree position and doesn't track data identity across reorders/insertions"
+          "text": "No — keys should track data identity; useId only tracks tree position"
         },
         {
           "id": "c",
@@ -1275,7 +1275,7 @@
       "choices": [
         {
           "id": "a",
-          "text": "An internal, authenticated admin dashboard with no SEO requirement and a team unfamiliar with server-runtime operations"
+          "text": "An internal admin dashboard behind auth, no SEO need, team unfamiliar with server runtimes"
         },
         {
           "id": "b",
@@ -1287,7 +1287,7 @@
         },
         {
           "id": "d",
-          "text": "An app with several heavy server-only dependencies (e.g. a markdown parser) currently bloating the client bundle"
+          "text": "An app with heavy server-only dependencies (e.g. a markdown parser) bloating the client bundle"
         }
       ],
       "correct": [
@@ -1379,7 +1379,7 @@
         },
         {
           "id": "c",
-          "text": "According to the React tree — an ancestor's onClick in the React tree fires even if its DOM node isn't an ancestor of the portal's DOM node"
+          "text": "According to the React tree, not the DOM tree — a React-tree ancestor's handler fires either way"
         },
         {
           "id": "d",
@@ -1407,7 +1407,7 @@
         },
         {
           "id": "b",
-          "text": "The lazy call must be wrapped in a Suspense boundary somewhere in the tree, and the module must have the component as its default export"
+          "text": "It must be Suspense-wrapped, and the module must default-export the component"
         },
         {
           "id": "c",
@@ -1477,7 +1477,7 @@
         },
         {
           "id": "c",
-          "text": "Remaining rows shift index, so React reuses component instances at each index — a row's local state (e.g. its typed text) appears to belong to the wrong data item"
+          "text": "Shifted indices make React reuse instances at the wrong index — text appears misplaced"
         },
         {
           "id": "d",
@@ -1505,7 +1505,7 @@
         },
         {
           "id": "b",
-          "text": "Because they found no use cases at scale where a component inheritance hierarchy was a better solution than props/composition"
+          "text": "Because no use cases were found where inheritance beat composition"
         },
         {
           "id": "c",
@@ -1533,7 +1533,7 @@
       "choices": [
         {
           "id": "a",
-          "text": "The child still re-renders on every parent render, because a new function is created each render, failing memo's reference check"
+          "text": "It still re-renders every time — a new function object fails memo's reference check"
         },
         {
           "id": "b",
@@ -1569,7 +1569,7 @@
         },
         {
           "id": "b",
-          "text": "Composing multiple HOCs can cause prop name collisions and produces deeply nested \"wrapper hell\" in the component tree, with props whose origin is hard to trace"
+          "text": "Composing HOCs causes prop collisions and deep wrapper nesting"
         },
         {
           "id": "c",
@@ -1601,7 +1601,7 @@
         },
         {
           "id": "b",
-          "text": "Memoization for that component/subtree is either absent or not effective — React is doing the full render-cost work every commit"
+          "text": "Memoization there is absent/ineffective — React redoes the full render cost"
         },
         {
           "id": "c",

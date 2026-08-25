@@ -69,6 +69,9 @@ This question checks whether the candidate understands indexes as a
 time/space trade-off, not just "a thing you add to make queries fast." A
 senior answer volunteers the write-cost side without being asked.
 
+**TL;DR:**
+An index is an ordered structure (usually a B-tree) enabling O(log n) lookups instead of an O(n) sequential scan, at the cost of write overhead and storage.
+
 **References:**
 - [PostgreSQL: Chapter 11. Indexes](https://www.postgresql.org/docs/current/indexes.html)
 
@@ -125,6 +128,9 @@ Tests whether the candidate actually understands the data structure rather
 than treating the index as a black box — this is the "explain it like you've
 read the source" bar that separates people who've memorized "indexes make
 things faster" from people who understand the mechanism.
+
+**TL;DR:**
+A B-tree's shallow, multi-key nodes keep lookups O(log n); leaf nodes are sorted and linked, which is also why B-trees serve range queries well and hash indexes can't.
 
 **References:**
 - [PostgreSQL: 11.2. Index Types (B-Tree)](https://www.postgresql.org/docs/current/indexes-types.html)
@@ -195,6 +201,9 @@ real-world performance bugs. This question tests whether the candidate can
 reason about *which* queries a given index actually serves, not just
 "whether an index exists."
 
+**TL;DR:**
+A composite index only helps queries that constrain a leftmost-contiguous prefix of its columns — a condition on a non-leading column alone can't narrow the scan.
+
 **References:**
 - [PostgreSQL: 11.3. Multicolumn Indexes](https://www.postgresql.org/docs/current/indexes-multicolumn.html)
 - [PostgreSQL: 11.5. Combining Multiple Indexes](https://www.postgresql.org/docs/current/indexes-bitmap-scans.html)
@@ -263,6 +272,9 @@ can't skip the heap.
 Distinguishes candidates who know indexes only speed up *filtering* from
 those who understand they can also eliminate heap I/O entirely — a common
 "advanced" lever for hot-path query optimization.
+
+**TL;DR:**
+An index-only scan answers a query entirely from the index (skipping the heap) when every needed column is present in the index, e.g. via a covering INCLUDE index.
 
 **References:**
 - [PostgreSQL: 11.9. Index-Only Scans and Covering Indexes](https://www.postgresql.org/docs/current/indexes-index-only-scans.html)
@@ -337,6 +349,9 @@ production, or only in theory." The interviewer wants concrete diagnostic
 vocabulary (Seq Scan, Filter vs Index Cond, actual vs estimated rows), not a
 vague "I'd look at the query plan."
 
+**TL;DR:**
+EXPLAIN ANALYZE shows planned vs. actual cost/rows per node — look for seq scans on large tables, big estimate/actual gaps, Filter vs Index Cond, and I/O buffer stats to find the bottleneck node.
+
 **References:**
 - [PostgreSQL: 14.1. Using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html)
 - [PostgreSQL: 14.2. Statistics Used by the Planner](https://www.postgresql.org/docs/current/planner-stats.html)
@@ -406,6 +421,9 @@ data/tooling first, or start guessing/eyeballing? This is the "which tools
 do you use, what's your method" performance-diagnosis angle interviewers are
 leaning on heavily right now.
 
+**TL;DR:**
+Use aggregate tooling like pg_stat_statements (or MySQL's slow query log) sorted by total/mean exec time to find real offenders, then drill in with EXPLAIN ANALYZE and correlate with app-level tracing.
+
 **References:**
 - [PostgreSQL: F.32. pg_stat_statements](https://www.postgresql.org/docs/current/pgstatstatements.html)
 - [MySQL 8.4 Reference Manual: 7.4.5 The Slow Query Log](https://dev.mysql.com/doc/refman/8.4/en/slow-query-log.html)
@@ -470,6 +488,9 @@ Checks whether the candidate understands that query plans are *estimates
 based on stale data*, not live computation — a subtlety that explains a
 whole category of "it just got slow for no reason" incidents.
 
+**TL;DR:**
+Query plans are estimates built from statistics gathered by ANALYZE — if data shifts since the last ANALYZE, estimates go stale and the planner can pick a much worse plan.
+
 **References:**
 - [PostgreSQL: 14.2. Statistics Used by the Planner](https://www.postgresql.org/docs/current/planner-stats.html)
 - [PostgreSQL: 19.10. Automatic Vacuuming](https://www.postgresql.org/docs/current/runtime-config-autovacuum.html)
@@ -524,6 +545,9 @@ This is the "what happens internally" concurrency-primitives question for
 the SQL domain — the equivalent of asking about locks/mutexes in a systems
 context, testing whether the candidate understands *why* the database
 behaves the way it does under concurrent load, not just that it does.
+
+**TL;DR:**
+MVCC keeps old row versions visible to in-flight transactions instead of blocking readers, so reads and writes never block each other — at the cost of dead-tuple bloat needing VACUUM.
 
 **References:**
 - [PostgreSQL: 13.1. Introduction](https://www.postgresql.org/docs/current/mvcc-intro.html)
@@ -596,6 +620,9 @@ Probes real transactional/locking experience beyond "I write SQL that
 works on one connection" — whether the candidate has actually reasoned about
 what happens under concurrent access.
 
+**TL;DR:**
+FOR UPDATE takes an exclusive row lock (blocks all other lockers), FOR SHARE takes a shared one (blocks writers only) — overusing FOR UPDATE serializes work and can cause deadlocks.
+
 **References:**
 - [PostgreSQL: 13.3. Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html)
 
@@ -651,6 +678,9 @@ This is the "software engineering theory mixed with technology-specific
 practice" question — it wants the candidate to connect textbook algorithmic
 complexity to a real cost-based optimizer's actual behavior, not just recite
 "indexes are faster."
+
+**TL;DR:**
+Index lookups are O(log n) vs. a scan's O(n), but that edge shrinks or reverses at low selectivity, where random index-to-heap I/O can cost more than one cheap sequential pass.
 
 **References:**
 - [PostgreSQL: 14.1. Using EXPLAIN](https://www.postgresql.org/docs/current/using-explain.html)
@@ -708,6 +738,9 @@ use daily — connecting it to a general systems-design principle (trading
 write cost for read speed) rather than treating it as an arbitrary database
 feature.
 
+**TL;DR:**
+Indexes trade a small ongoing write cost for near-constant-time reads, avoiding the linear scan cost that would otherwise grow with table size — the same precompute-to-avoid-repeated-work trade-off as caching.
+
 **References:**
 - [PostgreSQL: Chapter 11. Indexes](https://www.postgresql.org/docs/current/indexes.html)
 
@@ -763,6 +796,9 @@ blocked during the drop.
 Tests judgment and restraint — a senior engineer should default to "indexes
 are not free" rather than reflexively adding them, and should know how to
 justify an index with data rather than intuition.
+
+**TL;DR:**
+Every index adds real write, storage, and planner-overhead costs — index deliberately based on actual query patterns and periodically prune unused ones via pg_stat_user_indexes.
 
 **References:**
 - [PostgreSQL: Chapter 11. Indexes](https://www.postgresql.org/docs/current/indexes.html)
@@ -835,6 +871,9 @@ This is one of the most common real-world "why isn't my index being used"
 footguns — tests whether the candidate can debug a subtle mismatch between
 query shape and index shape, a very practical/pitfall-oriented skill.
 
+**TL;DR:**
+Wrapping an indexed column in a function or implicit cast makes the condition non-sargable, forcing a scan; fix by rewriting to a raw-column range condition or building a matching expression index.
+
 **References:**
 - [PostgreSQL: 11.3. Multicolumn Indexes](https://www.postgresql.org/docs/current/indexes-multicolumn.html)
 
@@ -900,6 +939,9 @@ Advanced-feature question — separates candidates who only know "create an
 index on the column" from those who've had to optimize a real skewed
 dataset.
 
+**TL;DR:**
+A partial index only covers rows matching a predicate, saving space/write cost when queries consistently target a skewed subset — also useful for enforcing a unique constraint on that subset.
+
 **References:**
 - [PostgreSQL: 11.8. Partial Indexes](https://www.postgresql.org/docs/current/indexes-partial.html)
 
@@ -952,6 +994,9 @@ inherently produces sorted output for free.
 Classic trade-off/comparison question — tests whether the candidate can
 articulate *why* a default exists instead of just knowing what the default
 is.
+
+**TL;DR:**
+B-tree supports equality, ranges, and sorting; hash indexes support only equality and can't produce sorted output, since hashing deliberately destroys key ordering.
 
 **References:**
 - [PostgreSQL: 11.2. Index Types](https://www.postgresql.org/docs/current/indexes-types.html)
@@ -1013,6 +1058,9 @@ the candidate's mental model of indexing isn't hard-coded to one database's
 implementation, and understands *why* primary key design choices ripple
 into every other index.
 
+**TL;DR:**
+In InnoDB the primary key IS the table's physical storage (clustered index); every secondary index stores the primary key instead of a row pointer, making secondary lookups a two-step bookmark hop.
+
 **References:**
 - [MySQL 8.4 Reference Manual: 17.6.2.1 Clustered and Secondary Indexes](https://dev.mysql.com/doc/refman/8.4/en/innodb-index-types.html)
 - [MySQL 8.4 Reference Manual: 17.6.2.2 The Physical Structure of an InnoDB Index](https://dev.mysql.com/doc/refman/8.4/en/innodb-physical-structure.html)
@@ -1071,6 +1119,9 @@ paying for reuse.
 Tests whether the candidate has encountered a real "it got slow for no
 apparent reason" production incident and understands cached-plan reuse
 across different data shapes, not just single-query optimization.
+
+**TL;DR:**
+Parameter sniffing caches a plan built from the first execution's parameter values, so if that value was atypical, every later call reuses a plan optimized for the wrong data shape until it's evicted.
 
 **References:**
 - [Microsoft Learn: Parameter Sensitive Plan Optimization - SQL Server](https://learn.microsoft.com/en-us/sql/relational-databases/performance/parameter-sensitive-plan-optimization)
@@ -1142,6 +1193,9 @@ This is a "does the candidate understand what their ORM is doing under the
 hood" question — a very common real-world performance bug that has nothing
 to do with missing indexes and everything to do with query *count*.
 
+**TL;DR:**
+The N+1 problem is one query per parent row from a lazily-loaded relation accessed in a loop; fix with eager fetching (JOIN FETCH) so the related data comes back in one query instead of N extra ones.
+
 **References:**
 - [Hibernate ORM User Guide — Fetching](https://docs.hibernate.org/orm/current/userguide/html_single/Hibernate_User_Guide.html#fetching)
 
@@ -1206,6 +1260,9 @@ parameters.
 Advanced/internals question that connects a "why is this slow" symptom
 directly back to the MVCC mechanism discussed earlier — testing whether the
 candidate can trace a performance symptom to its root architectural cause.
+
+**TL;DR:**
+MVCC leaves dead tuples behind after UPDATE/DELETE; unreclaimed dead tuples bloat tables/indexes and slow scans — VACUUM (usually via autovacuum) reclaims that space.
 
 **References:**
 - [PostgreSQL: 24.1. Routine Vacuuming](https://www.postgresql.org/docs/current/routine-vacuuming.html)
@@ -1281,6 +1338,9 @@ proceeding on stale logic.
 Classic trade-off question connecting SE theory (isolation guarantees) to
 practical performance consequences — tests whether the candidate can reason
 about *why* you wouldn't just pick the strictest option "to be safe."
+
+**TL;DR:**
+Stronger isolation levels (Repeatable Read, Serializable) prevent more concurrency anomalies but cost more contention/aborts — Read Committed is the default because it's correct enough for most operations at the best concurrency.
 
 **References:**
 - [PostgreSQL: 13.2. Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html)

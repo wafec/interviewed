@@ -128,6 +128,10 @@ Good answer, claims backed by References below>
 or experience the interviewer is trying to surface. This is the "why" behind
 the question, not a restatement of the answer.>
 
+**TL;DR:**
+<one sentence — the whole answer distilled so it can be skimmed on a revisit
+days/weeks later without re-reading everything above>
+
 **References:**
 - [Official doc title](https://...)
 ```
@@ -173,6 +177,19 @@ Each MCQ's `explanation` should cover why the correct choice(s) are right
 *and* why the wrong choices are plausible-but-wrong, and its `reference`
 should be a verified official-documentation link (same bar as the prose
 References section).
+
+**No answer-length or phrasing tells.** Don't let the correct choice be
+identifiable without knowing the material — most commonly this means the
+correct choice ends up longer/more detailed/more hedged than the
+distractors. Every choice in a question should be similar in length,
+grammatical form, and level of detail; if the accurate answer genuinely
+needs more nuance, move that nuance into `explanation` instead of stuffing
+it into the choice text. Also avoid other tells: don't always put the
+correct choice in the same position (vary it — don't default to "b" or the
+last option), avoid "all/none of the above" as a crutch, and don't phrase
+distractors as obviously-absolute ("always", "never") while the correct
+choice is hedged ("usually", "in most cases") unless that's the actual
+technical distinction being tested.
 
 ### Linking a question-set page to its quiz
 

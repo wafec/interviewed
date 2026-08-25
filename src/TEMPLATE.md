@@ -37,6 +37,10 @@ Good answer: accurate, concise, and its claims backed by References below>
 or experience the interviewer is trying to surface. This is the "why" behind
 the question, not a restatement of the answer.>
 
+**TL;DR:**
+<one sentence — the whole answer distilled so it can be skimmed on a revisit
+days/weeks later without re-reading everything above>
+
 **References:**
 - [Official doc title](https://...)
 
@@ -60,6 +64,9 @@ the question, not a restatement of the answer.>
 - **Term** — definition
 
 **Mental model:**
+...
+
+**TL;DR:**
 ...
 
 **References:**

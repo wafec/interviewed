@@ -46,6 +46,9 @@ It's stored inline as part of the containing object's memory layout on the manag
 **Mental model:**
 This question checks whether the candidate has the "stack vs. heap" myth or the accurate mental model — that storage location is determined by *where the variable is declared*, not by whether the type is a value or reference type in isolation.
 
+**TL;DR:**
+Value types copy their data; reference types copy a pointer to heap data — storage location depends on where the variable is declared, not the type category alone.
+
 **References:**
 - [Value types - C# reference | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/value-types)
 - [Reference types - C# reference | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/reference-types)
@@ -80,6 +83,9 @@ Generics avoid boxing because the JIT generates specialized native code per valu
 **Mental model:**
 Tests whether the candidate connects a language-level implicit conversion to its concrete performance cost (allocation + GC pressure), not just the mechanical definition.
 
+**TL;DR:**
+Boxing heap-allocates a copy of a value type behind an object reference, adding GC pressure — that's the entire cost.
+
 **References:**
 - [Boxing and Unboxing - C# | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing)
 
@@ -106,6 +112,9 @@ An exception thrown inside an `async Task`/`async Task<T>` method isn't propagat
 
 **Mental model:**
 Distinguishes candidates who've memorized "async makes it non-blocking" from those who understand the actual mechanism — critical for reasoning about allocations, exception flow, and why blocking on async code deadlocks.
+
+**TL;DR:**
+An async method compiles to a state machine that runs synchronously until it hits an incomplete await, then returns control and resumes later via a registered continuation.
 
 **References:**
 - [How Async/Await Really Works in C# - .NET Blog](https://devblogs.microsoft.com/dotnet/how-async-await-really-works/)
@@ -144,6 +153,9 @@ No — ASP.NET Core doesn't install a `SynchronizationContext` at all (unlike cl
 **Mental model:**
 Probes whether the candidate can explain the deadlock/threading implications of async, not just recite "use ConfigureAwait(false) in libraries" as a rule without understanding why.
 
+**TL;DR:**
+SynchronizationContext decides where a continuation resumes; ConfigureAwait(false) skips capturing it, avoiding marshaling overhead and a class of deadlocks.
+
 **References:**
 - [ExecutionContext and SynchronizationContext - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/executioncontext-synchronizationcontext)
 - [ConfigureAwait FAQ - .NET Blog](https://devblogs.microsoft.com/dotnet/configureawait-faq/)
@@ -180,6 +192,9 @@ public async Task DoWorkAsync() { /* real, testable logic */ }
 **Mental model:**
 Checks whether the candidate treats "avoid async void" as a memorized lint rule or actually understands the composability and exception-propagation failure modes it causes.
 
+**TL;DR:**
+async void has no Task to observe, so callers can't await it and its exceptions crash the process instead of being catchable — avoid it except for event handlers.
+
 **References:**
 - [Async/Await - Best Practices in Asynchronous Programming | Microsoft Learn](https://learn.microsoft.com/en-us/archive/msdn-magazine/2013/march/async-await-best-practices-in-asynchronous-programming)
 
@@ -204,6 +219,9 @@ Because neither installs a single-threaded `SynchronizationContext` by default. 
 
 **Mental model:**
 A staple senior-level question — tests real understanding of the SynchronizationContext + blocking interaction, not just "don't call .Result" as a rule of thumb.
+
+**TL;DR:**
+The deadlock needs a captured single-threaded context plus a synchronous block on the task — the blocked thread can never run the continuation.
 
 **References:**
 - [Common async/await bugs - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/asynchronous-programming-patterns/common-async-bugs)
@@ -237,6 +255,9 @@ Frequent Gen2 promotions usually mean objects are living longer than they should
 
 **Mental model:**
 Fundamentals of managed memory — checks whether the candidate can connect "why generations exist" to real GC-tuning/diagnosis reasoning, not just recite the three numbers.
+
+**TL;DR:**
+Gen0/1/2 age-based collection lets the GC do frequent, cheap Gen0 sweeps and rarely pay for an expensive full-heap Gen2 scan.
 
 **References:**
 - [Fundamentals of garbage collection - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/fundamentals)
@@ -273,6 +294,9 @@ Workstation GC is usually the better fit here. Server GC allocates a heap and de
 **Mental model:**
 Trade-off question — tests whether the candidate can reason about GC mode choice from actual deployment constraints (cores, memory, latency vs. throughput) rather than just picking "Server GC because it's faster."
 
+**TL;DR:**
+Workstation GC favors low footprint/latency on shared or constrained hardware; Server GC parallelizes across cores for throughput and is ASP.NET Core's default.
+
 **References:**
 - [Workstation vs. server garbage collection (GC) - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/workstation-server-gc)
 
@@ -298,6 +322,9 @@ What's the difference between `dotnet-trace` and `dotnet-counters`, and when wou
 
 **Mental model:**
 This is the core "performance diagnosis methodology" question for .NET — checks that the candidate has an actual detect → isolate → fix → verify loop with named tools, not just "I'd look at the logs."
+
+**TL;DR:**
+Diagnose GC pressure with dotnet-counters for a first read, then dotnet-trace/dotnet-gcdump to pinpoint allocation sources — fix, then re-measure with the same tools.
 
 **References:**
 - [.NET Diagnostic tools overview - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/tools-overview)
@@ -327,6 +354,9 @@ ReadyToRun keeps the full .NET runtime and JIT available, so the app retains dyn
 
 **Mental model:**
 Advanced/trade-off question that separates candidates who know .NET's compilation pipeline evolved beyond "it's just JIT'd" and can reason about startup-vs-flexibility trade-offs for real deployment decisions (e.g., serverless cold start).
+
+**TL;DR:**
+Tiered compilation JITs fast-then-optimized; ReadyToRun ships precompiled code for a faster cold start; Native AOT drops the JIT entirely for the fastest startup at the cost of dynamic features.
 
 **References:**
 - [ReadyToRun deployment overview - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/deploying/ready-to-run)
@@ -363,6 +393,9 @@ Why can't you use `Span<T>` as a field in a class or across an `await` boundary?
 **Mental model:**
 Advanced-feature question that tests whether the candidate understands span/memory as a *deliberate CLR safety trade-off* for zero-allocation code, not just "a faster array."
 
+**TL;DR:**
+Span<T>/Memory<T> let you slice contiguous memory without copying or allocating; Span is stack-only for safety, Memory is the heap-storable counterpart.
+
 **References:**
 - [Memory<T> and Span<T> usage guidelines - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/memory-t-usage-guidelines)
 - [Span<T> Struct (System) | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.span-1)
@@ -390,6 +423,9 @@ Detect it with `dotnet-counters` watching `ThreadPool Queue Length` (rising) and
 **Mental model:**
 Real-world production-incident question — checks whether the candidate has actually diagnosed a live starvation issue (specific counters, specific tool) versus just knowing "avoid blocking calls" as a rule.
 
+**TL;DR:**
+Thread pool starvation happens when blocking calls tie up worker threads faster than the pool can grow new ones, stalling queued work despite low CPU.
+
 **References:**
 - [Debug ThreadPool Starvation - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/diagnostics/debug-threadpool-starvation)
 
@@ -414,6 +450,9 @@ It's undefined/unsupported behavior — a `ValueTask` may wrap a pooled/reusable
 
 **Mental model:**
 Trade-off/advanced-feature question — tests whether the candidate treats `ValueTask` as a drop-in "faster Task" (wrong, and dangerous) or understands it as a constrained optimization for a specific, profiled hot path.
+
+**TL;DR:**
+Task always allocates; ValueTask avoids allocation for synchronously-available results but comes with single-await and no-premature-access constraints — profile before switching.
 
 **References:**
 - [ValueTask Struct (System.Threading.Tasks) | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/api/system.threading.tasks.valuetask)
@@ -465,6 +504,9 @@ No — only for a type that directly owns unmanaged resources (a raw handle, unm
 **Mental model:**
 SE-theory-meets-practice question: connects the abstract idea of "deterministic vs. non-deterministic resource cleanup" to the concrete Dispose pattern, and checks the candidate doesn't over-apply finalizers.
 
+**TL;DR:**
+Dispose() is deterministic cleanup for unmanaged resources; a finalizer is the GC's non-deterministic safety net, and GC.SuppressFinalize skips it once Dispose already ran.
+
 **References:**
 - [Implement a Dispose method - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/implementing-dispose)
 - [Dispose Pattern - Framework Design Guidelines | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/dispose-pattern)
@@ -491,6 +533,9 @@ Take two `dotnet-gcdump` snapshots some time apart under normal load, and diff t
 
 **Mental model:**
 Classic pitfall question — checks the candidate understands that "garbage collected" doesn't mean "leak-proof," and that leaks in managed languages are a reachability problem, not a missing-free problem.
+
+**TL;DR:**
+Managed leaks happen when something unintended keeps a reference alive (static events, unbounded caches, captured closures) — it's a reachability problem, not a missing-free problem.
 
 **References:**
 - [Memory leaks 101: Objects anchored by event generators | Microsoft Learn](https://learn.microsoft.com/en-us/archive/blogs/ricom/memory-leaks-101-objects-anchored-by-event-generators)
@@ -533,6 +578,9 @@ Debug builds disable most JIT optimizations and insert extra debugging scaffoldi
 **Mental model:**
 Performance-methodology question specifically about *micro*-benchmarking correctness — tests whether the candidate knows naive timing is actively misleading in a JIT'd, GC'd runtime, and knows the standard tool that controls for it.
 
+**TL;DR:**
+A single Stopwatch run is dominated by JIT warm-up and GC noise; BenchmarkDotNet controls for both and reports allocations alongside timing.
+
 **References:**
 - [Getting started | BenchmarkDotNet](https://benchmarkdotnet.org/articles/guides/getting-started.html)
 - [Overview | BenchmarkDotNet](https://benchmarkdotnet.org/articles/overview.html)
@@ -573,6 +621,9 @@ Loading multiple collection navigations with `.Include()` in a single query (e.g
 **Mental model:**
 The signature "real situation this technology's design causes" question for ORMs — checks the candidate has actually hit this in production and knows the concrete EF Core APIs to fix it, not just the term "N+1."
 
+**TL;DR:**
+Lazy-loaded navigation properties accessed in a loop trigger one query per entity (N+1); fix with eager (.Include()) or explicit loading so the extra round trip is visible and intentional.
+
 **References:**
 - [Loading Related Data - EF Core | Microsoft Learn](https://learn.microsoft.com/en-us/ef/core/querying/related-data/)
 - [Lazy Loading of Related Data - EF Core | Microsoft Learn](https://learn.microsoft.com/en-us/ef/core/querying/related-data/lazy)
@@ -606,6 +657,9 @@ Inject `IServiceScopeFactory` (or `IServiceProvider`) into the singleton instead
 
 **Mental model:**
 Classic pitfall/fundamentals hybrid — tests whether the candidate has actually been bitten by captive dependencies (a very common real bug) and knows the concrete fix, not just the three lifetime definitions.
+
+**TL;DR:**
+Transient/Scoped/Singleton control instance lifetime; injecting a Scoped service into a Singleton creates a captive dependency that silently becomes permanent shared state.
 
 **References:**
 - [Service lifetimes (dependency injection) - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/service-lifetimes)
@@ -644,6 +698,9 @@ Authorization middleware needs the endpoint that routing has selected (specifica
 **Mental model:**
 Internals question for the web-framework-specific angle — checks the candidate understands middleware as literally nested delegate calls (explaining the before/after and reverse-order-response behavior), not just "a list of steps."
 
+**TL;DR:**
+Middleware is a chain of nested request delegates run in registration order, so anything a later middleware depends on (like an authenticated identity) must be established earlier in the chain.
+
 **References:**
 - [ASP.NET Core Middleware | Microsoft Learn](https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/)
 
@@ -669,6 +726,9 @@ Publish with AOT enabled and read the trim/AOT analyzer warnings first — they 
 
 **Mental model:**
 Advanced/trade-off closer — checks whether the candidate can make a realistic go/no-go call on an exciting-sounding feature by actually naming its constraints, not just repeating the marketing benefit ("faster startup!").
+
+**TL;DR:**
+Native AOT drops the JIT and dynamic loading/reflection entirely for the fastest startup — the wrong choice for apps needing plugin loading or heavy runtime reflection.
 
 **References:**
 - [Native AOT deployment overview - .NET | Microsoft Learn](https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/)
