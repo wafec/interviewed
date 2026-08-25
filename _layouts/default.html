@@ -46,10 +46,16 @@
             &raquo; <a href="{{ '/src/dotnet/' | relative_url }}">.NET</a>
           {% elsif page.url contains '/src/react/' %}
             &raquo; <a href="{{ '/src/react/' | relative_url }}">React</a>
+          {% elsif page.url contains '/src/python/' %}
+            &raquo; <a href="{{ '/src/python/' | relative_url }}">Python</a>
+          {% elsif page.url contains '/src/architecture/' %}
+            &raquo; <a href="{{ '/src/architecture/' | relative_url }}">Architecture</a>
+          {% elsif page.url contains '/src/spring/' %}
+            &raquo; <a href="{{ '/src/spring/' | relative_url }}">Spring Boot</a>
           {% elsif page.url contains '/src/README' %}
             &raquo; Contributor Guide
           {% endif %}
-          {% unless page.url == '/src/java/' or page.url == '/src/api/' or page.url == '/src/sql/' or page.url == '/src/cloud/' or page.url == '/src/dotnet/' or page.url == '/src/react/' or page.url contains '/src/README' %}
+          {% unless page.url == '/src/java/' or page.url == '/src/api/' or page.url == '/src/sql/' or page.url == '/src/cloud/' or page.url == '/src/dotnet/' or page.url == '/src/react/' or page.url == '/src/python/' or page.url == '/src/architecture/' or page.url == '/src/spring/' or page.url contains '/src/README' %}
             &raquo; {{ page.title }}
           {% endunless %}
         </nav>

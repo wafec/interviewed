@@ -261,3 +261,6 @@ Use the `/new-question <topic>` skill (e.g. `/new-question java`,
 - `cloud/` — Cloud infra, networking, IAM, scaling, resilience, cost/perf trade-offs.
 - `dotnet/` — C#/.NET runtime (CLR), ASP.NET Core, async/await, GC, EF Core, performance diagnosis.
 - `react/` — React internals (fiber/reconciliation), hooks, rendering performance, state management, SSR/hydration.
+- `python/` — Python language/runtime internals (GIL, memory management), concurrency, decorators/generators, typing, packaging/tooling.
+- `architecture/` — Software/system architecture: distributed systems fundamentals, service decomposition, architectural patterns and design principles.
+- `spring/` — Spring Boot: IoC container/beans, dependency injection, autoconfiguration, Spring MVC/Data/Security, AOP.

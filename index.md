@@ -20,6 +20,9 @@ for the exact per-question structure.
 - [Cloud]({{ "/src/cloud/" | relative_url }})
 - [.NET]({{ "/src/dotnet/" | relative_url }})
 - [React]({{ "/src/react/" | relative_url }})
+- [Python]({{ "/src/python/" | relative_url }})
+- [Architecture]({{ "/src/architecture/" | relative_url }})
+- [Spring Boot]({{ "/src/spring/" | relative_url }})
 
 ## Test yourself
 

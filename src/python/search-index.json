@@ -1,0 +1,1442 @@
+[
+  {
+    "id": "python-core-language-and-data-model-q1",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "Is a Python variable a box that holds a value, or something else?",
+    "tldr": "Python variables are names bound to objects, not value-holding boxes — assignment binds/rebinds a name, it never copies; mutation vs. rebinding inside a function is what determines whether the caller sees the change.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q1"
+  },
+  {
+    "id": "python-core-language-and-data-model-q2",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What's the practical difference between a mutable and an immutable type, beyond just \"can it change\"?",
+    "tldr": "Immutability buys hashability and safe sharing without defensive copies; lists can't be dict keys because a hash-based container needs an object's hash to stay constant for its lifetime in the table, and a mutable object can't promise that.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q2"
+  },
+  {
+    "id": "python-core-language-and-data-model-q3",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What's the difference between __new__ and __init__, and when would you actually need to override __new__?",
+    "tldr": "__new__ creates the instance and runs first; __init__ only initializes an already-created instance and runs second (and only if __new__ returned an instance of the right class) — override __new__ only when creation itself needs control, like immutable subclassing or instance caching.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q3"
+  },
+  {
+    "id": "python-core-language-and-data-model-q4",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "If you override __eq__ on a class, why might instances suddenly become unusable as dict keys or set members?",
+    "tldr": "Defining __eq__ without __hash__ makes instances unhashable by design, because Python can't assume your custom equality is still consistent with the inherited identity-based hash — only re-add __hash__ (based on immutable fields) if you can guarantee the hash never changes while the object is stored in a set/dict.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q4"
+  },
+  {
+    "id": "python-core-language-and-data-model-q5",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What's the actual difference between __repr__ and __str__, and which one does print() use?",
+    "tldr": "__str__ is the user-facing string (used by print/str, with object.__str__ falling back to __repr__ if undefined) and __repr__ is the unambiguous developer-facing one always used by the REPL and inside container printing — define __repr__ first since __str__ inherits from it for free.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q5"
+  },
+  {
+    "id": "python-core-language-and-data-model-q6",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "How does @property actually work under the hood?",
+    "tldr": "@property is a data descriptor object bound to the class; because data descriptors (defining __set__) take priority over instance __dict__ in attribute lookup, obj.x always routes through your getter/setter instead of being silently shadowed by an instance attribute.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q6"
+  },
+  {
+    "id": "python-core-language-and-data-model-q7",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "In class D(B, C): where both B and C inherit from A, what determines which method() runs when D doesn't define one, and how does super() fit in?",
+    "tldr": "Python uses C3-linearized MRO (D.__mro__) to resolve multiple inheritance, guaranteeing each ancestor in a diamond is visited exactly once in a consistent order, and super() walks that same MRO rather than jumping straight to a \"parent\" class — which is what makes cooperative multiple inheritance work.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q7"
+  },
+  {
+    "id": "python-core-language-and-data-model-q8",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What actually changes at the memory-layout level when a class defines __slots__?",
+    "tldr": "__slots__ replaces a per-instance __dict__ with fixed-offset attribute storage, cutting memory and speeding up attribute access, at the cost of disallowing arbitrary new attributes and complicating multiple inheritance/weak references — worth it for millions of small fixed-shape objects, not for general-purpose classes.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q8"
+  },
+  {
+    "id": "python-core-language-and-data-model-q9",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "You suspect a service is using too much memory because it holds millions of small objects. How would you confirm __slots__ would actually help, and by how much?",
+    "tldr": "Confirm the memory/CPU win with real measurement — sys.getsizeof/tracemalloc for the per-instance __dict__ overhead at your actual object count, and timeit for any attribute-access speedup in your actual hot loop — rather than assuming __slots__ helps without profiling first.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q9"
+  },
+  {
+    "id": "python-core-language-and-data-model-q10",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "A hot loop calling obj.method() millions of times is slower than expected. What tools would you use to find out why, and what's actually expensive about a Python attribute/method access?",
+    "tldr": "Profile with cProfile/py-spy before optimizing; a Python attribute/method access is a real lookup (MRO walk and/or dict lookup) compiled to LOAD_ATTR/LOAD_METHOD bytecode, not a free memory read, which is why hoisting to locals, __slots__, or vectorization are the levers once profiling confirms that's actually the bottleneck.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q10"
+  },
+  {
+    "id": "python-core-language-and-data-model-q11",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What's the difference between duck typing and structural typing, and how does typing.Protocol relate to both?",
+    "tldr": "Duck typing is Python's runtime \"call it and see\" behavior; structural typing is its static-analysis equivalent, and typing.Protocol (PEP 544) lets a type checker treat any class with a matching method shape as compatible without requiring explicit inheritance — with @runtime_checkable offering only shallow, attribute-presence-only runtime checks.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q11"
+  },
+  {
+    "id": "python-core-language-and-data-model-q12",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "How does the Liskov Substitution Principle apply to Python, given that the language doesn't enforce method signatures at all?",
+    "tldr": "Python doesn't enforce LSP mechanically, so violations (narrowed accepted inputs, inconsistent __eq__/__hash__, unexpected side effects in an override) don't error at the violation site — they surface later as subtle bugs wherever a caller trusted the base type's contract, making LSP purely a design discipline in Python rather than something the language protects for you.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q12"
+  },
+  {
+    "id": "python-core-language-and-data-model-q13",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What real problem do dunder methods like __add__ and __len__ actually solve, beyond \"syntax sugar for operators\"?",
+    "tldr": "Dunder methods let custom types plug directly into Python's built-in operator/protocol syntax instead of needing bespoke method names, and mixed-type operations work correctly because a dunder method can return NotImplemented to hand off to the other operand's reflected method (__radd__, etc.) rather than failing outright.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q13"
+  },
+  {
+    "id": "python-core-language-and-data-model-q14",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What problem does the context manager protocol (with statement) actually solve that a plain try/finally doesn't?",
+    "tldr": "The context manager protocol turns \"remember to write correct try/finally cleanup\" into \"implement it once, get it everywhere for free,\" and __exit__'s exception-inspection + suppress-via-return-True capability gives structured exception handling that bare try/finally doesn't — contextlib.contextmanager gets you the same behavior from a single generator function for simple cases.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q14"
+  },
+  {
+    "id": "python-core-language-and-data-model-q15",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "Why does Python have a separate iterator protocol (__iter__/__next__) instead of just letting for loops index into anything with __getitem__ and a length?",
+    "tldr": "The iterator protocol (__iter__/__next__, raising StopIteration on exhaustion) lets a for loop consume values lazily from something with no fixed size or index at all, and generator functions build on it by turning ordinary control flow into a resumable paused frame — calling a generator function does zero work, all computation happens incrementally as next() is called.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q15"
+  },
+  {
+    "id": "python-core-language-and-data-model-q16",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What's wrong with def add_item(item, target=[]): as a function signature, and why does the bug only show up intermittently?",
+    "tldr": "Default argument values are created once at function-definition time, not per call, so a mutable default like [] is silently shared and accumulates state across every call that omits it — fix by defaulting to None and creating a fresh object inside the function body.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q16"
+  },
+  {
+    "id": "python-core-language-and-data-model-q17",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What's the difference between copy.copy() and copy.deepcopy(), and when would a shallow copy silently produce a bug?",
+    "tldr": "copy.copy() only copies the outer container — nested mutable objects stay shared, which silently breaks any code assuming full independence — while copy.deepcopy() recursively copies the whole graph (using a memo dict to handle cycles/shared refs), and a class can override __copy__/__deepcopy__ to customize or skip copying specific attributes like open resources.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q17"
+  },
+  {
+    "id": "python-core-language-and-data-model-q18",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "Why does a is b sometimes return True for two separately-written integer literals, but False for two separately-written string concatenations that produce \"the same\" string?",
+    "tldr": "is checks identity, not value equality, and CPython's small-int/string-literal caching is an implementation detail that makes is \"accidentally\" work for some literals but not others with equal values — use == for value comparison always, and reserve is for true singletons like None or deliberately-created sentinel objects.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q18"
+  },
+  {
+    "id": "python-core-language-and-data-model-q19",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "What is a metaclass, and when (if ever) would you actually reach for one instead of a simpler alternative?",
+    "tldr": "A metaclass (default type) controls how a class itself is constructed and behaves, but it's usually the wrong tool — __init_subclass__ (PEP 487) or a class decorator covers the common cases (like auto-registering subclasses) with far less complexity and no metaclass-conflict risk, so reach for a metaclass only when those don't suffice.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q19"
+  },
+  {
+    "id": "python-core-language-and-data-model-q20",
+    "topic": "python",
+    "subtopic": "core-language-and-data-model",
+    "file": "01-python-interview-core-language-and-data-model",
+    "title": "When would you reach for @dataclass instead of writing __init__/__eq__/__repr__ by hand, and where does it stop being the right tool?",
+    "tldr": "@dataclass is the right tool for classes whose job is holding a fixed set of typed fields with value semantics — it removes __init__/__eq__/__repr__ boilerplate and guards against the mutable-default bug via default_factory — but stops being appropriate once a class is fundamentally behavioral, and its type annotations are static-analysis documentation only, not runtime-enforced, unlike a library such as pydantic.",
+    "tags": [
+      "core-language-and-data-model"
+    ],
+    "url": "/src/python/01-python-interview-core-language-and-data-model.html#q20"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q1",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "When would you reach for threading, multiprocessing, or asyncio in Python, and why can't you just always use one?",
+    "tldr": "Use threading/asyncio for I/O-bound waiting (GIL is released), multiprocessing for CPU-bound parallelism (separate GILs per process) — and combine them via `run_in_executor` when you need both.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q1"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q2",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "What exactly is the GIL, and why does CPython have one?",
+    "tldr": "The GIL exists because CPython's reference counting isn't otherwise thread-safe; removing it (PEP 703) needed a coordinated redesign of refcounting, allocation, and locking to avoid regressing single-threaded performance.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q2"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q3",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "What controls how often CPython switches between threads, and does that mean threads are preempted mid-bytecode?",
+    "tldr": "The GIL switches at a configurable interval (default 5ms) between bytecode instructions, not inside one — so multi-instruction operations like `+=` are still race-prone and need explicit locking.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q3"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q4",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "Why does I/O-bound work benefit from threads even with the GIL, but CPU-bound Python code doesn't?",
+    "tldr": "Threads release the GIL during blocking I/O so other threads can run, but a CPU-bound thread holds the GIL almost continuously — so threading helps I/O concurrency but not CPU parallelism, which you can prove by comparing wall-clock time and CPU utilization for threaded vs. process-based CPU-bound work.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q4"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q5",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "How does `await` actually suspend and resume a coroutine inside the asyncio event loop?",
+    "tldr": "`await` suspends a coroutine like a generator yield, handing control back to the single-threaded event loop until the awaited operation completes and the loop resumes the coroutine's frame — nothing preempts it in between.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q5"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q6",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "How does `multiprocessing` sidestep the GIL, and what does that cost you compared to threading?",
+    "tldr": "Multiprocessing sidesteps the GIL because each process has its own interpreter/GIL, but pays for it with pickling/IPC overhead and heavier process startup — and objects like lambdas/closures can't cross that boundary because they aren't picklable by reference.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q6"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q7",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "How do you determine whether a slow Python service is I/O-bound or CPU-bound before deciding how to fix it?",
+    "tldr": "Check CPU utilization first (pegged = CPU-bound, idle-but-slow = I/O-bound), then use `cProfile`'s tottime/cumtime (or a live sampling profiler like py-spy) to confirm where time actually goes — and remember cumtime on an I/O call includes wait time, which usually isn't a code-optimization problem.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q7"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q8",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "You add more `threading.Thread` workers to a CPU-bound image-processing function and throughput doesn't improve. Walk through how you'd confirm the GIL is the cause.",
+    "tldr": "Confirm GIL contention by comparing threaded vs. process-based throughput and CPU utilization for identical work; fix it (in increasing order of disruption) via a GIL-releasing library call, multiprocessing, a C extension, or ultimately a free-threaded CPython build.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q8"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q9",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "Besides `cProfile`, what tools would you reach for to diagnose a slow or \"stuck\" asyncio application specifically?",
+    "tldr": "Use asyncio debug mode to catch slow callbacks and never-awaited coroutines, and `py-spy` to inspect a live/stuck process without restarting it — both point directly at blocking calls hiding inside coroutines.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q9"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q10",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "What's the difference between cooperative and preemptive multitasking, and which one is asyncio?",
+    "tldr": "asyncio is cooperative — a coroutine only yields at `await` points — so plain state changes without an intervening `await` are safe, but a critical section spanning an `await` still needs an `asyncio.Lock` to avoid a check-then-act race.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q10"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q11",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "How does asyncio's task/queue model relate to the theoretical CSP (Communicating Sequential Processes) or actor models of concurrency?",
+    "tldr": "asyncio's Task+Queue pattern is a practical instance of the CSP model (independent sequential processes communicating via channels instead of shared state), which is why it's recommended over direct shared-state mutation between coroutines.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q11"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q12",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "What real production problem does asyncio actually solve that threads couldn't already solve?",
+    "tldr": "asyncio's core win is handling very large numbers of concurrent I/O-bound connections with far less per-connection overhead than one-OS-thread-per-connection — at small scale, threads are often simpler and just as adequate.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q12"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q13",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "A coroutine calls a synchronous `time.sleep(2)` instead of `await asyncio.sleep(2)`. What actually happens to the rest of the application during those two seconds?",
+    "tldr": "A blocking call with no `await` freezes the entire single-threaded event loop for its duration, stalling every other coroutine — fix it by offloading the blocking call to `run_in_executor` so it runs off the loop's thread.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q13"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q14",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "You call an `async def` function without `await`ing it and nothing seems to happen. What's going on?",
+    "tldr": "Calling an `async def` function only creates a coroutine object — it doesn't run until awaited/scheduled — and an unawaited one only triggers a `RuntimeWarning` once it's garbage-collected, which can make the mistake look silent for a while.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q14"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q15",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "Two threads both do `if key not in cache: cache[key] = compute()`. Even with the GIL, why is this still a race?",
+    "tldr": "\"Check if missing, then compute and insert\" is a check-then-act race even under the GIL, because `compute()` can be preempted between the check and the insert — fix it by holding a lock around the whole check-compute-insert sequence, not just the individual dict accesses.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q15"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q16",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "You need to pass a closure (a function that captures a local variable) as the worker function to a `multiprocessing.Pool`. It fails — why, and what are your options?",
+    "tldr": "Closures/lambdas aren't picklable by reference, so spawn-based multiprocessing can't ship them to workers — use `functools.partial` on a module-level function (or `dill`-based alternatives) to pass the captured data explicitly instead.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q16"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q17",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "What's the practical difference between `asyncio.gather()` and `asyncio.TaskGroup` when one of several concurrent coroutines raises an exception?",
+    "tldr": "`gather()` propagates the first exception without cancelling sibling coroutines by default; `TaskGroup` (3.11+) cancels all sibling tasks on any failure and collects every exception into an `ExceptionGroup` — safer by default, at the cost of \"abort-all\" semantics.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q17"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q18",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "What does Python 3.13's free-threaded build actually change, and is it something you'd deploy to production today?",
+    "tldr": "The 3.13+ free-threaded build removes the GIL via biased refcounting, a new allocator, and per-object locking, at ~5–8% single-threaded overhead and an ecosystem-compatibility gap — worth piloting for genuinely GIL-bound, shared-memory CPU workloads, not a default production choice yet.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q18"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q19",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "When would you pick `ThreadPoolExecutor` over raw `threading.Thread`, and `ProcessPoolExecutor` over raw `multiprocessing.Process`?",
+    "tldr": "Prefer `ThreadPoolExecutor`/`ProcessPoolExecutor` for their uniform Future-based API, worker reuse, and built-in concurrency limits; reach for raw `Thread`/`Process` only for a uniquely-behaved long-lived worker — and treat `BrokenProcessPool` as a signal a worker crashed (OOM, segfault, unpicklable failure), not a normal exception.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q19"
+  },
+  {
+    "id": "python-concurrency-gil-and-async-q20",
+    "topic": "python",
+    "subtopic": "concurrency-gil-and-async",
+    "file": "02-python-interview-concurrency-gil-and-async",
+    "title": "Design the concurrency model for a service that: fetches data from 5 external APIs concurrently, then runs a CPU-heavy transformation on the combined result, for every incoming request.",
+    "tldr": "Handle the 5 concurrent API calls with `asyncio.gather`/`TaskGroup` (I/O-bound), and offload the CPU-heavy transform to a `ProcessPoolExecutor` via `run_in_executor` (CPU-bound) — one coroutine per request coordinating both, each bottleneck routed to the primitive suited to it, with the process pool sized to available cores.",
+    "tags": [
+      "concurrency-gil-and-async"
+    ],
+    "url": "/src/python/02-python-interview-concurrency-gil-and-async.html#q20"
+  },
+  {
+    "id": "python-memory-management-and-performance-q1",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "What is CPython's primary memory management mechanism, and how does it differ from a tracing garbage collector like the JVM's?",
+    "tldr": "CPython frees objects immediately via reference counting; the separate `gc` module only exists to catch reference cycles that counting can't see on its own.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q1"
+  },
+  {
+    "id": "python-memory-management-and-performance-q2",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "Mechanically, what happens to an object's reference count as it's passed around, and why is `sys.getrefcount()` notoriously misleading?",
+    "tldr": "Every reference create/destroy adjusts an object's refcount via `Py_INCREF`/`Py_DECREF`; `sys.getrefcount()` overcounts by at least one because calling it creates its own temporary reference, and since 3.12 some objects are \"immortal\" and don't reflect real refcounts at all.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q2"
+  },
+  {
+    "id": "python-memory-management-and-performance-q3",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "Reference counting can't collect cycles. How does CPython's cycle-detecting garbage collector actually find them?",
+    "tldr": "The cycle collector subtracts internal-to-the-candidate-set references from each tracked object's refcount to see what's actually reachable from outside; it runs generationally, collecting young objects far more often than old ones, and the three `gc` thresholds control exactly when each generation triggers.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q3"
+  },
+  {
+    "id": "python-memory-management-and-performance-q4",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "What does `gc.freeze()` do, and why would a production service call it right after startup?",
+    "tldr": "`gc.freeze()` excludes the current object graph from future cyclic-GC scans, which preserves copy-on-write memory sharing across `fork()`-ed workers — call `gc.disable()` → build state → `gc.freeze()` → `fork()` → `gc.enable()` in each child.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q4"
+  },
+  {
+    "id": "python-memory-management-and-performance-q5",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "What is `pymalloc`, and why does CPython need a custom allocator on top of the system `malloc`?",
+    "tldr": "`pymalloc` handles all allocations ≤512 bytes out of pre-reserved 256 KiB/1 MiB arenas subdivided into 4 KiB pools, avoiding per-small-object `malloc()`/`free()` overhead; `PYTHONMALLOC=malloc` bypasses it for native-level debugging.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q5"
+  },
+  {
+    "id": "python-memory-management-and-performance-q6",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "Why does even a trivial, attribute-less Python object take up noticeably more memory than an equivalent C struct?",
+    "tldr": "Every Python object pays for a refcount + type-pointer header plus (absent `__slots__`) a full dict just to hold its attributes, which is why even an empty object outweighs an equivalent C struct — and why `sys.getsizeof()` reports only that direct overhead, not what the object refers to.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q6"
+  },
+  {
+    "id": "python-memory-management-and-performance-q7",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "You suspect a long-running service has a memory leak. How would you use `tracemalloc` to find the exact line responsible?",
+    "tldr": "Take a `tracemalloc` snapshot at baseline and another after growth, then `compare_to()` them by `'lineno'` (or `'traceback'` for full context) — the biggest positive size deltas point straight at the leaking allocation site.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q7"
+  },
+  {
+    "id": "python-memory-management-and-performance-q8",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "When would you reach for `cProfile` versus a sampling profiler like `py-spy`?",
+    "tldr": "Use `cProfile` for exact, low-overhead profiling of a program you control and can restart; use `py-spy` to sample a live process you can't touch, at the cost of exactness — and don't trust either for precise micro-benchmark comparisons, that's what `timeit` is for.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q8"
+  },
+  {
+    "id": "python-memory-management-and-performance-q9",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "Before Python 3.4, objects with a `__del__` method that were part of a reference cycle couldn't be collected at all. What changed, and does that mean cycles with `__del__` are now free of any downside?",
+    "tldr": "PEP 442 (3.4+) made it safe for the cycle collector to call `__del__` on cyclic garbage, so it's no longer permanently leaked — but cyclic objects still aren't freed until the next GC pass, so `__del__` timing on them stays non-deterministic; use context managers or explicit `close()` for real resource cleanup instead.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q9"
+  },
+  {
+    "id": "python-memory-management-and-performance-q10",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "A list that only ever grows and shrinks by one element at a time still seems to hold onto more memory than you'd expect after shrinking. Why?",
+    "tldr": "Lists (and dicts/sets) over-allocate their backing storage on growth for amortized-cheap insertion, and don't shrink that storage back down when you remove elements — rebuild the container if you actually need to reclaim the memory.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q10"
+  },
+  {
+    "id": "python-memory-management-and-performance-q11",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "How can a `functools.lru_cache`-decorated function quietly become a memory leak in a long-running service?",
+    "tldr": "`lru_cache` on an instance method keeps `self` (and everything it references) alive for as long as the cache entry exists, because `self` is part of the cache key — cache module-level functions on hashable inputs instead, or use a weakref-based cache, to avoid pinning instances in memory.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q11"
+  },
+  {
+    "id": "python-memory-management-and-performance-q12",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "When would you reach for `weakref.WeakValueDictionary` instead of a plain `dict` as a cache?",
+    "tldr": "Use `WeakValueDictionary` for caches where you want entries to disappear automatically once nothing else references the value; note that built-in `list`/`dict`/`tuple` instances can't be weakly referenced at all without subclassing.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q12"
+  },
+  {
+    "id": "python-memory-management-and-performance-q13",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "What's the trade-off in disabling the cyclic garbage collector (`gc.disable()`) for a performance-sensitive service?",
+    "tldr": "Disabling `gc` removes cycle-scan pause overhead but stops automatic reclamation of any reference cycles your program or its dependencies create — only safe if you've measured (via a soak test and `gc.get_stats()`) that cycles aren't actually accumulating, or you replace automatic collection with scheduled manual `gc.collect()` calls.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q13"
+  },
+  {
+    "id": "python-memory-management-and-performance-q14",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "How does PyPy achieve significantly better throughput than CPython on the same Python code, and why isn't it a drop-in replacement for every project?",
+    "tldr": "PyPy JIT-compiles hot code to machine code instead of re-interpreting bytecode every time (~3x faster on average per PyPy's own benchmarks), but needs warm-up time and its C-extension compatibility layer makes it a poor fit for the NumPy/C-extension-heavy ecosystem — which is why that ecosystem reaches for targeted tools like Cython/Numba instead.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q14"
+  },
+  {
+    "id": "python-memory-management-and-performance-q15",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "You've profiled a Python service and found the bottleneck is a tight numeric loop. Walk through how you'd decide between rewriting it in Cython, using Numba, or switching the whole service to PyPy.",
+    "tldr": "Reach for Numba for isolated NumPy-shaped hot functions with no build-step cost, Cython for more general but still narrow hot paths needing finer control, and PyPy only when the bottleneck is diffuse across the whole codebase and your dependencies are PyPy-compatible — and don't optimize a \"technically biggest\" profile entry that isn't actually cost-significant end-to-end.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q15"
+  },
+  {
+    "id": "python-memory-management-and-performance-q16",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "When is a generator strictly better than a list for memory, and when do you actually still need a list despite the memory cost?",
+    "tldr": "Generators cost O(1) memory but only support single forward-pass iteration; reach for a list when you need random access, `len()`, multiple passes, or sorting — and don't over-engineer around lists for small sequences where the memory difference doesn't matter.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q16"
+  },
+  {
+    "id": "python-memory-management-and-performance-q17",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "Why is a NumPy array so much more memory- and cache-efficient than a Python `list` of the same numbers?",
+    "tldr": "A Python list stores pointers to individually-boxed, header-carrying number objects scattered across the heap; a NumPy array stores raw values contiguously with no per-element boxing, which is both why it uses far less memory and why vectorized operations over it are so much faster.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q17"
+  },
+  {
+    "id": "python-memory-management-and-performance-q18",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "In general garbage-collection theory, what's the fundamental trade-off between reference counting and tracing collection — beyond just \"cycles vs. no cycles\"?",
+    "tldr": "Refcounting trades small continuous per-operation overhead for immediate, deterministic destruction and no global pauses, but can't see cycles; tracing collectors trade occasional pause-based bursts for zero per-operation overhead and cycle-safety for free — CPython keeps both by using refcounting as primary and layering a tracing-style cycle collector on top only for what refcounting structurally can't handle.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q18"
+  },
+  {
+    "id": "python-memory-management-and-performance-q19",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "Why does a busy, long-running web service specifically need to think about the cyclic garbage collector, when a short CLI script never does?",
+    "tldr": "Long-running services accumulate reference cycles that a short script never lives long enough for the OS-level teardown to matter for; under load this shows up as either steady memory growth (cycles piling up faster than they're swept) or tail-latency spikes (collection pauses hitting in-flight requests) — diagnose with `gc.get_stats()`/`DEBUG_STATS` correlated against latency data before tuning thresholds blindly.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q19"
+  },
+  {
+    "id": "python-memory-management-and-performance-q20",
+    "topic": "python",
+    "subtopic": "memory-management-and-performance",
+    "file": "03-python-interview-memory-management-and-performance",
+    "title": "How would you actually measure the memory savings `__slots__` gives you for a specific class, rather than just assuming it helps?",
+    "tldr": "Measure `__slots__` savings empirically with `tracemalloc` across a large batch of instances (the benefit scales per-instance, so it only matters at meaningful instance counts) rather than assuming it — and remember that `sys.getrefcount()` on immortal objects (3.12+) won't give you a real count if refcounts come up in the same investigation.",
+    "tags": [
+      "memory-management-and-performance"
+    ],
+    "url": "/src/python/03-python-interview-memory-management-and-performance.html#q20"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q1",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What is a decorator in Python, and what does `@decorator` actually do to the function below it?",
+    "tldr": "`@decorator` above a function is just sugar for `f = decorator(f)`, executed once at definition time.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q1"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q2",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "How does a decorator \"remember\" values from its enclosing scope across multiple calls to the wrapped function?",
+    "tldr": "Closures keep enclosing-scope variables alive via closure cells; `nonlocal` is required only when *assigning* to one, because assignment defaults to creating a new local.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q2"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q3",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What breaks if you write a decorator without `functools.wraps`, and why?",
+    "tldr": "Skipping `functools.wraps` silently replaces the wrapped function's `__name__`/`__doc__`/etc. with the wrapper's, breaking introspection; `wraps` fixes this and adds `__wrapped__` back to the original.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q3"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q4",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "How do you write a decorator that itself takes arguments, e.g. `@retry(times=3)`?",
+    "tldr": "A decorator that takes arguments is a function returning a function returning a function: outer args → decorator → wrapper.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q4"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q5",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "Can a class be used as a decorator instead of a function? How would that work?",
+    "tldr": "A class with `__call__` can be a decorator, but decorating methods with a class-based decorator requires also implementing `__get__` to get correct `self` binding.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q5"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q6",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "If you stack two decorators, `@a` above `@b` above `def f(): ...`, what order do they run in?",
+    "tldr": "Stacked decorators apply bottom-up (`a(b(f))`) but execute outside-in at call time — the topmost decorator's code runs first.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q6"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q7",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What actually happens when Python calls a function that contains a `yield` statement?",
+    "tldr": "Calling a generator function returns a paused generator-iterator immediately; the body only runs (and freezes/resumes) as `next()`/`send()` drive it forward from each `yield`.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q7"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q8",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What happens when a generator finishes without hitting another `yield` — how does the caller know it's done?",
+    "tldr": "A generator signals completion by raising `StopIteration` (carrying its return value, if any); an *accidental* unhandled `StopIteration` from inside the generator is converted to `RuntimeError` since PEP 479 so it can't be silently mistaken for normal exhaustion.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q8"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q9",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What does `yield from subgenerator()` do that a plain `for x in subgenerator(): yield x` loop doesn't?",
+    "tldr": "`yield from` isn't just value-forwarding sugar — it also transparently delegates `send()`/`throw()`/`close()` to the subgenerator and surfaces its return value, none of which a manual `for`/`yield` loop does.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q9"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q10",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "Why does iterating over the same generator object a second time produce nothing?",
+    "tldr": "Generators are single-use iterators, not re-iterable sequences — once exhausted they always raise `StopIteration`; getting fresh values means calling the generator function again.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q10"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q11",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "When would using a generator instead of building a list actually matter for performance?",
+    "tldr": "Generators win on memory (constant footprint) and streaming latency for large/unbounded data, not on raw per-item CPU speed versus an equivalent list.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q11"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q12",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "How would you tell whether `functools.lru_cache` is actually helping a specific function in production?",
+    "tldr": "Use `cache_info()`'s hit/miss ratio to validate `lru_cache` is paying off, and watch for two hazards: pinning `self` alive on cached instance methods, and silently stale results on non-pure functions.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q12"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q13",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What is a context manager, and what two methods does an object need to work with `with`?",
+    "tldr": "`with` calls `__enter__` on entry and always calls `__exit__` on exit (passing exception info if any); `__exit__` returning truthy suppresses that exception, falsy lets it propagate.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q13"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q14",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "How does `@contextlib.contextmanager` let you write a context manager as a generator function instead of a class?",
+    "tldr": "`@contextmanager` turns a single-yield generator into a context manager by resuming it past the `yield` on block exit and re-raising `with`-block exceptions at that `yield` point — catching without re-raising there silently suppresses the exception.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q14"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q15",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "You need to open a variable, data-dependent number of files and guarantee all of them get closed, even if one fails partway through. How?",
+    "tldr": "`contextlib.ExitStack` lets you register a runtime-determined number of context managers/callbacks and guarantees they unwind in reverse (LIFO) order, even on partial failure.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q15"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q16",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "How does Python's context manager protocol relate to the classic \"RAII\" (Resource Acquisition Is Initialization) idea from C++?",
+    "tldr": "Context managers give Python RAII-like guaranteed cleanup, but via explicit `with`/`__exit__` scoping rather than C++-style deterministic destructors, because Python's garbage-collection timing (especially for cycles) isn't guaranteed.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q16"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q17",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "When would you reach for a context manager instead of a plain `try/finally`, given that they solve the same underlying problem?",
+    "tldr": "Both guarantee cleanup identically; prefer a context manager when the acquire/release pattern is reused or composed across call sites, and a plain `try/finally` for genuinely one-off, tightly-coupled cleanup.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q17"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q18",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "What's an async generator, and why couldn't you just put `yield` inside an `async def` function before Python 3.6?",
+    "tldr": "Async generators (`async def` + `yield`, consumed via `async for`) were introduced in PEP 525 (3.6) because PEP 492's coroutines explicitly forbade `yield`; unlike sync generators, they have no `yield from` for sub-generator delegation.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q18"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q19",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "How does `async with` differ from a regular `with`, and what methods does an async context manager need?",
+    "tldr": "`async with` uses awaitable `__aenter__`/`__aexit__` instead of synchronous `__enter__`/`__exit__`, needed whenever entering/exiting must itself perform async I/O; `contextlib.asynccontextmanager` mirrors `@contextmanager` for this case.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q19"
+  },
+  {
+    "id": "python-decorators-generators-and-context-managers-q20",
+    "topic": "python",
+    "subtopic": "decorators-generators-and-context-managers",
+    "file": "04-python-interview-decorators-generators-and-context-managers",
+    "title": "You need to add logging, timing, and retry-on-failure to a dozen unrelated functions across a codebase without duplicating that logic in each one. How do decorators solve this, and what's the trade-off versus baking that logic into each function directly?",
+    "tldr": "Decorators let you factor cross-cutting concerns (logging, timing, retry) out of individual functions into reusable, centrally-fixable units, at the cost of making a function's effective behavior less visible from its own body and making decorator *order* a real correctness concern.",
+    "tags": [
+      "decorators-generators-and-context-managers"
+    ],
+    "url": "/src/python/04-python-interview-decorators-generators-and-context-managers.html#q20"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q1",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Are Python type hints enforced at runtime? What actually happens if you violate one?",
+    "tldr": "Python never checks type hints at runtime — they're metadata for external tools like mypy/pyright, so violating one produces no error unless a separate type checker (or library like pydantic) is actually run against the code.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q1"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q2",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What's the difference between nominal and structural typing, and which does Python's `typing.Protocol` provide?",
+    "tldr": "Nominal typing checks declared inheritance; structural typing (Python's `Protocol`, PEP 544) checks whether an object merely has the right methods — formalizing duck typing for static checkers, with `isinstance()` support only via opt-in `@runtime_checkable`.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q2"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q3",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What exactly does the `@dataclass` decorator generate for you?",
+    "tldr": "`@dataclass` reads the class's annotated fields at decoration time and generates `__init__`/`__repr__`/`__eq__` from them, and it deliberately raises `ValueError` on mutable defaults like `[]`, forcing `field(default_factory=list)` instead to avoid the shared-mutable-default bug.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q3"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q4",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What's the difference between a bounded and a constrained `TypeVar`?",
+    "tldr": "A bounded TypeVar accepts a type or any subtype of it and preserves that subtype through the function; a constrained TypeVar must resolve to exactly one of the listed types, useful when you need input/output types to stay correlated across a signature.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q4"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q5",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "How does Python's `match`/`case` decide which branch runs — and how is that different from a C-style `switch`?",
+    "tldr": "`match` tries each `case` pattern in order and stops at the first structural match whose guard (if any) passes — no fallthrough — and class patterns convert positional sub-patterns to attribute checks via `__match_args__`, which dataclasses populate automatically.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q5"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q6",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Static typing adds friction to a dynamic language. What real production problem does it actually solve?",
+    "tldr": "Static typing's real payoff is catching contract violations across an entire codebase before runtime and keeping documentation honest at scale — a complement to tests, not a replacement, since PEP 484 deliberately kept it optional rather than changing Python's dynamic runtime semantics.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q6"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q7",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Why does `Any` quietly undermine a codebase's type safety if it's overused?",
+    "tldr": "`Any` is bidirectionally compatible with every type, so overusing it doesn't just leave one value unchecked — it silently propagates \"unchecked\" through everything derived from it, creating false confidence; `object` or a proper `Union`/TypeVar is usually the safer choice.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q7"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q8",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Why would `class Config: name: str; timeout: int = 30` (a plain annotated class, no decorator) behave surprisingly if you expected it to work like a dataclass?",
+    "tldr": "A bare class-level annotation with no assigned value (`name: str`) creates no instance attribute and no constructor logic on its own — it's inert metadata — which is exactly the gap `@dataclass` fills by reading `__annotations__` to generate a real `__init__`.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q8"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q9",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What problem does `typing.TYPE_CHECKING` solve, and why can't you just always import the type normally?",
+    "tldr": "`TYPE_CHECKING` is `False` at runtime but treated as `True` by static checkers, so guarding an import with it makes a type available for annotations without ever executing that import at runtime — breaking circular-import chains that only exist for typing purposes.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q9"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q10",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "When would you choose a `dataclass` over a `NamedTuple`, or vice versa?",
+    "tldr": "`NamedTuple` is an immutable, memory-lean tuple subclass with automatic unpacking/indexing; `dataclass` is a normal (optionally frozen) class with richer per-field configuration — pick based on whether you actually need tuple semantics or class semantics.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q10"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q11",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "`TypedDict` type-checks dictionary shapes, but what actually exists at runtime?",
+    "tldr": "A `TypedDict` produces a plain `dict` at runtime with no validation whatsoever — it only lets a static type checker flag shape mismatches it can see in your source, so it does nothing to guard against malformed data arriving dynamically.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q11"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q12",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What problem does `ParamSpec` solve that a plain `TypeVar` can't?",
+    "tldr": "`ParamSpec` (PEP 612) captures a whole parameter list as one unit via `P.args`/`P.kwargs`, letting a decorator forward the original function's exact signature to callers instead of erasing it to `Callable[..., T]`; `Concatenate` extends this to decorators that also inject an extra parameter.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q12"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q13",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What does `typing.Self` let you express that a regular `TypeVar` bound to the class couldn't already?",
+    "tldr": "`Self` (PEP 673) is shorthand for a class-bound `TypeVar`, but it matters in practice for chainable methods and alternative constructors on subclasses — annotating a return as the base class name (instead of `Self`) makes a type checker lose the subclass's type through method chains.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q13"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q14",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Where does pydantic's runtime validation actually cost you something that a pure `dataclass` + type hints wouldn't?",
+    "tldr": "Pydantic pays real per-instantiation validation cost that a plain `dataclass` doesn't, which is worth it at trust boundaries (external data) but wasteful for already-trusted internal data-passing — and any suspected pydantic hot path should be profiled, not assumed, before optimizing.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q14"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q15",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "What happens if a `Protocol`'s method has an incompatible signature on the implementing class — does structural matching just check method *names*?",
+    "tldr": "Static Protocol matching checks full signature compatibility, not just method names — an implementation can't add a *required* parameter the protocol doesn't promise callers will supply, though optional parameters with defaults are fine.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q15"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q16",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "How does adopting mypy on a large, previously untyped codebase actually happen in practice — do you annotate everything on day one?",
+    "tldr": "Rolling out mypy on a large untyped codebase means starting with a small subset under CI enforcement and expanding module-by-module — prioritizing widely-imported utilities for maximum leverage — rather than flipping on `--strict` everywhere immediately.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q16"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q17",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Does `get_type_hints()` behave exactly like reading `__annotations__` directly?",
+    "tldr": "`get_type_hints()` resolves string forward references into real type objects and strips `Annotated` metadata by default (unlike raw `__annotations__`), but that resolution can raise `NameError` if a `TYPE_CHECKING`-only name was never actually importable at runtime.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q17"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q18",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "In a `match` statement, why does `case Point(x, y):` risk a subtle bug if `Point` isn't actually a dataclass or doesn't define `__match_args__`?",
+    "tldr": "A positional class pattern (`case Point(x, y):`) raises `TypeError` at match time if the class has no `__match_args__` covering that many positions — keyword patterns (`case Point(x=x, y=y):`) sidestep this entirely since they use plain attribute lookup instead.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q18"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q19",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Why can a dataclass with `eq=True` (the default) not be safely used as a dict key or set member?",
+    "tldr": "A default (`eq=True, frozen=False`) dataclass is unhashable on purpose — mutable value-equal objects can't safely hash — and becomes hashable again once `frozen=True` guarantees its fields (and hash) can never change.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q19"
+  },
+  {
+    "id": "python-typing-and-modern-python-features-q20",
+    "topic": "python",
+    "subtopic": "typing-and-modern-python-features",
+    "file": "05-python-interview-typing-and-modern-python-features",
+    "title": "Given all these modern features are optional, how would you decide how much of this toolkit (typing, dataclasses, Protocol, match) to actually adopt on a new project?",
+    "tldr": "Adopt each modern Python feature (typing, dataclasses, Protocol, match) where it solves a specific pain you actually have — public-boundary typing almost always, dataclasses by default for data holders, Protocol for genuine structural flexibility, match for shape-based branching — rather than maximizing feature usage, since none of it is mandatory or changes Python's runtime semantics.",
+    "tags": [
+      "typing-and-modern-python-features"
+    ],
+    "url": "/src/python/05-python-interview-typing-and-modern-python-features.html#q20"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q1",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What is a Python virtual environment, and why does every project need one?",
+    "tldr": "A venv isolates a project's packages by giving it its own `site-packages` and shifting `sys.prefix` to point at it, so `pip install` there never touches the system Python or other projects.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q1"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q2",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What's the difference between a wheel and an sdist, and when does pip use each?",
+    "tldr": "sdist = source, needs a build step; wheel = prebuilt, pip just unpacks it — pip prefers a matching wheel and only falls back to building the sdist when none exists.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q2"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q3",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What's the difference between `requirements.txt` and the `[project]` table in `pyproject.toml`?",
+    "tldr": "`pyproject.toml`'s `[project]` table (PEP 621) is the standardized place for a package's abstract metadata/dependencies; `requirements.txt` is typically used as an unstandardized, often fully-pinned install/lock manifest.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q3"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q4",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "Walk through what happens when you write `import foo` — how does Python actually find and load the module?",
+    "tldr": "Import checks `sys.modules` first, then walks `sys.meta_path` finders (built-in, then path-based over `sys.path` in order), and the first matching entry wins — so ordering and stray same-named files can silently shadow the real module.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q4"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q5",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "How does `pip`'s dependency resolver work, and why can `pip install` sometimes hang for minutes?",
+    "tldr": "pip's resolver backtracks through candidate versions when constraints conflict, which is slow on large/loose dependency graphs — fix it with tighter constraints on the worst offenders or by resolving once into a lockfile instead of at every install.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q5"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q6",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "How does `pytest` decide which files and functions are tests, with zero configuration?",
+    "tldr": "pytest collects `test_*.py`/`*_test.py` files and `test`-prefixed functions/methods (in `Test`-prefixed classes without `__init__`) purely by naming convention — no explicit registration needed, but that also means a class with a constructor is silently excluded rather than erroring.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q6"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q7",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "How do pytest fixtures work as a dependency-injection mechanism?",
+    "tldr": "Fixtures are injected by parameter name and resolved in dependency order (with `yield` handling teardown); broadening their scope for speed trades away per-test isolation and can introduce order-dependent flakiness.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q7"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q8",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "Your CI test suite takes 20 minutes and used to take 5. How do you find out what got slow?",
+    "tldr": "Use `pytest --durations` to find slow individual tests; for an even, suite-wide slowdown, suspect import time (`python -X importtime`) or a broad-scope/autouse fixture doing more work than before.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q8"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q9",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "Why is a lockfile necessary for reproducible deployments, even if `pyproject.toml` already lists your dependencies?",
+    "tldr": "Ranges in `pyproject.toml` let a package coexist with others' constraints but don't guarantee the same resolve twice; a lockfile pins every (including transitive) dependency to an exact version so an application's environment is exactly reproducible — which is why applications lock and libraries generally don't.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q9"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q10",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "How should semantic versioning shape the version constraints you put on a dependency?",
+    "tldr": "Use range/compatible-release constraints (`~=`) to stay open to fixes and security patches without opting into breaking changes, but pair that with a lockfile and CI since semver is a convention maintainers can (and do) violate.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q10"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q11",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "How does the \"test pyramid\" apply to a Python codebase using pytest?",
+    "tldr": "Favor many fast unit tests with function-scoped mocks, fewer integration tests with shared session-scoped real fixtures, and mark end-to-end tests separately so they can be excluded from the fast local loop — inverting this makes CI slow, flaky, and hard to debug.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q11"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q12",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "Why do most teams prefer pytest fixtures over `unittest.TestCase`'s `setUp`/`tearDown`?",
+    "tldr": "Fixtures beat `setUp`/`tearDown` because they're explicitly requested, composable, and independently scoped instead of running unconditionally for a whole class — but pytest runs existing `unittest` suites as-is, so migration is optional.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q12"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q13",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "A test passes alone but fails when run as part of the full suite. What's the most likely cause, and how do you find it?",
+    "tldr": "Order-dependent failures almost always mean shared mutable state (module/class globals, a broad-scope fixture) leaking across tests; randomize test order to surface it and bisect the suite to find the offending test.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q13"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q14",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What is `pip install -e .` (an editable install), and why did it need its own PEP?",
+    "tldr": "Editable installs let you import from a source checkout without reinstalling on every change; PEP 660 standardized this for non-setuptools PEP 517 backends, but editable mode can mask real packaging bugs (missing data files) that only show up in a genuine wheel install.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q14"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q15",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What's the classic `unittest.mock.patch` mistake, and how do you avoid it?",
+    "tldr": "Patch where an object is looked up (the module under test's own namespace after `from...import`), not where it's defined — the target string must match how the code under test actually resolves the name.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q15"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q16",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What does `@pytest.mark.parametrize` give you that a `for` loop of assertions inside one test function doesn't?",
+    "tldr": "`parametrize` reports each case as its own test (so one failure doesn't hide the rest, and the failing input is visible directly), which a `for`-loop-of-asserts can't do — reserve the loop for asserting one property across values, not distinct scenarios.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q16"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q17",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What problem does `tox` (or `nox`) solve that running `pytest` directly doesn't?",
+    "tldr": "`tox`/`nox` run your tests inside freshly-built, isolated environments across a declared matrix of Python versions/dependencies, catching \"works on my machine\" bugs — like undeclared dependencies — that testing in your existing dev environment can't reveal.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q17"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q18",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "What is `uv`, and what does it change about the pip+venv workflow?",
+    "tldr": "`uv` is a Rust-based, unified replacement for pip/pip-tools/virtualenv claiming 10-100x install speedups, but its resolver has real behavioral differences from pip's (priority rules, multi-index handling) rather than being a drop-in identical algorithm.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q18"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q19",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "You're starting a new Python project today — pip+venv, Poetry, or uv? What actually differs?",
+    "tldr": "pip+venv is the manual, always-available baseline; Poetry is a mature, opinionated all-in-one with a slower resolver; uv is the fastest and most PEP 621-aligned option but is the newest of the three — the right choice depends on whether raw speed or ecosystem maturity matters more to the team.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q19"
+  },
+  {
+    "id": "python-packaging-testing-and-tooling-q20",
+    "topic": "python",
+    "subtopic": "packaging-testing-and-tooling",
+    "file": "06-python-interview-packaging-testing-and-tooling",
+    "title": "Design question: how would you structure dependency management for a monorepo with three internal packages that depend on each other, deployed separately?",
+    "tldr": "Give each monorepo package real PEP 621 metadata and versioned dependencies on its siblings, use editable/workspace installs for fast local iteration, but lock and build each package independently for deployment so a breaking change in one doesn't silently ship inside another's release.",
+    "tags": [
+      "packaging-testing-and-tooling"
+    ],
+    "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q20"
+  }
+]

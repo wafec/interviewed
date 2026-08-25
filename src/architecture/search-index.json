@@ -1,0 +1,722 @@
+[
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q1",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is a microservice, and how does that actually differ from a well-factored module inside a monolith?",
+    "tldr": "A microservice differs from a monolith's module in deployment/failure boundary, not code structure — it can be deployed, scaled, and fail independently; a module cannot.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q1"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q2",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is a \"bounded context\" in Domain-Driven Design, and why does it matter for drawing microservice boundaries?",
+    "tldr": "A bounded context is where one domain model is internally consistent — drawing service boundaries along bounded contexts, instead of technical layers, is what makes each service's API and data model actually coherent.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q2"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q3",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What's the practical difference between synchronous and asynchronous inter-service communication, and when do you reach for each?",
+    "tldr": "Sync calls couple caller and callee's availability/latency together; async messaging decouples them in time at the cost of immediate consistency — use sync for reads the caller needs now, async for side effects that shouldn't block the request.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q3"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q4",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is the distributed transaction problem in a microservices architecture, and how does the Saga pattern address it?",
+    "tldr": "Sagas replace one atomic cross-service transaction with a sequence of local transactions plus compensating actions for rollback, trading ACID isolation for something workable when there's no shared database to commit atomically.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q4"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q5",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What's the difference between choreography-based and orchestration-based sagas?",
+    "tldr": "Choreography coordinates a saga via services reacting to each other's events (decoupled but implicit); orchestration uses a central coordinator issuing commands and tracking state (coupled but explicit and easier to debug).",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q5"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q6",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "How does client-side service discovery work, and how does it differ from server-side discovery?",
+    "tldr": "Client-side discovery has the calling service query the registry and pick an instance itself (fewer hops, more client coupling); server-side discovery hides that behind a router/load balancer the client just calls directly.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q6"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q7",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What problem does an API Gateway solve for microservice clients, and what is the Backends-for-Frontends (BFF) variation?",
+    "tldr": "An API Gateway gives clients one entry point instead of many direct service calls, proxying or composing as needed; BFF splits that gateway per client type so each client gets a tailored API instead of one generic gateway accumulating every client's special cases.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q7"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q8",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "How do you diagnose where latency is coming from when a request crosses five different microservices?",
+    "tldr": "Diagnosing cross-service latency requires distributed tracing (linked spans across all services in one trace) to see which hop is actually slow — gaps between span totals and total latency point to un-instrumented time like queueing or connection-pool waits.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q8"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q9",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What causes an N+1-style problem in service-to-service calls, and how do you fix it?",
+    "tldr": "Service-level N+1 is per-item round trips to a downstream service instead of one batched call — fix it with a bulk endpoint or an API-composition aggregation layer, and paginate/cache if the batch itself gets too large.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q9"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q10",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What does it mean for services to be \"chatty,\" and what's your strategy to reduce it?",
+    "tldr": "Chattiness usually means service boundaries were drawn along a technical seam rather than a business one — fix it with coarser-grained APIs/aggregation first, and only consider merging services if the boundary never had a real bounded-context justification.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q10"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q11",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is Conway's Law, and how does it show up — often unintentionally — in service boundaries?",
+    "tldr": "Conway's Law says system architecture mirrors organizational communication structure — service boundaries often end up matching team boundaries by default, which is why deliberately shaping team structure (the Inverse Conway Maneuver) is a real architectural lever.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q11"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q12",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "How does the Single Responsibility Principle apply at the service level, and how is that different from applying it to a class?",
+    "tldr": "SRP applies to services the same way it does to classes — one reason to change — but a violation at the service level is far costlier to fix, since undoing it means a distributed-systems change instead of an in-codebase refactor.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q12"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q13",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What organizational/operational problems does splitting into microservices actually solve?",
+    "tldr": "Microservices solve independent deployability, independent scaling, fault isolation, and technology flexibility — but only pay off once you actually have the organizational/scaling pressure those solve; without it, you pay the cost for no benefit.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q13"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q14",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What new problems does a microservices architecture introduce that a monolith doesn't have?",
+    "tldr": "Microservices trade away cross-service ACID transactions and in-process reliability for distributed-systems failure modes (partial failure, network issues) and N-times the operational surface area to run, monitor, and debug.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q14"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q15",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is the \"distributed monolith\" anti-pattern, and how does a team end up there?",
+    "tldr": "A distributed monolith is services split across the network that still must deploy together due to coupling (often via shared internal libraries or technical-layer boundaries) — you pay for a distributed system without getting independent deployability.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q15"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q16",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is the shared-database anti-pattern, and why does it undermine microservices' benefits?",
+    "tldr": "Sharing a database across services lets them bypass each other's business rules and couples their schemas together, undoing the independent deployability and data ownership that \"database per service\" is meant to provide.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q16"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q17",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "Why does Martin Fowler's \"MonolithFirst\" advice argue against starting a brand-new project with microservices?",
+    "tldr": "MonolithFirst argues that new projects don't yet know their real domain boundaries or need the deploy/scale benefits microservices buy, so paying that overhead early is a bad trade — but the monolith should stay internally modular so a later split is tractable.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q17"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q18",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is the Strangler Fig pattern, and how is it used to migrate a legacy monolith incrementally?",
+    "tldr": "Strangler Fig migrates a legacy system incrementally by routing more and more traffic to new services over time, avoiding a risky big-bang rewrite — the hard part is usually the routing/data-sync layer during the transition, not the new services themselves.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q18"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q19",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "What is a service mesh, and what problem does the sidecar proxy pattern solve?",
+    "tldr": "A service mesh manages inter-service traffic/security/telemetry via a sidecar proxy next to each service instance, transparently and language-agnostically — but it only handles generic transport-level resilience, not business-aware decisions like safe retries or compensating actions.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q19"
+  },
+  {
+    "id": "architecture-microservices-vs-monoliths-and-service-boundaries-q20",
+    "topic": "architecture",
+    "subtopic": "microservices-vs-monoliths-and-service-boundaries",
+    "file": "02-architecture-interview-microservices-vs-monoliths-and-service-boundaries",
+    "title": "Given a mid-sized product built by a single team as a monolith, what specific signals would tell you it's time to consider splitting out a service?",
+    "tldr": "Split out a service when there's real, observed pressure (scaling profile, release cadence, team ownership, or reliability requirements) that a shared monolith can't satisfy — and check the candidate module already has a clean bounded-context boundary before extracting it, or the split will start out as a distributed monolith.",
+    "tags": [
+      "microservices-vs-monoliths-and-service-boundaries"
+    ],
+    "url": "/src/architecture/02-architecture-interview-microservices-vs-monoliths-and-service-boundaries.html#q20"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q1",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What is the Dependency Inversion Principle, and how is it different from dependency injection?",
+    "tldr": "DIP is about dependency *direction* (both sides depend on an abstraction); dependency injection is just one mechanism for wiring that up, and you can use DI while still violating DIP if you inject concrete types.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q1"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q2",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What is the \"Dependency Rule\" in Clean Architecture, and why must dependencies always point inward?",
+    "tldr": "Source-code dependencies in Clean Architecture must point inward only, toward business rules — control can still flow outward at runtime because outer layers implement interfaces defined by inner layers (DIP at the boundary).",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q2"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q3",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What problem does Hexagonal Architecture (Ports & Adapters) solve, and what exactly is a \"port\"?",
+    "tldr": "Hexagonal architecture isolates the application core behind technology-agnostic ports so any adapter (UI, database, test harness) can plug in without the core ever knowing or caring which one is connected.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q3"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q4",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "Explain CQRS — what does it actually separate, and when does Martin Fowler say it's not worth using?",
+    "tldr": "CQRS splits read and write models for one bounded context at a time, and is worth it only for genuinely complex domains or large read/write load asymmetry — everywhere else it's complexity without payoff.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q4"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q5",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "How does Event Sourcing reconstruct application state, and what problem do snapshots solve?",
+    "tldr": "State is a projection of replayed events, not a stored fact; snapshots cap replay cost by periodically checkpointing computed state, and side-effect-triggering logic must be kept out of the replay path.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q5"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q6",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What is an anemic domain model, and why does Martin Fowler consider it an anti-pattern?",
+    "tldr": "An anemic model has the shape of OO (classes, relationships) but none of the substance (behavior); logic ends up scattered in services, so you pay for a rich-domain-model's persistence overhead while getting a procedural design's lack of encapsulation.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q6"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q7",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "State the Liskov Substitution Principle, and give a concrete example of a violation.",
+    "tldr": "LSP violations happen when a subtype breaks the behavioral contract clients rely on for the base type — the classic mutable Rectangle/Square example shows the violation is about the interface's contract, not the real-world \"is-a\" relationship.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q7"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q8",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What does the Interface Segregation Principle solve that Single Responsibility doesn't already cover?",
+    "tldr": "SRP is about why a class changes; ISP is about not forcing a client to depend on interface methods it never uses — splitting fat interfaces into small, role-specific ones limits the blast radius of interface changes.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q8"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q9",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What is Conway's Law, and how does it show up in service/module boundaries?",
+    "tldr": "System boundaries tend to mirror team communication boundaries whether you plan it or not, so shaping team structure deliberately (the Inverse Conway Maneuver) is often more effective than trying to design an architecture that fights your org chart.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q9"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q10",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "How would you diagnose that a codebase has drifted from its intended architecture's dependency direction?",
+    "tldr": "Diagnose dependency-direction drift with automated fitness-function tooling (not just code review) and fix it incrementally by introducing the missing abstraction at each violated boundary, one at a time.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q10"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q11",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What's the difference between a design pattern and an architectural pattern?",
+    "tldr": "Design patterns solve local, class-level problems and are cheap to reverse; architectural patterns shape the whole system's structure and are expensive to reverse — the distinction should drive how much scrutiny a proposed change gets.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q11"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q12",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "Explain the Open-Closed Principle with a concrete before/after example.",
+    "tldr": "OCP replaces type-discriminator branching with polymorphism so new cases are added via new classes, not edits to existing code — but apply it only once real variation shows up, not speculatively.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q12"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q13",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What testability problem does classic layered architecture not solve that hexagonal/Clean Architecture does?",
+    "tldr": "Layered architecture constrains call order but not dependency direction, so business logic can still depend on concrete data-access classes; hexagonal architecture inverts that specific dependency so business logic can be unit-tested with zero database involved.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q13"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q14",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "What consistency trade-off do you take on when combining CQRS with Event Sourcing?",
+    "tldr": "CQRS+Event Sourcing typically makes the read side eventually consistent with the write side, so you need an explicit read-your-writes or optimistic-UI strategy for users who expect to see their own change immediately.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q14"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q15",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "When is applying Clean/Hexagonal Architecture over-engineering for a simple CRUD app?",
+    "tldr": "Full Clean/Hexagonal ceremony is over-engineering when there's no real business logic to isolate and no realistic infrastructure-swap scenario — introduce the abstraction at a specific boundary only once there's concrete evidence it's earning its cost.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q15"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q16",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "How do plugin architectures apply the Dependency Inversion Principle at a whole-system level?",
+    "tldr": "Plugin architectures are DIP applied at the scale of whole deployable units — the core depends only on a stable interface, never on concrete plugins — but that scale introduces a real versioning/compatibility risk that class-level DIP doesn't face.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q16"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q17",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "Why is a domain-layer class importing a framework or ORM-specific type considered a layering violation?",
+    "tldr": "ORM annotations on a domain entity invert the intended dependency direction, coupling business rules to a specific persistence technology; the fix is a separate persistence model plus a mapper at the boundary, keeping the domain layer framework-free.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q17"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q18",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "How does an event-sourced system avoid re-triggering side effects (like a payment charge) when replaying events?",
+    "tldr": "Side-effecting I/O must live only in the once-per-action command-handling path, never in the apply-function path used during replay, so reconstructing state never re-executes real-world effects like a payment charge.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q18"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q19",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "How do read-model consistency guarantees differ between plain CQRS (no event sourcing) and CQRS built on top of Event Sourcing?",
+    "tldr": "CQRS alone doesn't force eventual consistency — that's a separate choice — but CQRS built on Event Sourcing almost always leans eventually consistent because coupling the projector synchronously into the write transaction undoes much of what event sourcing is for.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q19"
+  },
+  {
+    "id": "architecture-architectural-patterns-and-design-principles-q20",
+    "topic": "architecture",
+    "subtopic": "architectural-patterns-and-design-principles",
+    "file": "03-architecture-interview-architectural-patterns-and-design-principles",
+    "title": "How would you evolve an event's schema in an event-sourced system without breaking replay of old, already-persisted events?",
+    "tldr": "Old events can never be edited, so schema evolution happens via upcasters in the read path (or by trading away full historical replay via snapshot-and-archive) — both are real, ongoing costs of committing to event sourcing.",
+    "tags": [
+      "architectural-patterns-and-design-principles"
+    ],
+    "url": "/src/architecture/03-architecture-interview-architectural-patterns-and-design-principles.html#q20"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q1",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What's the difference between latency and throughput, and why can optimizing for one hurt the other?",
+    "tldr": "Latency is per-request time, throughput is requests-per-second — batching/buffering trades one for the other, so the right choice depends on which axis the workload actually needs.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q1"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q2",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What's the difference between vertical and horizontal scaling, and when would you reach for each?",
+    "tldr": "Vertical scaling is simpler but capped by one machine's limits and keeps a single point of failure; horizontal scaling has near-unlimited headroom but requires the workload to be distributable — which is why stateless app tiers scale out and single-writer databases usually scale up first.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q2"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q3",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "How do you approach back-of-envelope capacity estimation in a system design interview?",
+    "tldr": "Convert user/traffic scale into QPS (with a peak multiplier), then propagate that into storage/bandwidth/instance-count estimates — the goal is catching order-of-magnitude bottlenecks, and the memory/disk/network latency hierarchy is what justifies caching and regional distribution.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q3"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q4",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Walk through what happens to a request as it passes through a load balancer, a cache, and a database — what does each layer actually buy you?",
+    "tldr": "Each layer exists to shield the next, slower one from load: the load balancer protects app servers, the cache protects the database — and the database, not the cache, is always the source of truth, with TTLs bounding how stale a cache entry can get.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q4"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q5",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "State the CAP theorem precisely. Is \"pick 2 of 3\" actually correct?",
+    "tldr": "Partition tolerance isn't optional in the real world, so the real CAP trade-off is consistency vs. availability, and only while a partition is actually happening — not an always-on \"pick 2 of 3.\"",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q5"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q6",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What does PACELC add on top of CAP?",
+    "tldr": "PACELC says CAP only covers the rare partition case — the trade-off you make constantly, partition or not, is latency vs. consistency, and DynamoDB's cheaper eventually-consistent-by-default read is a concrete example of choosing latency.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q6"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q7",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Explain strong, eventual, and causal consistency — what does each actually guarantee an application author?",
+    "tldr": "Strong consistency guarantees every read sees the latest write; eventual consistency only guarantees convergence with no staleness bound; causal consistency guarantees order for related operations only — and DynamoDB lets you opt into strong consistency per-read via `ConsistentRead` when you need it.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q7"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q8",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What does it mean for a quorum system to satisfy W + R > N, and why does that guarantee consistency?",
+    "tldr": "W + R > N guarantees every read quorum and write quorum share at least one replica, so a read is guaranteed to see the latest write; dropping below that threshold trades that guarantee away for lower latency and higher availability.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q8"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q9",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "A service's p99 latency has doubled. How do you figure out whether it's CPU-, memory-, disk-, or network-bound?",
+    "tldr": "Apply the USE method (Utilization, Saturation, Errors) to each resource in turn — a resource with high utilization and growing saturation is your bottleneck; low utilization everywhere points away from hardware and toward contention or a slow dependency.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q9"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q10",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "How do you validate, before writing any code, that a proposed design will actually meet a stated latency/throughput target?",
+    "tldr": "Break the target latency/throughput into per-component budgets and check each against known capacity numbers to catch order-of-magnitude problems early — then load-test, since back-of-envelope math can't capture real contention, hot keys, or tail-latency effects.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q10"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q11",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What does Amdahl's Law say, and why does it mean \"just add more servers\" has diminishing returns?",
+    "tldr": "Amdahl's Law caps the maximum speedup from parallelism at 1/(sequential fraction) — so any serialized part of a pipeline (a single-writer DB, a global lock) sets a hard ceiling that more servers alone can't push past.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q11"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q12",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Why do caching layers exist at all — what breaks without one?",
+    "tldr": "Caches exist because databases are the hardest component to scale — absorbing hot reads in-memory protects the database from becoming the bottleneck, at the cost of managed staleness.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q12"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q13",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Why introduce a message queue between a producer and a consumer instead of having the producer call the consumer directly?",
+    "tldr": "A queue decouples producer and consumer lifecycles and pace, giving durability and independent scaling — but it converts a visible synchronous failure into an easy-to-miss silent backlog if the consumer falls behind.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q13"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q14",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Why does sharding exist — what happens to a dataset that outgrows a single database node?",
+    "tldr": "Sharding splits data across nodes once one node's storage/throughput ceiling is exceeded — but it sacrifices easy cross-shard queries, and a poorly chosen partition key can create a hot shard that becomes the new bottleneck anyway.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q14"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q15",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What does \"premature optimization\" mean in a system design context, and how do you avoid it without under-designing?",
+    "tldr": "Premature optimization is solving scaling problems you haven't confirmed exist — avoid it by starting simple and naming the specific threshold at which each piece of added complexity becomes justified, especially for decisions that are expensive to change later (data model, partition key).",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q15"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q16",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "How do you identify and eliminate single points of failure (SPOFs) in a design?",
+    "tldr": "Find SPOFs by asking \"does this survive the loss of any one component?\" recursively — redundant instances in the same failure domain (e.g. one AZ) just move the SPOF up a level, so real resilience requires spreading across independent fault isolation zones.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q16"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q17",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What problem does consistent hashing solve that naive `hash(key) % N` doesn't?",
+    "tldr": "Naive `hash(key) % N` remaps almost every key when N changes; consistent hashing bounds that to roughly 1/N of the keyspace by placing nodes and keys on a ring — and virtual nodes fix the uneven-load problem plain single-point consistent hashing can still have.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q17"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q18",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Compare the lazy-loading (cache-aside) and write-through caching strategies — what does each optimize for, and what does each risk?",
+    "tldr": "Lazy loading only caches what's actually read (efficient, but can go stale); write-through keeps the cache always fresh (safer, but adds write latency and can leave new/empty nodes with permanently missing data unless combined with lazy loading).",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q18"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q19",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "Compare token bucket, leaky bucket, and sliding-window rate limiting — how does each behave under a burst of traffic?",
+    "tldr": "Token bucket allows accumulated bursts up to a cap; leaky bucket forces a constant output rate regardless of input burstiness; sliding window avoids the fixed-window boundary-doubling problem — pick based on whether the downstream can tolerate bursts at all.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q19"
+  },
+  {
+    "id": "architecture-system-design-fundamentals-and-tradeoffs-q20",
+    "topic": "architecture",
+    "subtopic": "system-design-fundamentals-and-tradeoffs",
+    "file": "01-architecture-interview-system-design-fundamentals-and-tradeoffs",
+    "title": "What access-pattern characteristics should actually drive a choice between a SQL and a NoSQL database?",
+    "tldr": "Choose SQL when you need flexible ad hoc querying and transactions at a scale one writer can handle; choose NoSQL when access patterns are known and narrow and scale genuinely exceeds a single writer — picking NoSQL before access patterns are known just trades query flexibility for scalability you may not need yet.",
+    "tags": [
+      "system-design-fundamentals-and-tradeoffs"
+    ],
+    "url": "/src/architecture/01-architecture-interview-system-design-fundamentals-and-tradeoffs.html#q20"
+  }
+]

@@ -1,0 +1,1939 @@
+{
+  "topic": "python",
+  "questions": [
+    {
+      "id": "python-core-language-and-data-model-001",
+      "tags": [
+        "core-language-and-data-model",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A class defines __eq__ but does not define __hash__. What happens when you try to add an instance to a set?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It works, using the default identity-based hash inherited from object"
+        },
+        {
+          "id": "b",
+          "text": "It raises TypeError, because __hash__ is implicitly set to None"
+        },
+        {
+          "id": "c",
+          "text": "Python auto-generates a __hash__ from the fields compared in __eq__"
+        },
+        {
+          "id": "d",
+          "text": "It works, but the set silently drops the instance without inserting it"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Defining __eq__ without __hash__ implicitly sets __hash__ to None on that class, making instances explicitly unhashable, because Python can't assume a custom equality is still consistent with the inherited identity-based hash. (a) is wrong because the identity hash is exactly what gets discarded. (c) is wrong — Python never auto-generates __hash__ from __eq__'s logic (that's what @dataclass does, not the plain data model). (d) is wrong — it's a loud TypeError, not a silent drop.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#object.__hash__"
+    },
+    {
+      "id": "python-core-language-and-data-model-002",
+      "tags": [
+        "core-language-and-data-model",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Which statement correctly describes the order of __new__ and __init__ when you call MyClass(arg)?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "__init__ builds the instance, then __new__ configures its fields afterward"
+        },
+        {
+          "id": "b",
+          "text": "Only one of them runs, depending on whether the class overrides __new__"
+        },
+        {
+          "id": "c",
+          "text": "__new__ creates the instance first, and __init__ then initializes it"
+        },
+        {
+          "id": "d",
+          "text": "They run concurrently, with __init__ waiting on __new__'s return value"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "__new__ is called first to create and return the instance; __init__ then runs on that instance to initialize it (and must return None). (a) reverses the order. (b) is wrong — both run for a normal call, __new__ just usually isn't overridden so it silently does the default allocation. (d) invents concurrency that doesn't exist here.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#object.__new__"
+    },
+    {
+      "id": "python-core-language-and-data-model-003",
+      "tags": [
+        "core-language-and-data-model",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What does declaring __slots__ = ('x', 'y') on a class primarily change?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It replaces the per-instance __dict__ with fixed, named storage slots"
+        },
+        {
+          "id": "b",
+          "text": "It makes x and y read-only after the constructor finishes running"
+        },
+        {
+          "id": "c",
+          "text": "It automatically adds x and y as keyword-only constructor arguments"
+        },
+        {
+          "id": "d",
+          "text": "It moves x and y into class-level attributes shared by every instance"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "__slots__ allocates fixed-offset storage for the named attributes instead of giving each instance its own __dict__, saving memory and speeding up attribute access. (b) is wrong — slots don't imply immutability, x and y remain assignable. (c) confuses slots with dataclass field generation. (d) is wrong — slots are still per-instance storage, not shared class state.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#slots"
+    },
+    {
+      "id": "python-core-language-and-data-model-004",
+      "tags": [
+        "core-language-and-data-model",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Given class A, class B(A), class C(A), class D(B, C), what is D.__mro__?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "D, A, B, C, object — A is promoted early since both B and C depend on it"
+        },
+        {
+          "id": "b",
+          "text": "D, B, C, A, object — each ancestor appears exactly once, A only after both B and C"
+        },
+        {
+          "id": "c",
+          "text": "D, B, A, C, A, object — A appears once per inheritance path it's reached through"
+        },
+        {
+          "id": "d",
+          "text": "It cannot be determined without also inspecting each method's own super() calls"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "C3 linearization preserves the left-to-right base order and guarantees each class appears exactly once, only after all of its own subclasses in the hierarchy — so D, B, C, A, object. (a) wrongly promotes A ahead of the subclasses that depend on it. (c) incorrectly duplicates A. (d) is wrong — the MRO is computed once at class-creation time from the class hierarchy alone, independent of any method bodies.",
+      "reference": "https://docs.python.org/3/howto/mro.html"
+    },
+    {
+      "id": "python-core-language-and-data-model-005",
+      "tags": [
+        "core-language-and-data-model",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "def add(item, bucket=[]): bucket.append(item); return bucket — calling add(1) then add(2) with no second argument returns what for the second call?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "[2] — each call without an explicit bucket gets its own fresh empty list"
+        },
+        {
+          "id": "b",
+          "text": "[1, 2] — the same default list object is reused and accumulates across calls"
+        },
+        {
+          "id": "c",
+          "text": "TypeError — a mutable object cannot be used as a default argument value"
+        },
+        {
+          "id": "d",
+          "text": "[2, 1] — Python reorders default-list contents by most-recent-first"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Default argument values are evaluated once at function-definition time, so the same list object backs every call that omits bucket, and mutating it (append) persists across calls. (a) describes the commonly-expected but wrong behavior. (c) is wrong — this is legal, just a footgun, not an error. (d) invents reordering behavior that doesn't exist.",
+      "reference": "https://docs.python.org/3/faq/programming.html#why-are-default-values-shared-between-objects"
+    },
+    {
+      "id": "python-core-language-and-data-model-006",
+      "tags": [
+        "core-language-and-data-model",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "original = [[1, 2], [3, 4]]; shallow = copy.copy(original); shallow[0].append(9) — what happens to original?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "original is unaffected, since copy.copy always fully isolates nested data"
+        },
+        {
+          "id": "b",
+          "text": "original[0] also gains the 9, because the inner lists are shared references"
+        },
+        {
+          "id": "c",
+          "text": "A RuntimeError is raised, since shallow copies forbid mutating nested elements"
+        },
+        {
+          "id": "d",
+          "text": "Only shallow is affected, but original's length changes to match it"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "copy.copy() only duplicates the outer container; nested mutable objects like the inner lists are shared between original and the copy, so mutating one through either reference is visible from both. (a) describes deepcopy's behavior, not copy.copy's. (c) invents an error that doesn't occur. (d) is nonsensical — lengths aren't linked that way.",
+      "reference": "https://docs.python.org/3/library/copy.html"
+    },
+    {
+      "id": "python-core-language-and-data-model-007",
+      "tags": [
+        "core-language-and-data-model",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Which comparison is guaranteed by the language to behave consistently across any CPython version or build?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "a is b for two int literals both equal to 100"
+        },
+        {
+          "id": "b",
+          "text": "a is b for two string literals both equal to \"hello\""
+        },
+        {
+          "id": "c",
+          "text": "a == b for two objects of equal value, using the type's __eq__"
+        },
+        {
+          "id": "d",
+          "text": "a is b for two lists built separately but containing equal elements"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "== always dispatches to __eq__ and compares by value, which is a language-level guarantee. Small-integer caching and string-literal interning (a, b) are CPython implementation details, not guaranteed by the language spec, and don't apply reliably outside narrow cached ranges. (d) is guaranteed False in practice — lists are never interned or cached this way, and are unhashable/mutable so identity is never shared unless deliberately aliased.",
+      "reference": "https://docs.python.org/3/faq/programming.html#id27"
+    },
+    {
+      "id": "python-core-language-and-data-model-008",
+      "tags": [
+        "core-language-and-data-model",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What is the default metaclass of every ordinary Python class that doesn't specify one?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "object, the root of the class hierarchy"
+        },
+        {
+          "id": "b",
+          "text": "type, which itself is also an instance of type"
+        },
+        {
+          "id": "c",
+          "text": "ABCMeta, since all classes support abstract-method checks"
+        },
+        {
+          "id": "d",
+          "text": "None — plain classes have no metaclass unless one is declared"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "type is Python's default metaclass; every ordinary class is an instance of type unless a different metaclass is explicitly specified (or inherited from a base class that specifies one). (a) confuses the base of instances (object) with the metaclass of classes. (c) is wrong — ABCMeta is only used by classes that opt into abc.ABC. (d) is wrong — every class has a metaclass, type included.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#metaclasses"
+    },
+    {
+      "id": "python-core-language-and-data-model-009",
+      "tags": [
+        "core-language-and-data-model",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Inside a @dataclass, why does `items: list = []` raise a ValueError at class-definition time instead of just working like a normal default?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "list fields must be declared with a fixed maximum length in dataclasses"
+        },
+        {
+          "id": "b",
+          "text": "dataclass rejects mutable default values to force safe per-instance defaults via default_factory"
+        },
+        {
+          "id": "c",
+          "text": "Type annotations on dataclass fields cannot reference built-in generic containers"
+        },
+        {
+          "id": "d",
+          "text": "Empty list literals are not valid expressions inside a class body"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "dataclass explicitly detects mutable default values and raises ValueError, forcing you to use field(default_factory=list) so each instance gets its own fresh list instead of silently sharing one — protecting against the classic mutable-default bug at the class level. (a) and (c) invent restrictions that don't exist. (d) is simply false; empty list literals are valid anywhere an expression is.",
+      "reference": "https://docs.python.org/3/library/dataclasses.html"
+    },
+    {
+      "id": "python-core-language-and-data-model-010",
+      "tags": [
+        "core-language-and-data-model",
+        "internals"
+      ],
+      "type": "single",
+      "question": "my_vector + 5 needs to work even though int doesn't know about the Vector class. What mechanism makes this possible?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "int.__add__ raises an exception that Python silently catches and retries differently"
+        },
+        {
+          "id": "b",
+          "text": "Vector must be registered as a numeric type via the numbers module before addition works"
+        },
+        {
+          "id": "c",
+          "text": "int.__add__ returns NotImplemented, so Python falls back to Vector.__radd__"
+        },
+        {
+          "id": "d",
+          "text": "Python converts 5 into a Vector automatically before evaluating the expression"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "When the left operand's __add__ can't handle the right operand's type, it returns the NotImplemented sentinel (not an exception), signaling Python to try the right operand's reflected method (__radd__) instead — that's what lets Vector supply the actual logic for 5 + vector or vector + 5. (a) misdescribes NotImplemented as an exception. (b) invents a registration requirement that doesn't exist for this mechanism. (d) invents implicit type conversion that Python doesn't perform here.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-001",
+      "tags": [
+        "concurrency-gil-and-async",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What does the CPython GIL guarantee?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only one thread executes Python bytecode at a time"
+        },
+        {
+          "id": "b",
+          "text": "Only one process can import a module at a time"
+        },
+        {
+          "id": "c",
+          "text": "Only one coroutine can be defined per module"
+        },
+        {
+          "id": "d",
+          "text": "Only one C extension can be loaded per interpreter"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "The GIL is a mutex ensuring only one thread runs Python bytecode at a time, protecting CPython's non-atomic reference counting. It has nothing to do with module imports (b, a plausible-sounding but fabricated constraint), coroutine definitions (c, coroutines are just functions, unrelated to the GIL), or how many C extensions can load (d, multiple extensions load fine; the GIL concerns bytecode execution, not loading).",
+      "reference": "https://docs.python.org/3/glossary.html#term-global-interpreter-lock"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-002",
+      "tags": [
+        "concurrency-gil-and-async",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why is `counter += 1` from two threads still a race condition despite the GIL?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The GIL only protects imports, not variable assignment"
+        },
+        {
+          "id": "b",
+          "text": "`+=` compiles to multiple bytecode instructions, and the GIL can switch threads between them"
+        },
+        {
+          "id": "c",
+          "text": "Integers above 256 are not protected by the GIL"
+        },
+        {
+          "id": "d",
+          "text": "The GIL is disabled automatically whenever arithmetic operators are used"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "`+=` is a read-modify-write spanning several bytecode instructions, and CPython can switch to another thread between any of them, causing a lost update. (a) misstates what the GIL protects (it's about bytecode execution, not just imports). (c) is fabricated — integer caching/interning has nothing to do with GIL protection. (d) is fabricated — arithmetic operators don't disable the GIL.",
+      "reference": "https://docs.python.org/3/library/sys.html#sys.setswitchinterval"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-003",
+      "tags": [
+        "concurrency-gil-and-async",
+        "performance"
+      ],
+      "type": "single",
+      "question": "A CPU-bound pure-Python function shows no speedup when run across multiple `threading.Thread` workers. What's the most likely cause?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "GIL contention — only one thread executes bytecode at a time"
+        },
+        {
+          "id": "b",
+          "text": "The function has a memory leak"
+        },
+        {
+          "id": "c",
+          "text": "Thread objects require manual garbage collection"
+        },
+        {
+          "id": "d",
+          "text": "Python threads default to a single CPU affinity mask"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "For pure-Python CPU-bound work, threads mostly take turns holding the GIL rather than running in parallel, so wall-clock time doesn't improve. (b) and (c) are unrelated fabricated causes. (d) is fabricated — Python threads don't set a CPU affinity mask by default; the bottleneck is the GIL, not OS scheduling affinity.",
+      "reference": "https://docs.python.org/3/glossary.html#term-global-interpreter-lock"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-004",
+      "tags": [
+        "concurrency-gil-and-async",
+        "internals"
+      ],
+      "type": "single",
+      "question": "How does `multiprocessing` achieve true parallelism for CPU-bound Python code?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It disables the GIL for the duration of the program"
+        },
+        {
+          "id": "b",
+          "text": "Each worker is a separate OS process with its own interpreter and GIL"
+        },
+        {
+          "id": "c",
+          "text": "It rewrites Python bytecode into native machine code at runtime"
+        },
+        {
+          "id": "d",
+          "text": "It runs all workers inside one process using cooperative scheduling"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Each multiprocessing worker is a full separate process with its own interpreter and GIL, so N processes can truly run in parallel across cores. (a) is wrong — the GIL isn't disabled, it's simply irrelevant across separate processes. (c) describes JIT compilation, unrelated to multiprocessing. (d) describes asyncio, not multiprocessing — cooperative scheduling is single-threaded, the opposite of what achieves parallelism here.",
+      "reference": "https://docs.python.org/3/library/multiprocessing.html#multiprocessing-programming"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-005",
+      "tags": [
+        "concurrency-gil-and-async",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why does passing a `lambda` as the target function to `multiprocessing.Pool.map` typically fail?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Lambdas aren't picklable by reference, so the spawned child can't import/unpickle them"
+        },
+        {
+          "id": "b",
+          "text": "Lambdas can only accept one positional argument in Python"
+        },
+        {
+          "id": "c",
+          "text": "The multiprocessing module blocks all anonymous functions for security reasons"
+        },
+        {
+          "id": "d",
+          "text": "Pool.map requires the target function to return a generator"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "With the default spawn start method, the child process must unpickle the target by importing it by name, and lambdas have no stable module-level name to reference. (b) is a fabricated, unrelated restriction on lambda arity. (c) is fabricated — there's no security-based block. (d) is fabricated — Pool.map has no such generator-return requirement.",
+      "reference": "https://docs.python.org/3/library/multiprocessing.html#multiprocessing-programming"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-006",
+      "tags": [
+        "concurrency-gil-and-async",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Mechanically, how does `await` suspend a coroutine and later resume it?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Like a generator: it yields control to the loop, which resumes the frame later"
+        },
+        {
+          "id": "b",
+          "text": "It spawns a new OS thread to run the awaited call in parallel"
+        },
+        {
+          "id": "c",
+          "text": "It serializes the coroutine to disk and reloads it once ready"
+        },
+        {
+          "id": "d",
+          "text": "It blocks the interpreter until the awaited value is available"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Coroutines are generator-based under the hood; `await` suspends execution and hands control to the event loop, which later resumes the same frame. (b) is fabricated — no OS thread is spawned by `await` itself. (c) is fabricated — nothing is serialized to disk. (d) describes blocking behavior, the opposite of what `await` does; a blocking call is exactly the bug this question's answer isn't describing.",
+      "reference": "https://peps.python.org/pep-3156/"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-007",
+      "tags": [
+        "concurrency-gil-and-async",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A coroutine inside an asyncio app calls a synchronous, blocking network library function directly. What happens to the rest of the app while that call runs?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The entire event loop is frozen since nothing yields control during the call"
+        },
+        {
+          "id": "b",
+          "text": "Other coroutines keep running normally on separate OS threads"
+        },
+        {
+          "id": "c",
+          "text": "The call is automatically moved to a background thread by asyncio"
+        },
+        {
+          "id": "d",
+          "text": "Only coroutines created after the call are affected"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A blocking call has no await point, so it occupies the single event-loop thread entirely, stalling every other coroutine and callback until it returns. (b) is wrong — asyncio is single-threaded; there are no separate OS threads running coroutines by default. (c) is fabricated — asyncio does not automatically offload blocking calls; you must explicitly use run_in_executor. (d) is fabricated — the freeze affects all pending work, not just coroutines created afterward.",
+      "reference": "https://docs.python.org/3/library/asyncio-dev.html#running-blocking-code"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-008",
+      "tags": [
+        "concurrency-gil-and-async",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "When a task inside an `asyncio.TaskGroup` raises an exception, what happens to the other tasks in that group?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They are cancelled, and the group waits for them before propagating"
+        },
+        {
+          "id": "b",
+          "text": "They keep running independently and are never cancelled"
+        },
+        {
+          "id": "c",
+          "text": "They are paused indefinitely until manually resumed"
+        },
+        {
+          "id": "d",
+          "text": "Only tasks created after the failure are cancelled"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "TaskGroup provides structured concurrency: any task failing cancels the sibling tasks, and the group waits for them to finish before propagating exceptions (wrapped in an ExceptionGroup). (b) describes gather's default behavior, not TaskGroup's. (c) is fabricated — tasks are cancelled, not paused. (d) is fabricated — cancellation applies to all sibling tasks in the group, not just ones created afterward.",
+      "reference": "https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-009",
+      "tags": [
+        "concurrency-gil-and-async",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What is the core architectural change PEP 703's free-threaded CPython build makes to allow disabling the GIL?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Biased reference counting, a new allocator, and per-object locking replace the GIL"
+        },
+        {
+          "id": "b",
+          "text": "It removes reference counting entirely in favor of manual memory management"
+        },
+        {
+          "id": "c",
+          "text": "It compiles all Python code to native machine code ahead of time"
+        },
+        {
+          "id": "d",
+          "text": "It restricts programs to a single thread at the OS level instead"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "PEP 703 pairs biased per-thread reference counting, a thread-safe allocator (mimalloc-based), and per-object locks/critical sections to safely remove the GIL's coarse protection. (b) is fabricated — reference counting is kept, just made thread-safe differently. (c) describes AOT compilation, unrelated to PEP 703. (d) contradicts the entire point of the feature, which is enabling more threads to run in parallel, not restricting to one.",
+      "reference": "https://peps.python.org/pep-0703/"
+    },
+    {
+      "id": "python-concurrency-gil-and-async-010",
+      "tags": [
+        "concurrency-gil-and-async",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "For a service handling tens of thousands of mostly-idle, long-lived connections, why is asyncio typically preferred over one-OS-thread-per-connection?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Coroutines have far less per-connection memory/scheduling overhead than OS threads"
+        },
+        {
+          "id": "b",
+          "text": "asyncio connections are encrypted by default, unlike threaded ones"
+        },
+        {
+          "id": "c",
+          "text": "Threads cannot perform network I/O in Python"
+        },
+        {
+          "id": "d",
+          "text": "asyncio automatically distributes connections across CPU cores"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Coroutines are lightweight userspace objects scheduled by a single event loop, avoiding the per-thread stack memory and OS scheduling cost that makes tens of thousands of OS threads impractical. (b) is fabricated — encryption is unrelated to the threading-vs-asyncio choice. (c) is false — threads can and do perform network I/O; that's exactly how threaded servers work. (d) is fabricated — asyncio's event loop is single-threaded and doesn't distribute across cores on its own.",
+      "reference": "https://docs.python.org/3/library/asyncio.html"
+    },
+    {
+      "id": "python-memory-management-and-performance-001",
+      "tags": [
+        "memory-management-and-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What is CPython's primary mechanism for reclaiming an object's memory?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A generational tracing collector that periodically scans the whole heap"
+        },
+        {
+          "id": "b",
+          "text": "A stop-the-world mark-and-sweep pass triggered on every allocation"
+        },
+        {
+          "id": "c",
+          "text": "Reference counting, freeing an object the instant its count hits zero"
+        },
+        {
+          "id": "d",
+          "text": "An arena allocator that never frees memory until process exit"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "CPython frees an object immediately once its reference count reaches zero — this is the primary mechanism. The generational collector (a) only supplements this for reference cycles; it isn't the primary path. (c) and (d) don't describe CPython's actual behavior.",
+      "reference": "https://docs.python.org/3/glossary.html#term-reference-count"
+    },
+    {
+      "id": "python-memory-management-and-performance-002",
+      "tags": [
+        "memory-management-and-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why does `sys.getrefcount(x)` return a value one higher than you might intuitively expect?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It always rounds the count up for safety margin"
+        },
+        {
+          "id": "b",
+          "text": "It counts the temporary argument reference to itself"
+        },
+        {
+          "id": "c",
+          "text": "It counts weak references as full references"
+        },
+        {
+          "id": "d",
+          "text": "It adds one for the module-level import reference"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Calling getrefcount(x) itself creates a temporary argument reference to x, inflating the count by one. The other options describe behavior getrefcount doesn't have.",
+      "reference": "https://docs.python.org/3/library/sys.html#sys.getrefcount"
+    },
+    {
+      "id": "python-memory-management-and-performance-003",
+      "tags": [
+        "memory-management-and-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "How many generations does CPython's cyclic garbage collector divide tracked objects into?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Two, split into young and old generations"
+        },
+        {
+          "id": "b",
+          "text": "Three: generation 0 (youngest) to 2 (oldest)"
+        },
+        {
+          "id": "c",
+          "text": "A number configurable per object type"
+        },
+        {
+          "id": "d",
+          "text": "One flat pool with no generational structure"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The gc module organizes tracked objects into 3 generations; objects surviving a collection are promoted to the next one up. (a), (c), and (d) don't match CPython's design.",
+      "reference": "https://docs.python.org/3/library/gc.html"
+    },
+    {
+      "id": "python-memory-management-and-performance-004",
+      "tags": [
+        "memory-management-and-performance",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What does calling `gc.freeze()` right before a pre-fork server forks its worker processes accomplish?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It excludes the current object graph from future cyclic GC scans"
+        },
+        {
+          "id": "b",
+          "text": "It permanently disables the garbage collector in all child processes"
+        },
+        {
+          "id": "c",
+          "text": "It compacts the heap to reduce the memory each worker needs"
+        },
+        {
+          "id": "d",
+          "text": "It forces an immediate full collection before the fork happens"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "freeze() moves currently tracked objects into a permanent generation the collector skips, so children never write to those shared pages during a scan, preserving COW sharing. It doesn't disable GC for new objects (b), doesn't compact memory (c), and doesn't itself trigger a collection (d).",
+      "reference": "https://docs.python.org/3/library/gc.html#gc.freeze"
+    },
+    {
+      "id": "python-memory-management-and-performance-005",
+      "tags": [
+        "memory-management-and-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Up to what allocation size does CPython route requests through the `pymalloc` small-object allocator rather than the system malloc?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "64 bytes"
+        },
+        {
+          "id": "b",
+          "text": "1 megabyte"
+        },
+        {
+          "id": "c",
+          "text": "4 kilobytes"
+        },
+        {
+          "id": "d",
+          "text": "512 bytes"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Allocations of 512 bytes or less go through pymalloc; larger ones fall back to PyMem_RawMalloc. The other sizes don't match the documented threshold.",
+      "reference": "https://docs.python.org/3/c-api/memory.html"
+    },
+    {
+      "id": "python-memory-management-and-performance-006",
+      "tags": [
+        "memory-management-and-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Besides a refcount and a type pointer, what does a typical Python object without `__slots__` carry that a comparable C struct doesn't?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A cached compiled bytecode object"
+        },
+        {
+          "id": "b",
+          "text": "A copy of its class's entire method table"
+        },
+        {
+          "id": "c",
+          "text": "A per-instance __dict__ backing its attribute storage"
+        },
+        {
+          "id": "d",
+          "text": "A pointer to every other live instance of the same class"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Without __slots__, instances get a per-instance __dict__ (itself a hash table with real overhead) to store attributes. The other options don't describe how per-instance attribute storage works.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#slots"
+    },
+    {
+      "id": "python-memory-management-and-performance-007",
+      "tags": [
+        "memory-management-and-performance",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Using `tracemalloc`, which call tells you exactly where memory grew between two points in a running program?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "tracemalloc.get_tracemalloc_memory()"
+        },
+        {
+          "id": "b",
+          "text": "snapshot2.compare_to(snapshot1, 'lineno')"
+        },
+        {
+          "id": "c",
+          "text": "tracemalloc.start() to begin tracing"
+        },
+        {
+          "id": "d",
+          "text": "gc.get_stats() per generation"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "compare_to() diffs two snapshots by allocation site, surfacing size/count deltas per line. start() only begins tracing, get_tracemalloc_memory() reports the tracer's own overhead, and gc.get_stats() is unrelated to tracemalloc.",
+      "reference": "https://docs.python.org/3/library/tracemalloc.html"
+    },
+    {
+      "id": "python-memory-management-and-performance-008",
+      "tags": [
+        "memory-management-and-performance",
+        "performance"
+      ],
+      "type": "single",
+      "question": "What kind of profiler is `cProfile`, as opposed to a sampling profiler like py-spy?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A deterministic profiler instrumenting every call/return"
+        },
+        {
+          "id": "b",
+          "text": "A statistical profiler that samples the stack on a timer"
+        },
+        {
+          "id": "c",
+          "text": "A bytecode-level disassembler with no timing information"
+        },
+        {
+          "id": "d",
+          "text": "A memory-only profiler with no CPU timing"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "cProfile instruments every function call/return for exact statistics — that's the deterministic approach. Sampling (b) describes tools like py-spy instead, and (c)/(d) mischaracterize what cProfile measures.",
+      "reference": "https://docs.python.org/3/library/profile.html"
+    },
+    {
+      "id": "python-memory-management-and-performance-009",
+      "tags": [
+        "memory-management-and-performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Before Python 3.4 (PEP 442), what happened to objects with a `__del__` method caught in a reference cycle?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They were collected normally, same as today"
+        },
+        {
+          "id": "b",
+          "text": "Their __del__ was called twice to be safe"
+        },
+        {
+          "id": "c",
+          "text": "The interpreter raised a RuntimeError at collection time"
+        },
+        {
+          "id": "d",
+          "text": "They were dumped into gc.garbage and never collected"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Pre-3.4, the collector couldn't safely order __del__ calls within a cycle, so it left such cycles in gc.garbage permanently uncollected. PEP 442 fixed this; (b), (c), and (d) don't match the pre-3.4 behavior.",
+      "reference": "https://peps.python.org/pep-0442/"
+    },
+    {
+      "id": "python-memory-management-and-performance-010",
+      "tags": [
+        "memory-management-and-performance",
+        "trade-offs"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are legitimate reasons to reach for Numba or Cython rather than switching a whole service to PyPy? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The hot path is a small, isolated numeric function rather than diffuse across the codebase"
+        },
+        {
+          "id": "b",
+          "text": "The service depends on C extensions that aren't well supported under PyPy's cpyext layer"
+        },
+        {
+          "id": "c",
+          "text": "PyPy cannot execute pure Python code at all"
+        },
+        {
+          "id": "d",
+          "text": "Numba/Cython avoid the JIT warm-up cost PyPy needs to reach full speed"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "A localized hot path, C-extension compatibility risk, and avoiding warm-up cost are all real, documented reasons to prefer a targeted tool. (c) is false — PyPy runs ordinary Python code just fine, it's C-extension compatibility that's the actual limitation.",
+      "reference": "https://pypy.org/"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-001",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What is `@my_decorator` above `def f(): ...` exactly equivalent to?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "f.decorate(my_decorator)"
+        },
+        {
+          "id": "b",
+          "text": "f = my_decorator(f)"
+        },
+        {
+          "id": "c",
+          "text": "my_decorator.apply(f)"
+        },
+        {
+          "id": "d",
+          "text": "f.__decorator__ = my_decorator"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The `@` syntax is sugar for calling the decorator with the function and rebinding the name to the result — `f = my_decorator(f)`. The other options describe APIs that don't exist in the language; decorators are plain callables, not a special protocol with its own method names.",
+      "reference": "https://docs.python.org/3/glossary.html#term-decorator"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-002",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A decorator wraps a function without using `functools.wraps`. What breaks?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The wrapped function raises a DeprecationWarning on every call"
+        },
+        {
+          "id": "b",
+          "text": "The wrapper silently drops any keyword arguments passed to it"
+        },
+        {
+          "id": "c",
+          "text": "`__name__`/`__doc__` now belong to the wrapper, not the original"
+        },
+        {
+          "id": "d",
+          "text": "The decorator fails at import time with an AttributeError"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Without `functools.wraps`, attributes like `__name__`, `__doc__`, `__module__`, and `__qualname__` on the returned function belong to the wrapper, not the original — breaking debuggers, `help()`, and doc generators. Nothing raises an error or warning, and arguments still pass through fine; the failure is silent metadata loss.",
+      "reference": "https://docs.python.org/3/library/functools.html#functools.wraps"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-003",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What happens immediately when you call a generator function, before calling `next()` on the result?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The function body runs up to (but not past) the first `yield`"
+        },
+        {
+          "id": "b",
+          "text": "The function body runs completely, buffering all yielded values"
+        },
+        {
+          "id": "c",
+          "text": "Nothing in the body runs yet — a generator-iterator object is returned"
+        },
+        {
+          "id": "d",
+          "text": "A RuntimeError is raised unless the caller is inside another generator"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Calling a generator function never executes its body — it immediately returns a generator-iterator. Execution of the body only begins on the first `next()`/`send(None)`/iteration call, running to the first `yield` at that point, not before.",
+      "reference": "https://docs.python.org/3/reference/expressions.html#yield-expressions"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-004",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A generator does `return \"done\"` instead of hitting another `yield`. How does a caller using `next()` directly observe that return value?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Via `StopIteration.value` on the exception that gets raised"
+        },
+        {
+          "id": "b",
+          "text": "`next()` returns the string directly instead of raising"
+        },
+        {
+          "id": "c",
+          "text": "It's discarded — bare `return` values in generators are not observable"
+        },
+        {
+          "id": "d",
+          "text": "It's stored on the generator object's `.result` attribute"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A generator's `return value` is attached to the `StopIteration.value` raised when it finishes — that's also the mechanism `yield from` uses to surface a subgenerator's return value to the delegating generator. `next()` itself never returns that value directly; you must catch `StopIteration` to read it.",
+      "reference": "https://docs.python.org/3/reference/expressions.html#yield-expressions"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-005",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "Compared to a manual `for x in sub(): yield x` loop, what does `yield from sub()` additionally provide?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Automatic parallel execution of the subgenerator on a separate thread"
+        },
+        {
+          "id": "b",
+          "text": "It relays send()/throw() to the subgenerator and its return value"
+        },
+        {
+          "id": "c",
+          "text": "A guarantee that the subgenerator can be iterated more than once"
+        },
+        {
+          "id": "d",
+          "text": "Automatic conversion of the subgenerator's output into a list"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "`yield from` transparently relays `send()` and `throw()`/`close()` down into the subgenerator and captures its return value via `StopIteration.value` — a plain `for`/`yield` loop only forwards yielded values, none of that bidirectional delegation. It has nothing to do with threading, re-iterability, or list conversion.",
+      "reference": "https://peps.python.org/pep-0380/"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-006",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Inside a `@contextlib.contextmanager` generator, you write `try: yield` / `except SomeError as e: log(e)` with no `raise`. What's the effect on the `with` block's caller?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The exception still propagates normally to the caller after logging"
+        },
+        {
+          "id": "b",
+          "text": "`SomeError` is suppressed — the caller sees no exception at all"
+        },
+        {
+          "id": "c",
+          "text": "Python raises a RuntimeError complaining the generator didn't re-raise"
+        },
+        {
+          "id": "d",
+          "text": "Only exceptions raised after the `yield` line get suppressed this way"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "`@contextmanager` re-raises the `with` block's exception inside the generator at the `yield` point; if the `except` clause catches it and doesn't re-raise, the context manager reports the exception as handled — exactly like `__exit__` returning `True` — and it never reaches the caller. This is a well-documented, easy-to-hit footgun, not a special error case.",
+      "reference": "https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-007",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What does an object's `__exit__` method returning `True` mean for the `with` statement it's attached to?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It requests that the `with` block be retried from the top once"
+        },
+        {
+          "id": "b",
+          "text": "It marks the resource as successfully released, with no other effect"
+        },
+        {
+          "id": "c",
+          "text": "Any exception raised inside the `with` block is suppressed"
+        },
+        {
+          "id": "d",
+          "text": "It signals `__enter__` should be called again on the next iteration"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "A truthy return from `__exit__` tells the `with` statement to swallow whatever exception occurred in the block — execution just continues after the `with` statement. A falsy return (including the default `None`) lets the exception propagate. There's no retry or re-entry behavior implied either way.",
+      "reference": "https://docs.python.org/3/reference/datamodel.html#context-managers"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-008",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "You register three callbacks on a `contextlib.ExitStack` in order: A, then B, then C. In what order do they run when the stack unwinds?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A, then B, then C — the order they were registered"
+        },
+        {
+          "id": "b",
+          "text": "C, then B, then A — reverse of registration order"
+        },
+        {
+          "id": "c",
+          "text": "All three run concurrently, order is unspecified"
+        },
+        {
+          "id": "d",
+          "text": "Only the last one registered (C) actually runs"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "`ExitStack` unwinds everything it holds in LIFO order — last registered, first run — the same way nested `with` blocks would unwind. So C (registered last) runs first, then B, then A, regardless of whether the entries are context managers or plain callbacks.",
+      "reference": "https://docs.python.org/3/library/contextlib.html#contextlib.ExitStack"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-009",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "performance"
+      ],
+      "type": "single",
+      "question": "You call `@lru_cache(maxsize=None)` on a recursive function. What does `maxsize=None` specifically change versus the default `maxsize=128`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The cache disables LRU eviction entirely and can grow without bound"
+        },
+        {
+          "id": "b",
+          "text": "The function's arguments are no longer used as part of the cache key"
+        },
+        {
+          "id": "c",
+          "text": "Caching is turned off, and every call re-executes the function"
+        },
+        {
+          "id": "d",
+          "text": "The cache is shared globally across all decorated functions"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "`maxsize=None` removes the LRU size limit — entries are never evicted, and the cache grows as large as the set of distinct argument combinations seen, which is exactly why it's common for memoizing recursive algorithms with a bounded input space. It doesn't touch how the cache key is built, doesn't disable caching, and each decorated function still gets its own independent cache.",
+      "reference": "https://docs.python.org/3/library/functools.html#functools.lru_cache"
+    },
+    {
+      "id": "python-decorators-generators-and-context-managers-010",
+      "tags": [
+        "decorators-generators-and-context-managers",
+        "advanced"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are true about async generators (`async def` functions containing `yield`)? Select all that apply.",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They're consumed with `async for` instead of a plain `for` loop"
+        },
+        {
+          "id": "b",
+          "text": "Combining `async def` and `yield` was a SyntaxError before PEP 525"
+        },
+        {
+          "id": "c",
+          "text": "They support `yield from` for delegating to another async generator"
+        },
+        {
+          "id": "d",
+          "text": "They implement `__aiter__`/`__anext__` instead of `__iter__`/`__next__`"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "Async generators are consumed via `async for` (a) and implement the async iteration protocol `__aiter__`/`__anext__` (d); before PEP 525 (Python 3.6), `yield` inside `async def` was disallowed by PEP 492's original coroutine design, making it a SyntaxError (b). `yield from` is NOT supported for async generators (c is false) — delegation must be written manually with an `async for` re-yield loop, without the automatic send/throw forwarding `yield from` gives synchronous generators.",
+      "reference": "https://peps.python.org/pep-0525/"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-001",
+      "tags": [
+        "typing-and-modern-python-features",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What happens when you call a function at runtime with an argument that violates its type hint (e.g. passing a str where an int is annotated)?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Python raises a TypeError immediately before the function body runs"
+        },
+        {
+          "id": "b",
+          "text": "The value is silently coerced to the annotated type before the call"
+        },
+        {
+          "id": "c",
+          "text": "Python raises a TypeError only in debug mode (python -O disables it)"
+        },
+        {
+          "id": "d",
+          "text": "The function runs normally; the hint is not checked by the interpreter at all"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "The typing docs state plainly that the Python runtime does not enforce annotations — they're metadata for external tools (mypy, pyright) to check offline. (a) and (c) both assume some built-in enforcement exists; there's no debug-mode check either. (b) confuses Python with a coercing/validating layer like pydantic, which is a separate opt-in library, not core behavior.",
+      "reference": "https://docs.python.org/3/library/typing.html"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-002",
+      "tags": [
+        "typing-and-modern-python-features",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What does typing.Protocol add on top of what PEP 484's original type hints already provided?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Runtime type coercion for annotated function arguments"
+        },
+        {
+          "id": "b",
+          "text": "Automatic __init__ generation for classes with annotated fields"
+        },
+        {
+          "id": "c",
+          "text": "Structural subtyping, so a class satisfies a type by shape, without inheriting from it"
+        },
+        {
+          "id": "d",
+          "text": "The ability to use isinstance() against any generic type argument"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "PEP 544 explicitly frames Protocol as adding structural subtyping (static duck typing) on top of PEP 484's nominal-only subtyping. (a) describes something Protocol doesn't do (no coercion anywhere in typing). (b) describes @dataclass, a different feature. (d) is backwards — isinstance against a Protocol requires the extra @runtime_checkable opt-in, it isn't automatic for generics in general.",
+      "reference": "https://peps.python.org/pep-0544/"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-003",
+      "tags": [
+        "typing-and-modern-python-features",
+        "internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why does @dataclass raise ValueError if a field's default value is a plain mutable literal like x: list = []?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Lists cannot be class-annotated in Python at all, regardless of dataclass"
+        },
+        {
+          "id": "b",
+          "text": "It detects the value is unhashable and assumes that means it's mutable and unsafe to share"
+        },
+        {
+          "id": "c",
+          "text": "The generated __init__ can only accept immutable default arguments syntactically"
+        },
+        {
+          "id": "d",
+          "text": "Python's parser rejects list literals used as default values in any annotated assignment"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The dataclasses docs say it raises ValueError on an unhashable default because unhashable is treated as a proxy for mutable, preventing the classic shared-mutable-default bug. (a) and (d) are false — plain functions accept list defaults fine syntactically, it's dataclass's own extra check. (c) misdescribes it as a syntax restriction rather than a dataclass-specific runtime guard.",
+      "reference": "https://docs.python.org/3/library/dataclasses.html"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-004",
+      "tags": [
+        "typing-and-modern-python-features",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Given S = TypeVar('S', bound=str) and A = TypeVar('A', str, bytes), what's the key difference a type checker enforces between them?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "S also accepts subclasses of str; A must resolve to exactly str or exactly bytes"
+        },
+        {
+          "id": "b",
+          "text": "A allows mixing str and bytes in a single call; S does not allow any subclasses"
+        },
+        {
+          "id": "c",
+          "text": "S is checked only by mypy; A is checked only by pyright"
+        },
+        {
+          "id": "d",
+          "text": "There is no real difference — bound and constrained TypeVars are interchangeable syntax"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "The typing docs distinguish bound (accepts the type or any subtype) from constrained (must resolve to exactly one of the listed types per call). (b) inverts the behavior — a constrained TypeVar can't mix types within one call either. (c) is fabricated; both checkers understand both forms. (d) is wrong, they express genuinely different constraints.",
+      "reference": "https://docs.python.org/3/library/typing.html"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-005",
+      "tags": [
+        "typing-and-modern-python-features",
+        "internals"
+      ],
+      "type": "single",
+      "question": "How does Python's match statement decide execution when multiple case patterns could structurally match the same subject?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It evaluates every matching case's guard and runs whichever guard result is truthiest"
+        },
+        {
+          "id": "b",
+          "text": "It picks the most specific pattern by inspecting each pattern's type annotations at runtime"
+        },
+        {
+          "id": "c",
+          "text": "It runs the first case whose pattern (and guard, if present) succeeds, then stops"
+        },
+        {
+          "id": "d",
+          "text": "It runs all matching cases in source order, like C's switch fallthrough"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Patterns are tried in source order and the first one whose pattern (and guard) succeeds executes, with no fallthrough to later cases. (a) invents a guard-comparison mechanism that doesn't exist. (d) describes exactly the C-style behavior match deliberately avoids. (b) invents a runtime specificity-inference step; match has no such annotation-based ranking.",
+      "reference": "https://docs.python.org/3/reference/compound_stmts.html#the-match-statement"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-006",
+      "tags": [
+        "typing-and-modern-python-features",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "At runtime, what kind of object do you actually get back from instantiating a class defined with TypedDict?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A lightweight subclass of dict with per-key type validation attached"
+        },
+        {
+          "id": "b",
+          "text": "A plain ordinary dict, with no distinguishing runtime type or validation"
+        },
+        {
+          "id": "c",
+          "text": "An immutable mapping similar to a frozen dataclass"
+        },
+        {
+          "id": "d",
+          "text": "A NamedTuple-style object supporting both key and positional index access"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The docs state TypedDict instances are simply dicts at runtime — no subclass, no validation, nothing distinguishing it. (a) invents runtime validation that doesn't exist. (c) and (d) both invent runtime behaviors (immutability, positional access) TypedDict never provides; it's purely a static-analysis construct.",
+      "reference": "https://docs.python.org/3/library/typing.html"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-007",
+      "tags": [
+        "typing-and-modern-python-features",
+        "advanced-features",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why does typing a generic decorator as Callable[..., T] instead of using ParamSpec lose useful information for callers?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Callable[..., T] erases the wrapped function's parameter types, so the decorated function's argument checking is lost"
+        },
+        {
+          "id": "b",
+          "text": "Callable[..., T] forces every argument to be re-typed as Any at the call site explicitly"
+        },
+        {
+          "id": "c",
+          "text": "Callable[..., T] only works for functions with zero parameters"
+        },
+        {
+          "id": "d",
+          "text": "Callable[..., T] cannot be combined with a TypeVar for the return type at all"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "The '...' in Callable[..., T] means 'don't check parameters,' so a decorator typed this way loses the original signature for callers, which is exactly the gap ParamSpec (PEP 612) closes by capturing the whole parameter list. (b) misdescribes it as requiring explicit Any annotations, which isn't how it works. (c) and (d) are both fabricated restrictions.",
+      "reference": "https://peps.python.org/pep-0612/"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-008",
+      "tags": [
+        "typing-and-modern-python-features",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What does annotating a method's return type as typing.Self actually express, compared to annotating it with the literal class name?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "That the return type is the actual calling subclass, not fixed to the class where the method is defined"
+        },
+        {
+          "id": "b",
+          "text": "That the method must return None and Self is purely documentation for humans"
+        },
+        {
+          "id": "c",
+          "text": "That the return value is deep-copied before being handed back to the caller"
+        },
+        {
+          "id": "d",
+          "text": "That the method cannot be overridden in any subclass"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Self correctly narrows to whatever subclass the method was actually called on, unlike a fixed class-name return type which stays the base class even for subclass calls — useful for chainable builders and alternative constructors. (b), (c), and (d) all invent behaviors Self has no relationship to; it's purely a type annotation with no runtime effect on copying, nullability, or overridability.",
+      "reference": "https://peps.python.org/pep-0673/"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-009",
+      "tags": [
+        "typing-and-modern-python-features",
+        "performance",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What real cost does a pydantic BaseModel pay on every instantiation that a plain @dataclass does not?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Pydantic writes every created instance to disk for audit purposes by default"
+        },
+        {
+          "id": "b",
+          "text": "Pydantic always spawns a background thread to check types asynchronously"
+        },
+        {
+          "id": "c",
+          "text": "Pydantic requires a network call to a schema registry for every instance"
+        },
+        {
+          "id": "d",
+          "text": "Pydantic parses and validates each field's value against its declared type at construction time"
+        },
+        {
+          "id": "e",
+          "text": "Pydantic compiles a new class definition from scratch on every single instantiation"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Pydantic actively validates/coerces field values against their declared types on every instantiation, unlike a dataclass's generated __init__, which just assigns whatever it's given with no type-checking logic. (a), (b), (c), and (e) are all fabricated — pydantic does none of those things; the real cost is purely the in-process validation logic itself.",
+      "reference": "https://docs.pydantic.dev/latest/concepts/performance/"
+    },
+    {
+      "id": "python-typing-and-modern-python-features-010",
+      "tags": [
+        "typing-and-modern-python-features",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A default @dataclass (eq=True, frozen=False) instance is unhashable by design. What specifically causes this?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Python bans hashing on any class that declares more than one field"
+        },
+        {
+          "id": "b",
+          "text": "dataclass sets __hash__ to None whenever eq=True and frozen=False, since a mutable value-equal object is unsafe to hash"
+        },
+        {
+          "id": "c",
+          "text": "The generated __eq__ method itself raises an exception when hash() is called on the instance"
+        },
+        {
+          "id": "d",
+          "text": "Hashing is disabled only on Python versions older than 3.10"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "dataclass deliberately sets __hash__ to None for the default eq=True/frozen=False combination, mirroring the general Python rule that mutable, value-equal objects shouldn't be hashable (their hash could change after being placed in a hash bucket). (a) and (d) are fabricated restrictions unrelated to field count or Python version. (c) misattributes the mechanism to __eq__ raising, when it's actually __hash__ itself being set to None.",
+      "reference": "https://docs.python.org/3/library/dataclasses.html"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-001",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What does a Python virtual environment actually isolate?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The CPU and memory resources available to the process"
+        },
+        {
+          "id": "b",
+          "text": "The site-packages directory and sys.prefix used to resolve imports"
+        },
+        {
+          "id": "c",
+          "text": "Network access, sandboxing the process from the internet"
+        },
+        {
+          "id": "d",
+          "text": "The filesystem permissions the interpreter runs with"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "A venv creates its own site-packages and shifts sys.prefix to point at it, so installs and imports resolve there instead of the system Python. It has nothing to do with CPU/memory limits (a), network sandboxing (c), or filesystem permissions (d) — those are OS-level concerns, not something venv touches.",
+      "reference": "https://docs.python.org/3/library/venv.html"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-002",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What's the key difference between a wheel and an sdist?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A wheel only works on Windows; an sdist is cross-platform"
+        },
+        {
+          "id": "b",
+          "text": "An sdist is compressed and a wheel is not"
+        },
+        {
+          "id": "c",
+          "text": "A wheel is a prebuilt distribution; an sdist needs a build step first"
+        },
+        {
+          "id": "d",
+          "text": "A wheel can only contain pure-Python code, unlike an sdist"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "A wheel is a built distribution pip can unpack directly; an sdist ships raw source and metadata that must go through a build step. Wheel platform-specificity (a) depends on the package, not the format itself; both formats are compressed archives (b); wheels can include compiled extensions too (d).",
+      "reference": "https://packaging.python.org/en/latest/discussions/wheel-vs-sdist/"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-003",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "internals"
+      ],
+      "type": "single",
+      "question": "When you run `import foo` and `foo` was already imported earlier in the process, what happens?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Python re-parses and re-executes foo's source from disk again"
+        },
+        {
+          "id": "b",
+          "text": "Python raises an error, since a module can only be imported once per process"
+        },
+        {
+          "id": "c",
+          "text": "Python re-runs only foo's __init__ function, skipping the rest"
+        },
+        {
+          "id": "d",
+          "text": "Python returns the cached module object from sys.modules without re-executing it"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Imports are cached in sys.modules; a later `import foo` just binds the name to the existing module object rather than re-executing its code (ruling out a and c) or erroring (b, which isn't how repeated imports behave at all).",
+      "reference": "https://docs.python.org/3/reference/import.html"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-004",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Why can `pip install` sometimes take several minutes on a large, loosely-pinned project?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "pip always downloads the full history of every package's releases"
+        },
+        {
+          "id": "b",
+          "text": "pip's backtracking resolver retries earlier version choices when later constraints conflict"
+        },
+        {
+          "id": "c",
+          "text": "pip re-compiles the entire standard library on every install"
+        },
+        {
+          "id": "d",
+          "text": "pip runs the full test suite of each dependency before installing it"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "pip's resolver backtracks through candidate versions when a conflict is found, and with many versions/loose constraints that search can be slow. It doesn't download full release history (a), recompile the stdlib (c), or run dependencies' tests (d) — none of those are things pip does at all.",
+      "reference": "https://pip.pypa.io/en/stable/topics/dependency-resolution/"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-005",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "internals"
+      ],
+      "type": "single",
+      "question": "By default, which of these does pytest treat as a test to collect and run?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Any function defined inside a file located in a `tests/` directory"
+        },
+        {
+          "id": "b",
+          "text": "Any function decorated with `@test`"
+        },
+        {
+          "id": "c",
+          "text": "A function named `test_login` inside a file named `test_auth.py`"
+        },
+        {
+          "id": "d",
+          "text": "Any function whose docstring contains the word 'test'"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "pytest collects by naming convention: files matching test_*.py/*_test.py, and functions/methods prefixed with `test`. Directory location alone (a), a nonexistent `@test` decorator (b), and docstring content (d) play no role in pytest's default collection rules.",
+      "reference": "https://docs.pytest.org/en/stable/explanation/goodpractices.html#conventions-for-python-test-discovery"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-006",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "In `b.py`, you have `from a import SomeClass`. To mock `SomeClass` inside a test of `b`'s functions, what should you patch?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "`a.SomeClass`, since that's where the class is defined"
+        },
+        {
+          "id": "b",
+          "text": "`b.SomeClass`, since that's the name `b` actually looks up at call time"
+        },
+        {
+          "id": "c",
+          "text": "Both `a.SomeClass` and `b.SomeClass` simultaneously, to be safe"
+        },
+        {
+          "id": "d",
+          "text": "Neither — `from...import` names can't be mocked with unittest.mock"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "`from a import SomeClass` binds a separate reference in b's own namespace, so b resolves the name from itself, not from a — patch b.SomeClass. Patching a.SomeClass (a) has no effect on b's already-bound reference; patching both (c) is unnecessary; and mocking from-imports is entirely possible (d) once you patch the right namespace.",
+      "reference": "https://docs.python.org/3/library/unittest.mock.html#where-to-patch"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-007",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Why might a project keep abstract dependency ranges in `pyproject.toml` AND generate a separate, fully-pinned lockfile?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "pyproject.toml cannot list dependencies at all, only a lockfile can"
+        },
+        {
+          "id": "b",
+          "text": "It's purely a legacy convention with no remaining technical purpose"
+        },
+        {
+          "id": "c",
+          "text": "Lockfiles are required by PyPI before a package can be published"
+        },
+        {
+          "id": "d",
+          "text": "Ranges stay flexible for compatibility, while the lockfile pins exact versions for reproducible installs"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Ranges in pyproject.toml keep a package installable alongside others' constraints, while a lockfile pins an exact, reproducible environment for deployment — the two serve different, still-relevant purposes (ruling out b). pyproject.toml does support dependencies directly (a), and PyPI has no lockfile publishing requirement (c).",
+      "reference": "https://packaging.python.org/en/latest/specifications/dependency-specifiers/"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-008",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What specific problem did PEP 660 (editable installs) solve?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It let pip install packages without downloading them first"
+        },
+        {
+          "id": "b",
+          "text": "It added editable-install hooks to PEP 517 so non-setuptools backends could support them"
+        },
+        {
+          "id": "c",
+          "text": "It replaced wheels as the standard built-distribution format"
+        },
+        {
+          "id": "d",
+          "text": "It made `pip install -e` the default install mode for every package"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Before PEP 660, editable installs only existed via setuptools' `setup.py develop`; PEP 660 standardized hooks so any PEP 517 backend could support them. It has nothing to do with skipping downloads (a), replacing wheels (c), or changing install defaults (d).",
+      "reference": "https://peps.python.org/pep-0660/"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-009",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "internals",
+        "trade-offs"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are genuine advantages of pytest fixtures over `unittest.TestCase`'s setUp/tearDown? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Fixtures can be independently scoped (function/class/module/session)"
+        },
+        {
+          "id": "b",
+          "text": "Fixtures are requested explicitly by name, so a test only gets what it declares"
+        },
+        {
+          "id": "c",
+          "text": "Fixtures automatically run in a random, non-deterministic order every time"
+        },
+        {
+          "id": "d",
+          "text": "Fixtures can depend on and compose with other fixtures"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "Scoping (a), explicit per-test requesting (b), and composability (d) are the real, documented advantages fixtures have over setUp/tearDown. Random ordering (c) is false — fixture resolution order is determined by dependencies, not randomized (test order randomization is a separate, opt-in plugin concern).",
+      "reference": "https://docs.pytest.org/en/stable/explanation/fixtures.html"
+    },
+    {
+      "id": "python-packaging-testing-and-tooling-010",
+      "tags": [
+        "packaging-testing-and-tooling",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What is a documented behavioral difference between uv's resolver and pip's, beyond raw speed?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "uv only supports pure-Python packages, unlike pip"
+        },
+        {
+          "id": "b",
+          "text": "uv ignores version constraints entirely and always installs the newest release"
+        },
+        {
+          "id": "c",
+          "text": "uv stops at the first index with a match across multiple package indexes, unlike pip"
+        },
+        {
+          "id": "d",
+          "text": "uv cannot install from a private package index at all"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "uv's docs note it stops searching at the first matching index rather than combining candidates from all configured indexes like pip does. uv fully supports compiled/native packages (a), respects version constraints (b), and does support private indexes (d) — none of those are real limitations.",
+      "reference": "https://docs.astral.sh/uv/pip/compatibility/"
+    }
+  ]
+}

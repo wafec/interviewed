@@ -1,0 +1,967 @@
+{
+  "topic": "architecture",
+  "questions": [
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-001",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "A pipeline increases its batch size to process more events per second overall. What is the most likely effect on any single event's end-to-end latency?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It decreases, since batching reduces per-event overhead"
+        },
+        {
+          "id": "b",
+          "text": "It increases, since an event may wait for its batch to fill"
+        },
+        {
+          "id": "c",
+          "text": "It stays exactly the same regardless of batch size"
+        },
+        {
+          "id": "d",
+          "text": "It becomes unpredictable and cannot be reasoned about"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Larger batches improve throughput by amortizing fixed overhead across more events, but an individual event now has to wait for the batch to fill (or a timeout) before being processed, raising its own latency. (a) confuses throughput gains with per-item latency. (c) ignores the queuing effect entirely. (d) overstates the uncertainty — the relationship is a well-understood, direct trade-off, not chaos.",
+      "reference": "https://docs.aws.amazon.com/wellarchitected/latest/performance-efficiency-pillar/network-architecture-selection.html"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-002",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Per Eric Brewer's own clarification of the CAP theorem, when does a system actually have to choose between consistency and availability?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only for the small subset of read operations, never for writes"
+        },
+        {
+          "id": "b",
+          "text": "Continuously, since all three properties are always in direct tension"
+        },
+        {
+          "id": "c",
+          "text": "Only during an active network partition between nodes"
+        },
+        {
+          "id": "d",
+          "text": "Only once the dataset exceeds a single node's storage capacity"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Brewer clarified that partition tolerance isn't optional in practice, so the real trade-off is consistency vs. availability, and specifically only while a partition is occurring. Outside a partition, there's no forced trade-off. (a) invents a read/write distinction CAP doesn't make. (b) is the popular but incorrect 'always in tension' reading Brewer explicitly rejected. (d) confuses CAP with a scaling/sharding concern.",
+      "reference": "https://www.infoq.com/articles/cap-twelve-years-later-how-the-rules-have-changed/"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-003",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What specific trade-off does the PACELC theorem add on top of CAP?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Latency vs. consistency, applying during normal, non-partitioned operation"
+        },
+        {
+          "id": "b",
+          "text": "A fourth property, Performance, that must be balanced against C, A, and P"
+        },
+        {
+          "id": "c",
+          "text": "A requirement that all replicas be geographically co-located"
+        },
+        {
+          "id": "d",
+          "text": "Durability vs. availability, applying only during a partition"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "PACELC's 'Else' branch says that even absent a partition, a system must still trade latency against consistency (synchronous replication for consistency costs latency). (b) misreads the 'P' in PACELC as a fourth property rather than 'Partitioned'. (c) is unrelated to what PACELC describes. (d) swaps in the wrong property pair and the wrong condition (PACELC's partition branch reuses CAP's C/A choice, not durability).",
+      "reference": "https://en.wikipedia.org/wiki/PACELC_theorem"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-004",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In a quorum-replicated store with N=5 replicas, which (W, R) pair fails to guarantee that reads see the latest write?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "W=3, R=3"
+        },
+        {
+          "id": "b",
+          "text": "W=4, R=2"
+        },
+        {
+          "id": "c",
+          "text": "W=2, R=2"
+        },
+        {
+          "id": "d",
+          "text": "W=5, R=1"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "The overlap guarantee requires W + R > N. With N=5: (a) 3+3=6>5 holds; (b) 4+2=6>5 holds; (d) 5+1=6>5 holds. Only (c) 2+2=4, which is not greater than 5, so a read and write quorum can fail to share a replica and a read can miss the latest write.",
+      "reference": "https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-005",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What specific problem does consistent hashing solve compared to plain `hash(key) % N`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It makes hash computation itself faster on modern CPUs"
+        },
+        {
+          "id": "b",
+          "text": "It bounds how many keys must move when N changes, instead of remapping nearly all of them"
+        },
+        {
+          "id": "c",
+          "text": "It eliminates the need for any replication across nodes"
+        },
+        {
+          "id": "d",
+          "text": "It guarantees keys are always sorted in insertion order across nodes"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "With mod-N hashing, changing N changes almost every key's assignment; consistent hashing's ring structure means only the keys near the changed node's ring segment move — roughly a 1/N fraction. (a) is not what the technique addresses (it's about remapping, not raw hash speed). (c) and (d) describe unrelated properties consistent hashing doesn't provide.",
+      "reference": "https://www.semanticscholar.org/paper/Consistent-hashing-and-random-trees:-distributed-on-Karger-Lehman/02bb762c3bd1b3d1ad788340d8e9cdc3d85f33e1"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-006",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Using Brendan Gregg's USE method to triage a slow service, what does high 'saturation' on a resource specifically indicate?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The resource is returning malformed responses to some requests"
+        },
+        {
+          "id": "b",
+          "text": "The resource has been replaced or restarted recently"
+        },
+        {
+          "id": "c",
+          "text": "Work is queued waiting because the resource can't service it fast enough"
+        },
+        {
+          "id": "d",
+          "text": "The resource's error rate has exceeded a fixed alerting threshold"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Saturation specifically measures queued/waiting demand a resource can't immediately service — separate from utilization (busy time) and errors (which (a) and (d) describe). (b) isn't a USE method concept at all.",
+      "reference": "https://www.brendangregg.com/usemethod.html"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-007",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "By Amdahl's Law, if 25% of a workload must run sequentially, what is the maximum possible speedup from adding unlimited parallel processors to the rest?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Unlimited — enough processors eventually approach infinite speedup"
+        },
+        {
+          "id": "b",
+          "text": "4x, since maximum speedup is the reciprocal of the sequential fraction"
+        },
+        {
+          "id": "c",
+          "text": "25x, matching the sequential percentage directly"
+        },
+        {
+          "id": "d",
+          "text": "75x, matching the parallelizable percentage directly"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Max speedup = 1 / (sequential fraction) = 1 / 0.25 = 4x. (a) ignores that the sequential portion sets a hard floor on total time no matter how much parallel capacity is added. (c) and (d) misapply the percentages directly rather than taking the reciprocal.",
+      "reference": "https://en.wikipedia.org/wiki/Amdahl%27s_law"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-008",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "A downstream service genuinely cannot handle bursts of traffic even briefly and needs a strictly constant inbound request rate. Which rate-limiting algorithm best fits that requirement?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Token bucket, since it allows accumulated bursts up to its capacity"
+        },
+        {
+          "id": "b",
+          "text": "Leaky bucket, since it forwards requests at a fixed, constant output rate"
+        },
+        {
+          "id": "c",
+          "text": "Fixed window counter, since it resets predictably every interval"
+        },
+        {
+          "id": "d",
+          "text": "No rate limiter is needed if the client is trusted"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Leaky bucket forwards requests at a strictly constant rate regardless of how bursty arrivals are, queuing or dropping the excess — exactly what a burst-intolerant downstream needs. (a) is the opposite behavior (bursts are explicitly allowed). (c) still permits a boundary-burst doubling effect across window edges. (d) ignores that the requirement is about downstream capacity, not trust.",
+      "reference": "https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-009",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "A team's access patterns are still unknown and they expect to need frequent ad hoc joins across entities. Which database category is the safer default?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A relational (SQL) database"
+        },
+        {
+          "id": "b",
+          "text": "A NoSQL database, since it will scale better later regardless"
+        },
+        {
+          "id": "c",
+          "text": "Whichever has lower list-price licensing cost"
+        },
+        {
+          "id": "d",
+          "text": "A NoSQL database, since schemas can't be changed once chosen"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Relational databases defer the 'how will this be queried' decision to query time via joins and ad hoc filtering, which fits unknown/evolving access patterns; most NoSQL stores instead require committing to access patterns via the partition/sort key design up front. (b) and (d) both push NoSQL for the wrong or backwards reasons. (c) ignores the actual technical fit entirely.",
+      "reference": "https://aws.amazon.com/nosql/"
+    },
+    {
+      "id": "architecture-system-design-fundamentals-and-tradeoffs-010",
+      "tags": [
+        "system-design-fundamentals-and-tradeoffs",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Two application instances behind a load balancer both run in the same single Availability Zone. What single point of failure remains?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "None — two instances behind a load balancer is fully redundant"
+        },
+        {
+          "id": "b",
+          "text": "The load balancer's DNS entry, which never changes"
+        },
+        {
+          "id": "c",
+          "text": "The Availability Zone itself, whose failure takes down both instances"
+        },
+        {
+          "id": "d",
+          "text": "The application code, if it was written by a single engineer"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Instance-level redundancy doesn't protect against a failure of the shared fault-isolation zone (the AZ) they both run in — true resilience requires spreading across independent zones. (a) misses this shared-domain risk. (b) and (d) aren't the fault-isolation concern this scenario is testing.",
+      "reference": "https://docs.aws.amazon.com/wellarchitected/latest/reliability-pillar/welcome.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-001",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What actually distinguishes a microservice from a well-factored module inside a monolith?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It has cleaner internal code organization than the rest of the app"
+        },
+        {
+          "id": "b",
+          "text": "It can be deployed, scaled, and can fail independently"
+        },
+        {
+          "id": "c",
+          "text": "The microservice is written in a stricter programming language"
+        },
+        {
+          "id": "d",
+          "text": "The microservice has a smaller total amount of code"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The distinguishing factor is the deployment/failure boundary, not code cleanliness — a module can be just as well-organized but still shares the monolith's process, deploy cycle, and database. (a) describes something either can have; (c) and (d) aren't actual distinguishing properties of microservices at all.",
+      "reference": "https://martinfowler.com/articles/microservices.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-002",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In Domain-Driven Design, what is a \"bounded context\"?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A network boundary enforced by a firewall between two services"
+        },
+        {
+          "id": "b",
+          "text": "The maximum number of entities allowed in one database table"
+        },
+        {
+          "id": "c",
+          "text": "The boundary where one domain model has one consistent meaning"
+        },
+        {
+          "id": "d",
+          "text": "A limit on how many services one team is allowed to own"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "A bounded context is a modeling boundary, not an infrastructure or organizational limit — inside it, terms like \"Product\" mean one specific thing. (a), (b), and (d) invent constraints DDD doesn't define.",
+      "reference": "https://martinfowler.com/bliki/BoundedContext.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-003",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why can't a business operation spanning multiple microservices typically be wrapped in one ACID transaction?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "REST APIs don't support returning error codes across services"
+        },
+        {
+          "id": "b",
+          "text": "Each service owns its own database, so there's no shared commit point"
+        },
+        {
+          "id": "c",
+          "text": "Kubernetes disables transactions by default for security reasons"
+        },
+        {
+          "id": "d",
+          "text": "HTTP requests are capped at one write operation per request"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Database-per-service means there's no shared transactional resource to coordinate an atomic commit/rollback across, which is exactly the gap the Saga pattern fills with local transactions plus compensations. The other options aren't real constraints in play here.",
+      "reference": "https://microservices.io/patterns/data/saga.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-004",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What's the defining difference between a choreography-based saga and an orchestration-based saga?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Choreography can only be used with exactly two services"
+        },
+        {
+          "id": "b",
+          "text": "Orchestration is always faster since it makes fewer network calls"
+        },
+        {
+          "id": "c",
+          "text": "Choreography requires a shared database between all participants"
+        },
+        {
+          "id": "d",
+          "text": "Choreography reacts to events with no coordinator; orchestration uses one"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "That's the core mechanical difference — no coordinator vs. a central one tracking and driving the flow. (a) and (c) are fabricated constraints, and (b) isn't a general truth (orchestration adds a coordinator hop, it doesn't inherently reduce calls).",
+      "reference": "https://microservices.io/patterns/data/saga.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-005",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In client-side service discovery, who queries the service registry to find a healthy instance to call?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The DNS server resolving the service's hostname"
+        },
+        {
+          "id": "b",
+          "text": "The calling service itself, before making the request"
+        },
+        {
+          "id": "c",
+          "text": "The database storing the service's persistent data"
+        },
+        {
+          "id": "d",
+          "text": "A human operator, manually, before each deployment"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "That's what makes it \"client-side\" — the caller looks up the registry itself and picks an instance, as opposed to server-side discovery where an intermediary (load balancer/router) does that lookup instead. The other options don't describe how discovery registries are queried.",
+      "reference": "https://microservices.io/patterns/client-side-discovery.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-006",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What problem does an API Gateway primarily solve for clients of a microservices system?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It encrypts data at rest inside each service's database"
+        },
+        {
+          "id": "b",
+          "text": "It automatically writes unit tests for every backend service"
+        },
+        {
+          "id": "c",
+          "text": "It replaces the need for services to have their own databases"
+        },
+        {
+          "id": "d",
+          "text": "It gives clients one entry point instead of many direct service calls"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "The gateway proxies or composes requests so a client makes one call instead of many round trips to individual services. (a), (b), and (c) describe things an API Gateway doesn't do.",
+      "reference": "https://microservices.io/patterns/apigateway.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-007",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In distributed tracing, what is a \"span\"?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The total number of services a request can pass through before timing out"
+        },
+        {
+          "id": "b",
+          "text": "One unit of work within a trace, with its own timing and metadata"
+        },
+        {
+          "id": "c",
+          "text": "A fixed time window used to batch log entries for shipping"
+        },
+        {
+          "id": "d",
+          "text": "The maximum allowed depth of nested service calls"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "A span captures one operation's timing and metadata; a trace is the full chain of spans for one logical request across services. The other options aren't real tracing concepts.",
+      "reference": "https://opentelemetry.io/docs/concepts/observability-primer/"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-008",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What is a \"distributed monolith\"?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A monolith that has been deployed to multiple geographic regions"
+        },
+        {
+          "id": "b",
+          "text": "A single service that internally mixes multiple programming languages"
+        },
+        {
+          "id": "c",
+          "text": "Services split across the network but still coupled enough to deploy together"
+        },
+        {
+          "id": "d",
+          "text": "A database replicated across more than one data center"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "It's services that are physically separate but functionally still coupled — often via shared internal libraries or technical-layer splits — so you pay the network/operational cost of a distributed system without gaining independent deployability. The other options describe unrelated concepts (multi-region deployment, polyglot code, DB replication).",
+      "reference": "https://www.infoq.com/news/2016/02/services-distributed-monolith"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-009",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why does the shared-database anti-pattern undermine microservices' benefits?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It forces cross-service reads to run in a different programming language"
+        },
+        {
+          "id": "b",
+          "text": "It doubles the storage cost of every table involved"
+        },
+        {
+          "id": "c",
+          "text": "It lets services bypass each other's rules and couples their schemas"
+        },
+        {
+          "id": "d",
+          "text": "It is disallowed by most cloud providers' terms of service"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Sharing a database means any service can read/write another's data directly, bypassing its owning service's rules, and a schema change now has to consider every consumer — reintroducing exactly the coupling database-per-service is meant to remove. The other options aren't real consequences of this anti-pattern.",
+      "reference": "https://microservices.io/patterns/data/database-per-service.html"
+    },
+    {
+      "id": "architecture-microservices-vs-monoliths-and-service-boundaries-010",
+      "tags": [
+        "microservices-vs-monoliths-and-service-boundaries",
+        "theory"
+      ],
+      "type": "single",
+      "question": "What does Conway's Law state?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "System designs tend to mirror their organization's communication structure"
+        },
+        {
+          "id": "b",
+          "text": "Software projects always take longer than initially estimated"
+        },
+        {
+          "id": "c",
+          "text": "Distributed systems eventually converge to a monolithic architecture"
+        },
+        {
+          "id": "d",
+          "text": "A system's bug count is proportional to its number of services"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Conway's original claim is that organizations are constrained to produce designs that copy their own communication structure — which is why service boundaries often end up matching team boundaries by default. (b) describes Hofstadter's Law, and (c)/(d) aren't established principles.",
+      "reference": "https://www.melconway.com/Home/Committees_Paper.html"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-001",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "internals"
+      ],
+      "type": "single",
+      "question": "In Clean Architecture's Dependency Rule, which direction must source-code dependencies point?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Bidirectionally, as long as no cycles exist between layers"
+        },
+        {
+          "id": "b",
+          "text": "Inward, toward entities and use cases only"
+        },
+        {
+          "id": "c",
+          "text": "It depends on which layer initiates the request at runtime"
+        },
+        {
+          "id": "d",
+          "text": "Outward, from entities toward frameworks and drivers"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The Dependency Rule requires source-code dependencies to point inward only, toward higher-level policy (entities, use cases) — outer layers may reference inner ones, never the reverse, even though runtime control flow can go outward via interfaces defined by the inner layer. Allowing dependencies in either direction defeats the rule's purpose; claiming direction depends on which layer initiates the request confuses runtime call direction with compile-time dependency direction; and requiring dependencies to point outward reverses the rule entirely.",
+      "reference": "https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-002",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "In Hexagonal Architecture, what is a \"port\"?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A background job that synchronizes two adapters with each other"
+        },
+        {
+          "id": "b",
+          "text": "The concrete database driver used by a persistence adapter"
+        },
+        {
+          "id": "c",
+          "text": "A network endpoint the application listens on for incoming requests"
+        },
+        {
+          "id": "d",
+          "text": "A tech-agnostic interface for talking to the outside world"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "A port is a technology-agnostic interface (like OrderRepository or NotificationSender) representing a purposeful conversation between the application core and something external; adapters are the technology-specific implementations that plug into a port. A concrete database driver is an adapter's implementation detail, not the port itself; a literal network endpoint confuses the term with networking; and a background job synchronizing adapters isn't part of the pattern's vocabulary at all.",
+      "reference": "https://alistair.cockburn.us/hexagonal-architecture/"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-003",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "According to Martin Fowler, CQRS is worth adopting mainly in which situation?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Every system, applied uniformly across the whole codebase for consistency"
+        },
+        {
+          "id": "b",
+          "text": "Only systems already using event sourcing for their write model"
+        },
+        {
+          "id": "c",
+          "text": "A complex domain or a big read/write load gap, in one bounded context"
+        },
+        {
+          "id": "d",
+          "text": "Any system where reads and writes touch the same database tables"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Fowler recommends CQRS narrowly: for a specific bounded context with real domain complexity or a significant read/write load imbalance — never applied uniformly system-wide, which he calls risky complexity. Applying it to every system for consistency is the opposite of his \"never a whole system\" guidance; requiring event sourcing first is false, since CQRS and event sourcing are separable choices; and \"reads/writes touch the same tables\" isn't the criterion he uses at all.",
+      "reference": "https://martinfowler.com/bliki/CQRS.html"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-004",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What does an event-sourcing \"snapshot\" primarily optimize for?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Avoiding the need to version event schemas over time"
+        },
+        {
+          "id": "b",
+          "text": "Cuts replay cost by resuming from a saved computed state"
+        },
+        {
+          "id": "c",
+          "text": "Reducing the storage size of the full event log"
+        },
+        {
+          "id": "d",
+          "text": "Guaranteeing strong consistency between the read and write models"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "A snapshot periodically persists fully-computed state so a later load only replays events since that snapshot instead of the entire history, cutting replay cost. It doesn't shrink the underlying event log's total storage, doesn't remove the need to version event schemas for events predating the snapshot, and has nothing to do with guaranteeing consistency between CQRS read and write models.",
+      "reference": "https://martinfowler.com/eaaDev/EventSourcing.html"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-005",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What is the defining symptom of an anemic domain model?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The domain model has too many small classes instead of a few larger ones"
+        },
+        {
+          "id": "b",
+          "text": "The domain layer imports too many third-party libraries"
+        },
+        {
+          "id": "c",
+          "text": "Business rules are duplicated across multiple microservices"
+        },
+        {
+          "id": "d",
+          "text": "Domain classes are just getters/setters; logic lives in services"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "An anemic model has the shape of OO objects but no real behavior — logic lives in separate services that manipulate the data holders from outside, which Fowler says pays a domain model's persistence cost without its behavioral benefit. Having many small classes is a granularity concern, not this pattern; importing too many libraries is a coupling concern; and duplicated rules across microservices is a cross-service consistency problem — neither is specific to anemia.",
+      "reference": "https://martinfowler.com/bliki/AnemicDomainModel.html"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-006",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "The classic mutable Rectangle/Square example is used to illustrate a violation of which SOLID principle?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Liskov Substitution Principle"
+        },
+        {
+          "id": "b",
+          "text": "Open-Closed Principle"
+        },
+        {
+          "id": "c",
+          "text": "Interface Segregation Principle"
+        },
+        {
+          "id": "d",
+          "text": "Single Responsibility Principle"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Square extending a mutable Rectangle (with independent setWidth/setHeight) breaks code written against Rectangle's contract, because setting one dimension on a Square silently changes the other — a behavioral-contract violation, which is exactly what the Liskov Substitution Principle is about. It isn't about extension-without-modification (Open-Closed), interface bloat (Interface Segregation), or a class having multiple reasons to change (Single Responsibility).",
+      "reference": "https://www.baeldung.com/cs/liskov-substitution-principle"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-007",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "What problem does the Interface Segregation Principle target that Single Responsibility does not directly address?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Whether a subclass can be substituted for its superclass safely"
+        },
+        {
+          "id": "b",
+          "text": "Whether a client depends on interface methods it never uses"
+        },
+        {
+          "id": "c",
+          "text": "Whether a class has more than one reason to change"
+        },
+        {
+          "id": "d",
+          "text": "Whether high-level code depends directly on low-level implementation details"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The Interface Segregation Principle is specifically about not forcing a client to depend on methods it doesn't use, favoring small role-specific interfaces over one fat interface — a concern about interface shape, distinct from Single Responsibility's concern about why a class changes. Safe subclass substitution is Liskov Substitution, and high-level code depending on low-level details is what Dependency Inversion addresses instead.",
+      "reference": "https://gist.github.com/OddExtension5/5590a2a8197a31aa3bf1d4ca3ee20f83"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-008",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "se-theory"
+      ],
+      "type": "single",
+      "question": "What does Conway's Law claim about the relationship between an organization and the systems it builds?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Designs tend to mirror the org's communication structure"
+        },
+        {
+          "id": "b",
+          "text": "Communication overhead decreases as an organization scales its engineering headcount"
+        },
+        {
+          "id": "c",
+          "text": "Larger organizations always ship higher-quality software than smaller ones"
+        },
+        {
+          "id": "d",
+          "text": "Software architecture should be decided independently of team structure for best results"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Conway's Law states that organizations are constrained to produce designs that copy their own communication structure — subsystem boundaries tend to mirror the teams and communication paths that created them. Claiming communication overhead decreases with scale, that larger orgs always ship higher quality, or that architecture should be decided independently of team structure are not claims Conway makes — the last is actually the opposite of the law's implication, since team structure and architecture are entangled whether you plan for it or not.",
+      "reference": "https://www.melconway.com/Home/Committees_Paper.html"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-009",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Which of these is the most accurate distinction between a design pattern and an architectural pattern?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Design patterns only apply to Java; architectural patterns are language-agnostic"
+        },
+        {
+          "id": "b",
+          "text": "Architectural patterns are always faster to implement than design patterns"
+        },
+        {
+          "id": "c",
+          "text": "Design patterns are class-level, architectural patterns are system-wide"
+        },
+        {
+          "id": "d",
+          "text": "Design patterns require a framework, architectural patterns don't"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Design patterns (Strategy, Observer, Adapter, etc.) address recurring problems at the scale of a few collaborating classes; architectural patterns (layered, hexagonal, microservices, CQRS) govern how components or services across the whole system communicate, and are far more expensive to reverse. Claiming one category is always faster, that design patterns are Java-specific, or that one requires a framework and the other doesn't are not real distinguishing properties between the two.",
+      "reference": "https://cleancoders.com/episode/clean-code-episode-8"
+    },
+    {
+      "id": "architecture-architectural-patterns-and-design-principles-010",
+      "tags": [
+        "architectural-patterns-and-design-principles",
+        "performance",
+        "select all that apply"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are legitimate reasons Clean/Hexagonal Architecture's full layering can be over-engineering for a given application? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The team currently has fewer than five engineers assigned to the codebase"
+        },
+        {
+          "id": "b",
+          "text": "The application never needs to be deployed to more than one server"
+        },
+        {
+          "id": "c",
+          "text": "The application is thin CRUD with no real business logic to isolate from infrastructure"
+        },
+        {
+          "id": "d",
+          "text": "There is no realistic scenario where the database or framework will be swapped"
+        }
+      ],
+      "correct": [
+        "c",
+        "d"
+      ],
+      "explanation": "The real justification for the extra layering is proportional to how much genuine business logic needs isolating and how likely infrastructure is to change — neither of which holds for thin CRUD apps with a fixed tech stack, making those two legitimate reasons to skip the ceremony. Team size and single-server deployment aren't the relevant factors — a small team with genuinely complex business rules can still benefit, and deployment topology is unrelated to this architectural choice.",
+      "reference": "https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html"
+    }
+  ]
+}
