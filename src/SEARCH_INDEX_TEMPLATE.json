@@ -1,0 +1,12 @@
+[
+  {
+    "id": "<topic>-<subtopic>-q1",
+    "topic": "<topic-slug, e.g. java>",
+    "subtopic": "<subtopic-slug, matches the prose file's subtopic>",
+    "file": "<NN-topic-interview-subtopic, no extension>",
+    "title": "<the Q<N> question text, without the 'Q1.' prefix>",
+    "tldr": "<the question's TL;DR sentence, verbatim>",
+    "tags": ["<subtopic-slug>"],
+    "url": "/src/<topic>/<NN-topic-interview-subtopic>.html#q1"
+  }
+]

@@ -1,0 +1,242 @@
+[
+  {
+    "id": "sql-indexing-and-query-performance-q1",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What is a database index, and why does it make reads faster?",
+    "tldr": "An index is an ordered structure (usually a B-tree) enabling O(log n) lookups instead of an O(n) sequential scan, at the cost of write overhead and storage.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q1"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q2",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "How does a B-tree index actually work internally?",
+    "tldr": "A B-tree's shallow, multi-key nodes keep lookups O(log n); leaf nodes are sorted and linked, which is also why B-trees serve range queries well and hash indexes can't.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q2"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q3",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "How does column order matter in a composite (multicolumn) index?",
+    "tldr": "A composite index only helps queries that constrain a leftmost-contiguous prefix of its columns — a condition on a non-leading column alone can't narrow the scan.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q3"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q4",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What is a covering index / index-only scan?",
+    "tldr": "An index-only scan answers a query entirely from the index (skipping the heap) when every needed column is present in the index, e.g. via a covering INCLUDE index.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q4"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q5",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "How do you read an `EXPLAIN ANALYZE` output to find a bad plan?",
+    "tldr": "EXPLAIN ANALYZE shows planned vs. actual cost/rows per node — look for seq scans on large tables, big estimate/actual gaps, Filter vs Index Cond, and I/O buffer stats to find the bottleneck node.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q5"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q6",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "How do you find your worst-performing queries in a live production database?",
+    "tldr": "Use aggregate tooling like pg_stat_statements (or MySQL's slow query log) sorted by total/mean exec time to find real offenders, then drill in with EXPLAIN ANALYZE and correlate with app-level tracing.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q6"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q7",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "Why do stale table statistics cause bad query plans?",
+    "tldr": "Query plans are estimates built from statistics gathered by ANALYZE — if data shifts since the last ANALYZE, estimates go stale and the planner can pick a much worse plan.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q7"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q8",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What is MVCC, and why does it mean readers don't block writers?",
+    "tldr": "MVCC keeps old row versions visible to in-flight transactions instead of blocking readers, so reads and writes never block each other — at the cost of dead-tuple bloat needing VACUUM.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q8"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q9",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "Walk through PostgreSQL's row-level lock modes and how `SELECT ... FOR UPDATE` affects concurrency.",
+    "tldr": "FOR UPDATE takes an exclusive row lock (blocks all other lockers), FOR SHARE takes a shared one (blocks writers only) — overusing FOR UPDATE serializes work and can cause deadlocks.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q9"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q10",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "Why is an index lookup O(log n) and a full scan O(n) — and when does that stop mattering?",
+    "tldr": "Index lookups are O(log n) vs. a scan's O(n), but that edge shrinks or reverses at low selectivity, where random index-to-heap I/O can cost more than one cheap sequential pass.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q10"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q11",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What real-world problem do indexes solve, and what did databases do before them?",
+    "tldr": "Indexes trade a small ongoing write cost for near-constant-time reads, avoiding the linear scan cost that would otherwise grow with table size — the same precompute-to-avoid-repeated-work trade-off as caching.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q11"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q12",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What's the risk of over-indexing a table?",
+    "tldr": "Every index adds real write, storage, and planner-overhead costs — index deliberately based on actual query patterns and periodically prune unused ones via pg_stat_user_indexes.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q12"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q13",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "Why does wrapping an indexed column in a function or implicit cast stop the index from being used?",
+    "tldr": "Wrapping an indexed column in a function or implicit cast makes the condition non-sargable, forcing a scan; fix by rewriting to a raw-column range condition or building a matching expression index.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q13"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q14",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What's a partial index, and when would you use one?",
+    "tldr": "A partial index only covers rows matching a predicate, saving space/write cost when queries consistently target a skewed subset — also useful for enforcing a unique constraint on that subset.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q14"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q15",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "B-tree vs. Hash index — what's the actual trade-off?",
+    "tldr": "B-tree supports equality, ranges, and sorting; hash indexes support only equality and can't produce sorted output, since hashing deliberately destroys key ordering.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q15"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q16",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What's the difference between a clustered and a non-clustered (secondary) index?",
+    "tldr": "In InnoDB the primary key IS the table's physical storage (clustered index); every secondary index stores the primary key instead of a row pointer, making secondary lookups a two-step bookmark hop.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q16"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q17",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What is parameter sniffing, and how does it cause a query to suddenly get slow?",
+    "tldr": "Parameter sniffing caches a plan built from the first execution's parameter values, so if that value was atypical, every later call reuses a plan optimized for the wrong data shape until it's evicted.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q17"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q18",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "What is the N+1 query problem, and how do you detect and fix it?",
+    "tldr": "The N+1 problem is one query per parent row from a lazily-loaded relation accessed in a loop; fix with eager fetching (JOIN FETCH) so the related data comes back in one query instead of N extra ones.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q18"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q19",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "Why does PostgreSQL need `VACUUM`, and how does bloat degrade performance?",
+    "tldr": "MVCC leaves dead tuples behind after UPDATE/DELETE; unreclaimed dead tuples bloat tables/indexes and slow scans — VACUUM (usually via autovacuum) reclaims that space.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q19"
+  },
+  {
+    "id": "sql-indexing-and-query-performance-q20",
+    "topic": "sql",
+    "subtopic": "indexing-and-query-performance",
+    "file": "01-sql-interview-indexing-and-query-performance",
+    "title": "How do transaction isolation levels trade correctness for concurrency/performance?",
+    "tldr": "Stronger isolation levels (Repeatable Read, Serializable) prevent more concurrency anomalies but cost more contention/aborts — Read Committed is the default because it's correct enough for most operations at the best concurrency.",
+    "tags": [
+      "indexing-and-query-performance"
+    ],
+    "url": "/src/sql/01-sql-interview-indexing-and-query-performance.html#q20"
+  }
+]

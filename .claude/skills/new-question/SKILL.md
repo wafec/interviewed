@@ -24,12 +24,16 @@ Generates a new interview question set file under `src/<topic>/`.
    mandatory coverage areas (fundamentals, internals, performance, SE theory,
    real-world problems, pitfalls, advanced features, trade-offs), the "Quiz
    question bank" section (the `src/<topic>/quiz.json` contribution this
-   skill must make every run), and read `src/TEMPLATE.md`, the canonical
-   per-question structure (front matter, Question / Good answer / optional
-   Code example / Follow-up question / Follow-up good answer / Glossary /
-   Mental model / TL;DR / References, plus the mandatory "Test your knowledge" quiz
-   link footer). Also read `src/QUIZ_TEMPLATE.json` for the exact MCQ schema.
-   Every file you generate must match these shapes exactly.
+   skill must make every run), the "Search index" section (the
+   `src/<topic>/search-index.json` contribution this skill must also make
+   every run), and read `src/TEMPLATE.md`, the canonical per-question
+   structure (front matter, `### Q<N>. ... {#q<N>}` heading with its
+   mandatory anchor id, Question / Good answer / optional Code example /
+   Follow-up question / Follow-up good answer / Glossary / Mental model /
+   TL;DR / References, plus the mandatory "Test your knowledge" quiz link
+   footer). Also read `src/QUIZ_TEMPLATE.json` and
+   `src/SEARCH_INDEX_TEMPLATE.json` for the exact schemas. Every file you
+   generate must match these shapes exactly.
 
 2. **Survey existing files.** List `src/<topic>/*.md`. Read their titles/H1
    and subtopic slugs (don't need to read every question in full, just enough
@@ -86,7 +90,8 @@ Generates a new interview question set file under `src/<topic>/`.
    - An H1 title.
    - A one-paragraph intro naming the subtopic and what it covers.
    - Exactly 20 questions, each following the mandatory structure from
-     `src/README.md` (`### Q<N>. ...` with Question / Good answer / optional
+     `src/README.md` (`### Q<N>. ... {#q<N>}` — the anchor id is mandatory,
+     search results deep-link to it — with Question / Good answer / optional
      Code example / Follow-up question / Follow-up good answer / Glossary /
      Mental model / TL;DR / References subsections).
    - Every question ends with a **References** section containing at least
@@ -121,9 +126,25 @@ Generates a new interview question set file under `src/<topic>/`.
      online the same way as the prose References (reuse a link already
      verified in step 5 when it supports the same claim).
 
-9. **Report back** with the file path(s) touched (prose file + quiz.json)
-   and a one-line summary of the subtopic and coverage, so the user can
-   review it.
+9. **Contribute to the search index — mandatory every run.** Open (or
+   create) `src/<topic>/search-index.json`. If it doesn't exist, create it
+   as `[]`. Append one entry per question (20 total), following
+   `src/SEARCH_INDEX_TEMPLATE.json`'s schema exactly:
+   - Every item's `id` must be unique (e.g.
+     `java-concurrency-and-memory-model-q7`).
+   - `title` is the question text (without the "Q7." prefix), `tldr` is
+     that question's TL;DR sentence verbatim, `tags` includes at least this
+     file's `<subtopic>` slug.
+   - `url` must point to that question's heading anchor:
+     `/src/<topic>/NN-<topic>-interview-<subtopic>.html#q<N>` — this only
+     resolves correctly if the `{#q<N>}` anchor was actually added to the
+     heading in step 7.
+   - Never remove or overwrite existing entries already in the file — only
+     append.
+
+10. **Report back** with the file path(s) touched (prose file + quiz.json +
+    search-index.json) and a one-line summary of the subtopic and coverage,
+    so the user can review it.
 
 ## Notes
 

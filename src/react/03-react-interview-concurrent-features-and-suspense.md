@@ -7,7 +7,7 @@ title: "React Interview — Concurrent Features & Suspense"
 
 This set focuses on React 18+'s concurrent rendering model: what "concurrent" actually means under the hood, how `<Suspense>`, `startTransition`, and `useDeferredValue` work together, streaming SSR with selective hydration, React Server Components, and the pitfalls/performance-diagnosis skills that separate someone who has used these APIs from someone who understands why they exist.
 
-### Q1. What is "concurrent rendering" in React 18, and what problem does it solve compared to the legacy synchronous renderer?
+### Q1. What is "concurrent rendering" in React 18, and what problem does it solve compared to the legacy synchronous renderer? {#q1}
 
 **Question:**
 What is "concurrent rendering" in React 18, and what problem does it solve compared to the legacy synchronous renderer?
@@ -52,7 +52,7 @@ Concurrent rendering makes React's render work interruptible/pausable so urgent 
 
 ---
 
-### Q2. What is a "Fiber" in React's internals, and how does it enable interruptible rendering?
+### Q2. What is a "Fiber" in React's internals, and how does it enable interruptible rendering? {#q2}
 
 **Question:**
 What is a "Fiber" in React's internals, and how does it enable interruptible rendering?
@@ -82,7 +82,7 @@ A Fiber is a resumable unit-of-work node replacing the old recursive call stack,
 
 ---
 
-### Q3. What are "lanes" in React's scheduler, and how do they relate to update priority?
+### Q3. What are "lanes" in React's scheduler, and how do they relate to update priority? {#q3}
 
 **Question:**
 What are "lanes" in React's scheduler, and how do they relate to update priority?
@@ -111,7 +111,7 @@ Lanes are a bitmask React uses to track multiple simultaneous pending updates pe
 
 ---
 
-### Q4. What does it mean for a component to "suspend," and what actually happens under the hood?
+### Q4. What does it mean for a component to "suspend," and what actually happens under the hood? {#q4}
 
 **Question:**
 What does it mean for a component to "suspend," and what actually happens under the hood?
@@ -155,7 +155,7 @@ A component suspends by throwing an unresolved Promise during render (e.g. via `
 
 ---
 
-### Q5. What's the difference between `startTransition` and `useDeferredValue`, and when would you reach for each?
+### Q5. What's the difference between `startTransition` and `useDeferredValue`, and when would you reach for each? {#q5}
 
 **Question:**
 What's the difference between `startTransition` and `useDeferredValue`, and when would you reach for each?
@@ -195,7 +195,7 @@ Use `startTransition` when you own the `setState` call; use `useDeferredValue` w
 
 ---
 
-### Q6. How do you diagnose jank caused by a large, low-priority update blocking urgent user input, and what's the fix?
+### Q6. How do you diagnose jank caused by a large, low-priority update blocking urgent user input, and what's the fix? {#q6}
 
 **Question:**
 A user reports that typing in a search box feels laggy while a large results list is rendering below it. How do you diagnose the cause, and how would you fix it?
@@ -241,7 +241,7 @@ Diagnose with the DevTools Profiler + browser Performance panel to find the long
 
 ---
 
-### Q7. Why does React only reveal newly-ready Suspense content "at most once every 300ms," and what problem does that solve?
+### Q7. Why does React only reveal newly-ready Suspense content "at most once every 300ms," and what problem does that solve? {#q7}
 
 **Question:**
 Why does React only reveal newly-ready Suspense content "at most once every 300ms," and what problem does that solve?
@@ -270,7 +270,7 @@ React throttles Suspense content reveals to roughly once per 300ms so multiple b
 
 ---
 
-### Q8. What real-world problem did "automatic batching" in React 18 solve?
+### Q8. What real-world problem did "automatic batching" in React 18 solve? {#q8}
 
 **Question:**
 What real-world problem did "automatic batching" in React 18 solve?
@@ -308,7 +308,7 @@ React 18 made batching automatic everywhere (timeouts, promises, native handlers
 
 ---
 
-### Q9. What "waterfall" problem does Suspense for data fetching solve, and how?
+### Q9. What "waterfall" problem does Suspense for data fetching solve, and how? {#q9}
 
 **Question:**
 What "waterfall" problem does Suspense for data fetching solve, and how?
@@ -338,7 +338,7 @@ Suspense fixes fetch waterfalls only if fetches are also initiated early/in-para
 
 ---
 
-### Q10. What's a common mistake when placing `<Suspense>` boundaries, and what effect does it have?
+### Q10. What's a common mistake when placing `<Suspense>` boundaries, and what effect does it have? {#q10}
 
 **Question:**
 What's a common mistake when placing `<Suspense>` boundaries, and what effect does it have?
@@ -383,7 +383,7 @@ One coarse Suspense boundary makes fast content wait behind the slowest sibling;
 
 ---
 
-### Q11. What happens if you trigger a Suspense-causing update without wrapping it in `startTransition`?
+### Q11. What happens if you trigger a Suspense-causing update without wrapping it in `startTransition`? {#q11}
 
 **Question:**
 What happens if you trigger a Suspense-causing update (e.g. navigating to a view that suspends) without wrapping it in `startTransition`?
@@ -421,7 +421,7 @@ Without `startTransition`, a suspending update immediately flashes visible conte
 
 ---
 
-### Q12. What's a common misuse of `useTransition` that developers run into, related to async functions?
+### Q12. What's a common misuse of `useTransition` that developers run into, related to async functions? {#q12}
 
 **Question:**
 What's a common misuse of `useTransition` that developers run into, related to async functions?
@@ -464,7 +464,7 @@ Only the synchronous part of a `startTransition` callback (before the first `awa
 
 ---
 
-### Q13. What is "selective hydration," and what problem does it solve for streaming SSR?
+### Q13. What is "selective hydration," and what problem does it solve for streaming SSR? {#q13}
 
 **Question:**
 What is "selective hydration," and what problem does it solve for streaming SSR?
@@ -493,7 +493,7 @@ Selective hydration hydrates each Suspense boundary independently and prioritize
 
 ---
 
-### Q14. Walk through how `renderToPipeableStream` streams a page that has nested Suspense boundaries.
+### Q14. Walk through how `renderToPipeableStream` streams a page that has nested Suspense boundaries. {#q14}
 
 **Question:**
 Walk through how `renderToPipeableStream` streams a page that has nested Suspense boundaries.
@@ -540,7 +540,7 @@ Tests hands-on familiarity with the actual streaming SSR API surface, not just t
 
 ---
 
-### Q15. What are React Server Components, and how do they relate to Suspense?
+### Q15. What are React Server Components, and how do they relate to Suspense? {#q15}
 
 **Question:**
 What are React Server Components, and how do they relate to Suspense?
@@ -569,7 +569,7 @@ Server Components render server-side only and never ship JS to the client; they 
 
 ---
 
-### Q16. What's a real downside/trade-off of marking an update as a transition with `useTransition`?
+### Q16. What's a real downside/trade-off of marking an update as a transition with `useTransition`? {#q16}
 
 **Question:**
 What's a real downside/trade-off of marking an update as a transition with `useTransition`?
@@ -597,7 +597,7 @@ Transitions can be interrupted/discarded and add no extra CPU throughput — the
 
 ---
 
-### Q17. How would you use the React DevTools Profiler to figure out *which* component is causing dropped frames during an interaction?
+### Q17. How would you use the React DevTools Profiler to figure out *which* component is causing dropped frames during an interaction? {#q17}
 
 **Question:**
 How would you use the React DevTools Profiler to figure out *which* component is causing dropped frames during an interaction?
@@ -626,7 +626,7 @@ Record the interaction in the Profiler, read the flame/ranked chart for long/sel
 
 ---
 
-### Q18. What problem does `useSyncExternalStore` solve, and what is "tearing" in the context of concurrent rendering?
+### Q18. What problem does `useSyncExternalStore` solve, and what is "tearing" in the context of concurrent rendering? {#q18}
 
 **Question:**
 What problem does `useSyncExternalStore` solve, and what is "tearing" in the context of concurrent rendering?
@@ -663,7 +663,7 @@ Tearing is inconsistent UI reads of a mutable external store during a paused/res
 
 ---
 
-### Q19. Compare React's cooperative scheduling model to OS-level preemptive thread scheduling — what's the underlying CS concept, and where does React's approach fall short of true preemption?
+### Q19. Compare React's cooperative scheduling model to OS-level preemptive thread scheduling — what's the underlying CS concept, and where does React's approach fall short of true preemption? {#q19}
 
 **Question:**
 Compare React's cooperative scheduling model to OS-level preemptive thread scheduling — what's the underlying CS concept, and where does React's approach fall short of true preemption?
@@ -693,7 +693,7 @@ React's scheduling is cooperative (yields only between fibers), not preemptive �
 
 ---
 
-### Q20. Suppose you suspend on a transition and the boundary was already showing content — does the user see the fallback again? What governs this?
+### Q20. Suppose you suspend on a transition and the boundary was already showing content — does the user see the fallback again? What governs this? {#q20}
 
 **Question:**
 Suppose an already-revealed Suspense boundary suspends again as the result of a transition-triggered update — does the fallback show again, and what determines the answer?

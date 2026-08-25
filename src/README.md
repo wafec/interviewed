@@ -208,6 +208,39 @@ file's subtopic:
 (skip the setup screen and jump straight into the sampled quiz) from the URL
 query string.
 
+## Search index
+
+`/search/` ([search.html](../search.html)) is a client-side keyword search
+over every question across every topic, ranked by relevance. It runs
+entirely in the browser against a per-topic index at
+`src/<topic>/search-index.json`. Schema and an example live in
+[`src/SEARCH_INDEX_TEMPLATE.json`](SEARCH_INDEX_TEMPLATE.json) (excluded
+from the Pages build, same as `TEMPLATE.md`/`QUIZ_TEMPLATE.json`).
+
+**Every time `/new-question` generates a new prose file, it must also
+contribute matching entries to `src/<topic>/search-index.json`** — one entry
+per question (create the file as `[]` if it doesn't exist yet, otherwise
+append; never overwrite existing entries; keep `id`s unique). Each entry's
+`title` is the question text, `tldr` is that question's TL;DR sentence
+(verbatim — this is what search results show as a snippet), and `url` points
+to that question's heading anchor.
+
+**Heading anchors are mandatory for this to work.** Every `### Q<N>.` heading
+must carry an explicit `{#q<N>}` id (see `src/TEMPLATE.md`), e.g.:
+
+```markdown
+### Q3. What happens if two threads call a non-atomic increment concurrently? {#q3}
+```
+
+so `search-index.json`'s `url` for that question is
+`/src/<topic>/NN-<topic>-interview-<subtopic>.html#q3`.
+
+`search.html` normalizes both the index and the query the same way before
+matching — lowercase, strip diacritics, strip punctuation, split on
+whitespace — then scores each entry by keyword overlap (title matches
+weighted highest, then tags, then the TL;DR snippet; a bonus for matching
+more of the distinct query terms) and sorts best-match first.
+
 ## Adding a new file
 
 Use the `/new-question <topic>` skill (e.g. `/new-question java`,

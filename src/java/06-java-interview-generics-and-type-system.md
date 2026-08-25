@@ -12,7 +12,7 @@ theory behind wildcards (PECS, variance), self-bounded/recursive generics,
 heap pollution, and the real-world API-design trade-offs generics force you
 into.
 
-### Q1. What is type erasure, and what does the compiler actually do to a generic type?
+### Q1. What is type erasure, and what does the compiler actually do to a generic type? {#q1}
 
 **Question:**
 Explain type erasure in Java. What does `List<String>` look like after compilation, and why was erasure chosen over reifying generics (keeping type info at runtime, like C#)?
@@ -56,7 +56,7 @@ Type erasure replaces generic type parameters with `Object`/their bound at compi
 
 ---
 
-### Q2. Why can't you write `new T[10]` inside a generic class, and what's the standard workaround?
+### Q2. Why can't you write `new T[10]` inside a generic class, and what's the standard workaround? {#q2}
 
 **Question:**
 Given `class Box<T> { T[] make(int n) { return new T[n]; } }`, why does `new T[n]` fail to compile, and how would you actually implement this method?
@@ -103,7 +103,7 @@ Probes whether the candidate can connect an abstract rule ("you can't do X") to 
 
 ---
 
-### Q3. What is a bridge method, and when does the compiler generate one?
+### Q3. What is a bridge method, and when does the compiler generate one? {#q3}
 
 **Question:**
 What is a "bridge method" in the context of Java generics, and why does the compiler need to synthesize one?
@@ -144,7 +144,7 @@ Bridge methods are compiler-synthesized overrides that reconcile a generic super
 
 ---
 
-### Q4. What are bounded type parameters, and why would you use multiple bounds?
+### Q4. What are bounded type parameters, and why would you use multiple bounds? {#q4}
 
 **Question:**
 What does `<T extends Comparable<T>>` mean, and how does declaring multiple bounds like `<T extends Number & Comparable<T>>` work?
@@ -191,7 +191,7 @@ Checks whether the candidate understands bounds as a compile-time contract that 
 
 ---
 
-### Q5. What's the difference between `List<?>`, `List<? extends Number>`, and `List<? super Integer>`?
+### Q5. What's the difference between `List<?>`, `List<? extends Number>`, and `List<? super Integer>`? {#q5}
 
 **Question:**
 Explain the three wildcard forms in Java generics and what operations each one permits.
@@ -223,7 +223,7 @@ Tests whether the candidate can reason about *why* each wildcard form permits or
 
 ---
 
-### Q6. What is the PECS principle, and how would you apply it to designing a `copy(src, dest)` method?
+### Q6. What is the PECS principle, and how would you apply it to designing a `copy(src, dest)` method? {#q6}
 
 **Question:**
 Explain "PECS" (Producer Extends, Consumer Super) and use it to decide the wildcard bounds for a generic `copy` method that copies elements from one list into another.
@@ -266,7 +266,7 @@ PECS: bound a parameter with `? extends T` if you only read from it (producer), 
 
 ---
 
-### Q7. Why can't primitive types be used as generic type arguments, and what does that cost you?
+### Q7. Why can't primitive types be used as generic type arguments, and what does that cost you? {#q7}
 
 **Question:**
 Why does `List<int>` fail to compile, and what's the runtime cost of the workaround (`List<Integer>`)?
@@ -305,7 +305,7 @@ Primitives can't be type arguments because erasure needs a reference-type target
 
 ---
 
-### Q8. What is a raw type, and why does the language still allow them?
+### Q8. What is a raw type, and why does the language still allow them? {#q8}
 
 **Question:**
 What happens when you write `List list = new ArrayList();` instead of using a type parameter, and why does Java still permit this in 2026?
@@ -336,7 +336,7 @@ Raw types disable generic checking and exist only for pre-Java-5 backward compat
 
 ---
 
-### Q9. What is heap pollution, and what's the simplest way to trigger it?
+### Q9. What is heap pollution, and what's the simplest way to trigger it? {#q9}
 
 **Question:**
 Define "heap pollution" in the context of Java generics, and give a minimal example that causes it.
@@ -374,7 +374,7 @@ Heap pollution is a parameterized-type reference pointing at an object of the wr
 
 ---
 
-### Q10. Why do generic varargs methods trigger an "unchecked generics array creation" warning, and what does `@SafeVarargs` actually do about it?
+### Q10. Why do generic varargs methods trigger an "unchecked generics array creation" warning, and what does `@SafeVarargs` actually do about it? {#q10}
 
 **Question:**
 Given `static <T> void method(List<T>... lists)`, explain why this triggers a compiler warning, and what `@SafeVarargs` does (and doesn't) fix.
@@ -421,7 +421,7 @@ Generic varargs erase to an unchecked array, risking heap pollution; `@SafeVarar
 
 ---
 
-### Q11. Why are Java arrays covariant but generic types invariant, and what does that cost arrays?
+### Q11. Why are Java arrays covariant but generic types invariant, and what does that cost arrays? {#q11}
 
 **Question:**
 `Object[] arr = new String[3];` compiles fine, but `List<Object> l = new ArrayList<String>();` does not. Why the difference, and what's the runtime consequence for arrays?
@@ -463,7 +463,7 @@ Arrays are covariant (with a runtime `ArrayStoreException` safety net) because t
 
 ---
 
-### Q12. What is a self-bounded (recursive) generic type, and why is `Enum` declared as `Enum<E extends Enum<E>>`?
+### Q12. What is a self-bounded (recursive) generic type, and why is `Enum` declared as `Enum<E extends Enum<E>>`? {#q12}
 
 **Question:**
 Explain the `<E extends Enum<E>>` pattern used by `java.lang.Enum`. What problem does this "recursive" bound solve?
@@ -503,7 +503,7 @@ Tests whether the candidate can go beyond "I've seen `<T extends Comparable<T>>`
 
 ---
 
-### Q13. How does type inference work for generic method calls, and what changed in Java 8's "target typing"?
+### Q13. How does type inference work for generic method calls, and what changed in Java 8's "target typing"? {#q13}
 
 **Question:**
 When you call a generic method without explicitly supplying type arguments, how does the compiler figure out what type to use? What limitation did Java 8 lift?
@@ -535,7 +535,7 @@ Type inference derives generic type arguments from call context; Java 8 expanded
 
 ---
 
-### Q14. Why can't you write `if (list instanceof List<String>)`, and what's the correct way to check element types at runtime?
+### Q14. Why can't you write `if (list instanceof List<String>)`, and what's the correct way to check element types at runtime? {#q14}
 
 **Question:**
 Why does `if (obj instanceof List<String>)` fail to compile, and what should you write instead if you actually need to distinguish element types at runtime?
@@ -565,7 +565,7 @@ Tests whether the candidate knows the difference between "erasure removed this i
 
 ---
 
-### Q15. Why were generics added to Java in Java 5, and what real bug class did they eliminate?
+### Q15. Why were generics added to Java in Java 5, and what real bug class did they eliminate? {#q15}
 
 **Question:**
 Java shipped without generics from 1.0 through 1.4. What real-world problem did adding them in Java 5 solve?
@@ -596,7 +596,7 @@ Generics eliminated pervasive unchecked-cast `ClassCastException` bugs from coll
 
 ---
 
-### Q16. What's the wildcard capture problem, and how does the "helper method" pattern fix it?
+### Q16. What's the wildcard capture problem, and how does the "helper method" pattern fix it? {#q16}
 
 **Question:**
 Why does this fail to compile, and how would you fix it: `static void swapFirst(List<?> list) { list.set(0, list.get(0)); }` — swapping an element with itself?
@@ -643,7 +643,7 @@ Wildcard capture prevents the compiler from proving a `get()` and `set()` on the
 
 ---
 
-### Q17. When designing a public API method, when should you use a wildcard versus an exact type parameter?
+### Q17. When designing a public API method, when should you use a wildcard versus an exact type parameter? {#q17}
 
 **Question:**
 You're designing `static <T> void process(List<T> list)`. When (if ever) should this be `List<? extends T>` or `List<?>` instead, from an API-design perspective?
@@ -675,7 +675,7 @@ Use an exact type parameter when a method both reads and writes the same element
 
 ---
 
-### Q18. Why can't you overload two methods that differ only by generic type argument?
+### Q18. Why can't you overload two methods that differ only by generic type argument? {#q18}
 
 **Question:**
 Why does declaring `void print(Set<String> s)` and `void print(Set<Integer> s)` in the same class fail to compile?
@@ -704,7 +704,7 @@ Overloads that differ only by generic type argument erase to the same signature 
 
 ---
 
-### Q19. What's the difference between a generic *class* and a generic *method*, and when would a static utility method need its own type parameter even inside a non-generic class?
+### Q19. What's the difference between a generic *class* and a generic *method*, and when would a static utility method need its own type parameter even inside a non-generic class? {#q19}
 
 **Question:**
 Explain the syntactic and semantic difference between a class-level type parameter (`class Box<T>`) and a method-level type parameter (`static <T> T identity(T t)`).
@@ -750,7 +750,7 @@ A class-level type parameter belongs to the type and is shared by its instance m
 
 ---
 
-### Q20. What's the practical trade-off between a generic API and a `Class<T>`-token-based API when you need runtime type information?
+### Q20. What's the practical trade-off between a generic API and a `Class<T>`-token-based API when you need runtime type information? {#q20}
 
 **Question:**
 Some APIs (e.g. `Gson.fromJson(json, MyType.class)`) take a `Class<T>` argument alongside a generic type parameter. Why is that pattern necessary, and what does it still fail to handle?

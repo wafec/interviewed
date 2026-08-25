@@ -11,7 +11,7 @@ the JIT tiers that compile bytecode to native code, and the diagnostic tools
 and advanced features (JPMS, AppCDS, Project Leyden) built around this
 machinery.
 
-### Q1. What are the three phases the JVM goes through to turn a `.class` file into a runnable class, and what happens in each?
+### Q1. What are the three phases the JVM goes through to turn a `.class` file into a runnable class, and what happens in each? {#q1}
 
 **Question:**
 Walk me through what the JVM does, phase by phase, from finding a `.class` file to being able to run code in it.
@@ -50,7 +50,7 @@ Loading -> Linking (verify/prepare/resolve) -> Initialization runs lazily on fir
 
 ---
 
-### Q2. Explain the classloader delegation model: bootstrap, platform, and application classloaders.
+### Q2. Explain the classloader delegation model: bootstrap, platform, and application classloaders. {#q2}
 
 **Question:**
 How does class loading delegation work in the JVM, and what are the standard classloaders involved?
@@ -88,7 +88,7 @@ Parent-first delegation (bootstrap -> platform -> application) means core JDK cl
 
 ---
 
-### Q3. What's the difference between `ClassNotFoundException`, `NoClassDefFoundError`, and `LinkageError`?
+### Q3. What's the difference between `ClassNotFoundException`, `NoClassDefFoundError`, and `LinkageError`? {#q3}
 
 **Question:**
 A production app throws one of `ClassNotFoundException`, `NoClassDefFoundError`, or `LinkageError`. What does each one actually tell you about the failure?
@@ -118,7 +118,7 @@ Distinguishes candidates who've actually debugged a `NoClassDefFoundError` in pr
 
 ---
 
-### Q4. What does bytecode verification actually check, and why does the JVM insist on doing it even for code compiled by a trusted compiler?
+### Q4. What does bytecode verification actually check, and why does the JVM insist on doing it even for code compiled by a trusted compiler? {#q4}
 
 **Question:**
 Why does the JVM verify bytecode at link time, and what kinds of problems does verification catch?
@@ -148,7 +148,7 @@ Bytecode verification independently enforces type/memory safety on any bytecode 
 
 ---
 
-### Q5. What is symbolic reference resolution, and why is it lazy rather than happening all at once at link time?
+### Q5. What is symbolic reference resolution, and why is it lazy rather than happening all at once at link time? {#q5}
 
 **Question:**
 The JVM Spec describes resolution as converting symbolic references in the constant pool into concrete references. Why is resolution allowed to be lazy?
@@ -189,7 +189,7 @@ Resolution is lazy so a class can load and link even with an unresolvable refere
 
 ---
 
-### Q6. Explain tiered compilation: what C1 and C2 do, and why the JVM uses both instead of just always running the "best" compiler.
+### Q6. Explain tiered compilation: what C1 and C2 do, and why the JVM uses both instead of just always running the "best" compiler. {#q6}
 
 **Question:**
 What is HotSpot's tiered compilation, and why does it use two different JIT compilers?
@@ -219,7 +219,7 @@ Tiered compilation runs C1 first for fast warm-up, then promotes hot methods to 
 
 ---
 
-### Q7. What is escape analysis, and what optimizations does it unlock?
+### Q7. What is escape analysis, and what optimizations does it unlock? {#q7}
 
 **Question:**
 What does the JIT compiler's escape analysis do, and how does it change how objects are allocated?
@@ -248,7 +248,7 @@ Escape analysis lets the JIT scalar-replace, stack-allocate, or skip locking on 
 
 ---
 
-### Q8. How would you diagnose a Java application with unexpectedly slow startup/warm-up time?
+### Q8. How would you diagnose a Java application with unexpectedly slow startup/warm-up time? {#q8}
 
 **Question:**
 A service's cold-start latency has regressed. Walk me through how you'd diagnose whether classloading, JIT warm-up, or something else is the cause.
@@ -278,7 +278,7 @@ Diagnose startup regressions by separating classloading, JIT warm-up, and app-in
 
 ---
 
-### Q9. What is Application Class-Data Sharing (AppCDS), and what specific cost does it eliminate?
+### Q9. What is Application Class-Data Sharing (AppCDS), and what specific cost does it eliminate? {#q9}
 
 **Question:**
 How does AppCDS reduce JVM startup time, mechanically?
@@ -308,7 +308,7 @@ AppCDS pre-parses and archives class metadata so later JVM starts skip re-parsin
 
 ---
 
-### Q10. What problem does the Java Platform Module System (JPMS, "Jigsaw") solve that packages and JARs alone couldn't?
+### Q10. What problem does the Java Platform Module System (JPMS, "Jigsaw") solve that packages and JARs alone couldn't? {#q10}
 
 **Question:**
 Why was the module system introduced in Java 9, given that Java already had packages and JAR-level classpath organization?
@@ -337,7 +337,7 @@ JPMS adds strong encapsulation and explicit, checkable module dependencies, clos
 
 ---
 
-### Q11. Describe a real classloader-leak scenario in an application server, and what causes it.
+### Q11. Describe a real classloader-leak scenario in an application server, and what causes it. {#q11}
 
 **Question:**
 Application servers running many deployed apps are notorious for classloader-related memory leaks. What actually causes a classloader to leak, and how would you detect it?
@@ -366,7 +366,7 @@ Classloader leaks in app servers come from stray references — unstopped thread
 
 ---
 
-### Q12. What is "duplicate classes on the classpath" and why is it dangerous even when the JVM doesn't immediately error?
+### Q12. What is "duplicate classes on the classpath" and why is it dangerous even when the JVM doesn't immediately error? {#q12}
 
 **Question:**
 Two different JARs on the classpath both contain a class with the same fully-qualified name but different bytecode. What actually happens at runtime?
@@ -395,7 +395,7 @@ Duplicate classes on the classpath silently resolve to whichever JAR is scanned 
 
 ---
 
-### Q13. When and why would you write a custom `ClassLoader`?
+### Q13. When and why would you write a custom `ClassLoader`? {#q13}
 
 **Question:**
 Give a real scenario where you'd need to write a custom classloader instead of relying on the standard application classloader.
@@ -436,7 +436,7 @@ Custom classloaders for cases like plugin isolation override `findClass()`, not 
 
 ---
 
-### Q14. What's the performance cost of using reflection, and why does it exist?
+### Q14. What's the performance cost of using reflection, and why does it exist? {#q14}
 
 **Question:**
 Why is reflective method invocation slower than a direct call, mechanically — not just "it's slower, avoid it in hot paths"?
@@ -465,7 +465,7 @@ Reflective calls are slower because dynamically-resolved types defeat JIT inlini
 
 ---
 
-### Q15. What is dynamic dispatch, and how does the JVM implement it at the bytecode level?
+### Q15. What is dynamic dispatch, and how does the JVM implement it at the bytecode level? {#q15}
 
 **Question:**
 When you call an instance method in Java, how does the JVM decide which actual implementation to run, given polymorphism?
@@ -495,7 +495,7 @@ Connects a core OOP/CS-theory concept (dynamic dispatch) to its concrete bytecod
 
 ---
 
-### Q16. What is Project Leyden, and what problem is it trying to solve that AppCDS doesn't fully solve?
+### Q16. What is Project Leyden, and what problem is it trying to solve that AppCDS doesn't fully solve? {#q16}
 
 **Question:**
 What is Project Leyden, and how is its goal different from what AppCDS already provides?
@@ -524,7 +524,7 @@ Project Leyden's condensers move classloading/linking (and eventually JIT compil
 
 ---
 
-### Q17. What's the practical difference between static and dynamic linking/binding, and where does Java sit on that spectrum?
+### Q17. What's the practical difference between static and dynamic linking/binding, and where does Java sit on that spectrum? {#q17}
 
 **Question:**
 In general software-engineering terms, what's the difference between static and dynamic linking/binding, and how does Java combine both?
@@ -554,7 +554,7 @@ Java deliberately mixes static linking (`invokestatic`/`invokespecial`) with dyn
 
 ---
 
-### Q18. What does "structural correctness" mean in the context of a `.class` file, and what's roughly in a class file besides the bytecode itself?
+### Q18. What does "structural correctness" mean in the context of a `.class` file, and what's roughly in a class file besides the bytecode itself? {#q18}
 
 **Question:**
 Beyond the actual bytecode instructions, what else does a compiled `.class` file contain, and why does the format matter for interoperability across JVM languages?
@@ -583,7 +583,7 @@ A `.class` file is a fully specified, language-agnostic binary format (constant 
 
 ---
 
-### Q19. What's the trade-off between using reflection-based frameworks (classic Spring/Hibernate style) versus compile-time/annotation-processor-based approaches (like Dagger or Micronaut)?
+### Q19. What's the trade-off between using reflection-based frameworks (classic Spring/Hibernate style) versus compile-time/annotation-processor-based approaches (like Dagger or Micronaut)? {#q19}
 
 **Question:**
 Modern frameworks like Micronaut and Dagger favor compile-time code generation over runtime reflection for dependency injection, unlike classic Spring. What's the actual trade-off?
@@ -612,7 +612,7 @@ Reflection-based DI wires dependencies flexibly at runtime but pays a startup co
 
 ---
 
-### Q20. Static vs. dynamic linking, revisited: what would you actually lose if the JVM only supported static (compile-time-fixed) method dispatch, no `invokevirtual`?
+### Q20. Static vs. dynamic linking, revisited: what would you actually lose if the JVM only supported static (compile-time-fixed) method dispatch, no `invokevirtual`? {#q20}
 
 **Question:**
 Suppose the JVM only had `invokestatic`-style fixed dispatch — no dynamic dispatch at all. What capabilities would that cost the platform, concretely?

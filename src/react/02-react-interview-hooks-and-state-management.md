@@ -11,7 +11,7 @@ behind batching and Context, the pitfalls that trip up even experienced
 developers (stale closures, dependency arrays, referential equality), and
 the trade-offs between local state, Context, and external state libraries.
 
-### Q1. Why can't you mutate state directly in React (e.g. `state.push(x)` on an array in state), and what should you do instead?
+### Q1. Why can't you mutate state directly in React (e.g. `state.push(x)` on an array in state), and what should you do instead? {#q1}
 
 **Question:**
 Why can't you mutate state directly in React (e.g. `state.push(x)` on an array in state), and what should you do instead?
@@ -68,7 +68,7 @@ Mutating state in place leaves its reference unchanged, so React can't detect th
 
 ---
 
-### Q2. React 18 introduced "automatic batching." What does that mean, and how is it different from React 17's batching behavior?
+### Q2. React 18 introduced "automatic batching." What does that mean, and how is it different from React 17's batching behavior? {#q2}
 
 **Question:**
 React 18 introduced "automatic batching." What does that mean, and how is it different from React 17's batching behavior?
@@ -123,7 +123,7 @@ React 18's automatic batching extends batching (many setStates → one re-render
 
 ---
 
-### Q3. Why must Hooks always be called in the same order on every render (the "Rules of Hooks"), and what breaks internally if that rule is violated?
+### Q3. Why must Hooks always be called in the same order on every render (the "Rules of Hooks"), and what breaks internally if that rule is violated? {#q3}
 
 **Question:**
 Why must Hooks always be called in the same order on every render (the "Rules of Hooks"), and what breaks internally if that rule is violated?
@@ -185,7 +185,7 @@ Hooks are tracked by call position in a per-fiber linked list, not by name — c
 
 ---
 
-### Q4. What is a "stale closure" bug in a `useEffect`, and how does an incomplete dependency array cause it?
+### Q4. What is a "stale closure" bug in a `useEffect`, and how does an incomplete dependency array cause it? {#q4}
 
 **Question:**
 What is a "stale closure" bug in a `useEffect`, and how does an incomplete dependency array cause it?
@@ -246,7 +246,7 @@ A stale closure happens when an effect's callback captured an old value and the 
 
 ---
 
-### Q5. `useMemo` and `useCallback` both "cache" something between renders. When do they actually help performance, and when are they pointless or even harmful?
+### Q5. `useMemo` and `useCallback` both "cache" something between renders. When do they actually help performance, and when are they pointless or even harmful? {#q5}
 
 **Question:**
 `useMemo` and `useCallback` both "cache" something between renders. When do they actually help performance, and when are they pointless or even harmful?
@@ -303,7 +303,7 @@ expected to draw.
 
 ---
 
-### Q6. Walk through your methodology for diagnosing "this component re-renders too often" in a real app.
+### Q6. Walk through your methodology for diagnosing "this component re-renders too often" in a real app. {#q6}
 
 **Question:**
 Walk through your methodology for diagnosing "this component re-renders too often" in a real app.
@@ -351,7 +351,7 @@ Diagnose excess re-renders with the React DevTools Profiler's "why did this rend
 
 ---
 
-### Q7. What's wrong with initializing state from a prop and then never updating it — e.g. `const [items, setItems] = useState(props.items)`?
+### Q7. What's wrong with initializing state from a prop and then never updating it — e.g. `const [items, setItems] = useState(props.items)`? {#q7}
 
 **Question:**
 What's wrong with initializing state from a prop and then never updating it — e.g. `const [items, setItems] = useState(props.items)`?
@@ -394,7 +394,7 @@ for `useEffect` as a state-syncing hammer.
 
 ---
 
-### Q8. What real problem does "lifting state up" solve, and what pain does Context solve that lifting state up alone doesn't?
+### Q8. What real problem does "lifting state up" solve, and what pain does Context solve that lifting state up alone doesn't? {#q8}
 
 **Question:**
 What real problem does "lifting state up" solve, and what pain does Context solve that lifting state up alone doesn't?
@@ -438,7 +438,7 @@ Lifting state up gives sibling components one shared source of truth; Context av
 
 ---
 
-### Q9. When would you reach for Context vs. an external state library (Redux, Zustand, Jotai) for global-ish state?
+### Q9. When would you reach for Context vs. an external state library (Redux, Zustand, Jotai) for global-ish state? {#q9}
 
 **Question:**
 When would you reach for Context vs. an external state library (Redux, Zustand, Jotai) for global-ish state?
@@ -485,7 +485,7 @@ Context suits infrequently-changing, broadly-read values; external stores (Redux
 
 ---
 
-### Q10. If a Context's value is an object like `{ user, theme, setTheme }`, and a component only reads `theme`, does it still re-render when `user` changes? Why?
+### Q10. If a Context's value is an object like `{ user, theme, setTheme }`, and a component only reads `theme`, does it still re-render when `user` changes? Why? {#q10}
 
 **Question:**
 If a Context's value is an object like `{ user, theme, setTheme }`, and a component only reads `theme` (destructured from the result of `useContext`), does it still re-render when `user` changes? Why?
@@ -541,7 +541,7 @@ bugs in production apps.
 
 ---
 
-### Q11. When would you reach for `useReducer` instead of several `useState` calls?
+### Q11. When would you reach for `useReducer` instead of several `useState` calls? {#q11}
 
 **Question:**
 When would you reach for `useReducer` instead of several `useState` calls?
@@ -605,7 +605,7 @@ several independent `useState` calls.
 
 ---
 
-### Q12. What happens if you pass an inline object or function as a `useEffect` dependency, e.g. `useEffect(() => {...}, [{ id }])` or `useEffect(() => {...}, [() => {}])`?
+### Q12. What happens if you pass an inline object or function as a `useEffect` dependency, e.g. `useEffect(() => {...}, [{ id }])` or `useEffect(() => {...}, [() => {}])`? {#q12}
 
 **Question:**
 What happens if you pass an inline object or function as a `useEffect` dependency, e.g. `useEffect(() => {...}, [{ id }])`?
@@ -665,7 +665,7 @@ Inline object/array/function literals get a new reference every render, so as de
 
 ---
 
-### Q13. What is "tearing" in the context of concurrent React, and how does `useSyncExternalStore` prevent it?
+### Q13. What is "tearing" in the context of concurrent React, and how does `useSyncExternalStore` prevent it? {#q13}
 
 **Question:**
 What is "tearing" in the context of concurrent React, and how does `useSyncExternalStore` prevent it?
@@ -730,7 +730,7 @@ Tearing is inconsistent data shown across a UI mid concurrent-render; `useSyncEx
 
 ---
 
-### Q14. What's the difference between `useRef` and `useState`, and when would using `useRef` for something be a mistake?
+### Q14. What's the difference between `useRef` and `useState`, and when would using `useRef` for something be a mistake? {#q14}
 
 **Question:**
 What's the difference between `useRef` and `useState`, and when would using `useRef` for something be a mistake?
@@ -790,7 +790,7 @@ constraints on where refs can safely be mutated.
 
 ---
 
-### Q15. A parent passes an `onClick` handler to a memoized child (`React.memo`). Even though the handler is defined as an arrow function inline in the parent, the child re-renders every time the parent does. Why, and how do you fix it?
+### Q15. A parent passes an `onClick` handler to a memoized child (`React.memo`). Even though the handler is defined as an arrow function inline in the parent, the child re-renders every time the parent does. Why, and how do you fix it? {#q15}
 
 **Question:**
 A parent passes an `onClick` handler to a memoized child (`React.memo`). Even though the handler is defined as an arrow function inline in the parent, the child re-renders every time the parent does. Why, and how do you fix it?
@@ -848,7 +848,7 @@ still re-rendering" confusion is extremely common in practice.
 
 ---
 
-### Q16. What does it mean that a custom hook doesn't share state between the components that use it — and why is that the case, given it's "just a function"?
+### Q16. What does it mean that a custom hook doesn't share state between the components that use it — and why is that the case, given it's "just a function"? {#q16}
 
 **Question:**
 What does it mean that a custom hook doesn't share state between the components that use it — and why is that the case, given it's "just a function"?
@@ -906,7 +906,7 @@ A custom hook shares reusable logic, not state — each caller gets its own inde
 
 ---
 
-### Q17. React's docs describe function components (and reducers) as needing to be "pure." What does that mean concretely, and what's an example of an impure component that still often "seems to work"?
+### Q17. React's docs describe function components (and reducers) as needing to be "pure." What does that mean concretely, and what's an example of an impure component that still often "seems to work"? {#q17}
 
 **Question:**
 React's docs describe function components (and reducers) as needing to be "pure." What does that mean concretely, and what's an example of an impure component that still often "seems to work"?
@@ -964,7 +964,7 @@ A pure component's output depends only on its inputs with no side effects, since
 
 ---
 
-### Q18. Why does React's `StrictMode` intentionally call your component function, state initializers, and reducers twice in development?
+### Q18. Why does React's `StrictMode` intentionally call your component function, state initializers, and reducers twice in development? {#q18}
 
 **Question:**
 Why does React's `StrictMode` intentionally call your component function, state initializers, and reducers twice in development?
@@ -1008,7 +1008,7 @@ to work around.
 
 ---
 
-### Q19. React 19.2 introduced `useEffectEvent`. What problem does it solve that plain `useEffect` + dependency arrays couldn't solve cleanly?
+### Q19. React 19.2 introduced `useEffectEvent`. What problem does it solve that plain `useEffect` + dependency arrays couldn't solve cleanly? {#q19}
 
 **Question:**
 React 19.2 introduced `useEffectEvent`. What problem does it solve that plain `useEffect` + dependency arrays couldn't solve cleanly?
@@ -1070,7 +1070,7 @@ the underlying reactive-vs-non-reactive distinction well enough to explain
 
 ---
 
-### Q20. You're handed a component where a `useEffect` fires an API call, and the team suspects it's causing duplicate requests in production (not just the known `StrictMode` dev double-invoke). What's your process for confirming and fixing this?
+### Q20. You're handed a component where a `useEffect` fires an API call, and the team suspects it's causing duplicate requests in production (not just the known `StrictMode` dev double-invoke). What's your process for confirming and fixing this? {#q20}
 
 **Question:**
 You're handed a component where a `useEffect` fires an API call, and the team suspects it's causing duplicate requests in production (not just the known `StrictMode` dev double-invoke). What's your process for confirming and fixing this?

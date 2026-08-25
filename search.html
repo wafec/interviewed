@@ -1,0 +1,177 @@
+---
+layout: default
+title: Search
+permalink: /search/
+---
+
+<style>
+  #search-app { font-family: inherit; max-width: 820px; }
+  #search-app input[type="search"] {
+    width: 100%; box-sizing: border-box; padding: 0.6em 0.8em;
+    font-size: 1.1em; font-family: inherit;
+  }
+  #search-app .meta { opacity: 0.7; margin: 0.6em 0 1em; font-size: 0.9em; }
+  #search-app .result { border-left: 4px solid #555; padding: 0.4em 0 0.4em 0.8em; margin: 1em 0; }
+  #search-app .result .badges { margin-bottom: 0.3em; }
+  #search-app .badge {
+    display: inline-block; font-size: 0.75em; opacity: 0.75;
+    border: 1px solid #555; border-radius: 3px; padding: 0.05em 0.5em;
+    margin-right: 0.4em; text-transform: uppercase;
+  }
+  #search-app .result h3 { margin: 0.2em 0; }
+  #search-app .result h3 a { text-decoration: none; }
+  #search-app .result h3 a:hover { text-decoration: underline; }
+  #search-app .snippet { opacity: 0.85; margin: 0.3em 0 0; }
+  #search-app mark { background: #ffdd55; color: #111; padding: 0 0.1em; }
+  #search-app .empty-state { opacity: 0.7; }
+</style>
+
+# Search
+
+<div id="search-app">
+  <input type="search" id="search-input" placeholder="Search all questions… e.g. deadlock, index, hydration" autofocus>
+  <div class="meta" id="search-meta"></div>
+  <div id="search-results"></div>
+</div>
+
+<script>
+(function () {
+  var BASEURL = {{ site.baseurl | jsonify }};
+  var TOPICS = ["java", "api", "sql", "cloud", "dotnet", "react"];
+
+  var input = document.getElementById("search-input");
+  var meta = document.getElementById("search-meta");
+  var results = document.getElementById("search-results");
+
+  var allEntries = [];
+
+  function normalize(text) {
+    if (!text) return [];
+    var s = text.toString().toLowerCase();
+    if (s.normalize) s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    s = s.replace(/[^a-z0-9]+/g, " ").trim();
+    if (!s) return [];
+    return s.split(/\s+/);
+  }
+
+  function loadAll() {
+    var fetches = TOPICS.map(function (topic) {
+      return fetch(BASEURL + "/src/" + topic + "/search-index.json")
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .catch(function () { return []; });
+    });
+    return Promise.all(fetches).then(function (lists) {
+      allEntries = lists.reduce(function (acc, l) { return acc.concat(l); }, []);
+      allEntries.forEach(function (e) {
+        e._titleTokens = normalize(e.title);
+        e._tldrTokens = normalize(e.tldr);
+        e._tagTokens = (e.tags || []).reduce(function (acc, t) {
+          return acc.concat(normalize(t));
+        }, []);
+      });
+    });
+  }
+
+  function countOccurrences(tokens, term) {
+    var n = 0;
+    for (var i = 0; i < tokens.length; i++) if (tokens[i] === term) n++;
+    return n;
+  }
+
+  function score(entry, queryTokens) {
+    var total = 0;
+    var distinctMatched = 0;
+    queryTokens.forEach(function (term) {
+      var titleHits = countOccurrences(entry._titleTokens, term);
+      var tagHits = countOccurrences(entry._tagTokens, term);
+      var tldrHits = countOccurrences(entry._tldrTokens, term);
+      var hits = titleHits * 3 + tagHits * 3 + tldrHits * 1;
+      if (hits > 0) {
+        total += hits;
+        distinctMatched++;
+      }
+    });
+    if (distinctMatched > 0) total += distinctMatched * 2;
+    return total;
+  }
+
+  function highlight(text, queryTokens) {
+    if (!text || queryTokens.length === 0) return escapeHtml(text || "");
+    var escaped = escapeHtml(text);
+    queryTokens.forEach(function (term) {
+      if (term.length < 2) return;
+      var re = new RegExp("(" + term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+      escaped = escaped.replace(re, "<mark>$1</mark>");
+    });
+    return escaped;
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function render(query) {
+    var queryTokens = normalize(query);
+
+    if (queryTokens.length === 0) {
+      meta.textContent = allEntries.length
+        ? allEntries.length + " questions indexed. Start typing to search."
+        : "No search index found yet.";
+      results.innerHTML = "";
+      return;
+    }
+
+    var scored = allEntries
+      .map(function (e) { return { entry: e, s: score(e, queryTokens) }; })
+      .filter(function (x) { return x.s > 0; })
+      .sort(function (a, b) { return b.s - a.s; })
+      .slice(0, 40);
+
+    meta.textContent = scored.length + " result" + (scored.length === 1 ? "" : "s");
+
+    results.innerHTML = "";
+    scored.forEach(function (x) {
+      var e = x.entry;
+      var div = document.createElement("div");
+      div.className = "result";
+
+      var badges = document.createElement("div");
+      badges.className = "badges";
+      var topicBadge = document.createElement("span");
+      topicBadge.className = "badge";
+      topicBadge.textContent = e.topic;
+      badges.appendChild(topicBadge);
+      var subtopicBadge = document.createElement("span");
+      subtopicBadge.className = "badge";
+      subtopicBadge.textContent = e.subtopic;
+      badges.appendChild(subtopicBadge);
+      div.appendChild(badges);
+
+      var h3 = document.createElement("h3");
+      var a = document.createElement("a");
+      a.href = BASEURL + e.url;
+      a.innerHTML = highlight(e.title, queryTokens);
+      h3.appendChild(a);
+      div.appendChild(h3);
+
+      var snippet = document.createElement("p");
+      snippet.className = "snippet";
+      snippet.innerHTML = highlight(e.tldr, queryTokens);
+      div.appendChild(snippet);
+
+      results.appendChild(div);
+    });
+
+    if (scored.length === 0) {
+      results.innerHTML = '<p class="empty-state">No matches. Try different or fewer keywords.</p>';
+    }
+  }
+
+  loadAll().then(function () {
+    render(input.value);
+    input.addEventListener("input", function () { render(input.value); });
+  });
+})();
+</script>

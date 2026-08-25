@@ -7,7 +7,7 @@ title: "Java Interview — I/O, NIO & Networking Performance"
 
 This set covers Java's I/O model end to end: classic blocking streams, NIO channels/buffers and `Selector`-based multiplexing, zero-copy transfers and memory-mapped files, async I/O, and how virtual threads have changed the blocking-vs-NIO calculus. It leans heavily on performance diagnosis — how to actually detect and validate an I/O bottleneck rather than just describe the APIs.
 
-### Q1. What's the fundamental architectural difference between `java.io` streams and `java.nio` channels/buffers?
+### Q1. What's the fundamental architectural difference between `java.io` streams and `java.nio` channels/buffers? {#q1}
 
 **Question:**
 What's the fundamental architectural difference between `java.io` streams and `java.nio` channels/buffers?
@@ -52,7 +52,7 @@ This question checks whether the candidate understands NIO as a *concurrency mod
 
 ---
 
-### Q2. How does a `Selector` let one thread monitor thousands of channels without polling each one in a loop?
+### Q2. How does a `Selector` let one thread monitor thousands of channels without polling each one in a loop? {#q2}
 
 **Question:**
 How does a `Selector` let one thread monitor thousands of channels without polling each one in a loop?
@@ -97,7 +97,7 @@ Tests whether the candidate understands that NIO's scalability comes from pushin
 
 ---
 
-### Q3. What does `FileChannel.transferTo()` do that a manual read/write loop doesn't, and why does that matter for performance?
+### Q3. What does `FileChannel.transferTo()` do that a manual read/write loop doesn't, and why does that matter for performance? {#q3}
 
 **Question:**
 What does `FileChannel.transferTo()` do that a manual read/write loop doesn't, and why does that matter for performance?
@@ -137,7 +137,7 @@ Checks whether the candidate can explain *why* an API is faster at the OS level,
 
 ---
 
-### Q4. Your synchronous, thread-per-connection server starts failing to accept new connections under load, even though CPU usage is low. What's the likely cause and how do you confirm it?
+### Q4. Your synchronous, thread-per-connection server starts failing to accept new connections under load, even though CPU usage is low. What's the likely cause and how do you confirm it? {#q4}
 
 **Question:**
 Your synchronous, thread-per-connection server starts failing to accept new connections under load, even though CPU usage is low. What's the likely cause and how do you confirm it?
@@ -167,7 +167,7 @@ Low CPU with connection failures under a thread-per-connection design usually me
 
 ---
 
-### Q5. How would you profile a service you suspect is I/O-bound (spending most of its time waiting on sockets/disk) rather than CPU-bound?
+### Q5. How would you profile a service you suspect is I/O-bound (spending most of its time waiting on sockets/disk) rather than CPU-bound? {#q5}
 
 **Question:**
 How would you profile a service you suspect is I/O-bound (spending most of its time waiting on sockets/disk) rather than CPU-bound?
@@ -196,7 +196,7 @@ Use JFR's socket/file I/O events (or wall-clock, not CPU, profiling) to see time
 
 ---
 
-### Q6. From an architecture-theory standpoint, what's the fundamental trade-off between a thread-per-request model and an event-driven (reactor) model?
+### Q6. From an architecture-theory standpoint, what's the fundamental trade-off between a thread-per-request model and an event-driven (reactor) model? {#q6}
 
 **Question:**
 From an architecture-theory standpoint, what's the fundamental trade-off between a thread-per-request model and an event-driven (reactor) model?
@@ -225,7 +225,7 @@ Thread-per-request trades OS-thread cost for simple sequential code and stack tr
 
 ---
 
-### Q7. Why do high-throughput frameworks like Netty build on top of NIO instead of just using virtual threads with blocking I/O?
+### Q7. Why do high-throughput frameworks like Netty build on top of NIO instead of just using virtual threads with blocking I/O? {#q7}
 
 **Question:**
 Why do high-throughput frameworks like Netty build on top of NIO instead of just using virtual threads with blocking I/O?
@@ -254,7 +254,7 @@ Netty/reactive stacks still earn their keep for backpressure control and pooled-
 
 ---
 
-### Q8. What's wrong with this NIO code, and what would actually happen when it runs?
+### Q8. What's wrong with this NIO code, and what would actually happen when it runs? {#q8}
 
 **Question:**
 What's wrong with this NIO code, and what would actually happen when it runs?
@@ -297,7 +297,7 @@ Forgetting `flip()` between a read and a write on the same buffer writes the emp
 
 ---
 
-### Q9. A non-blocking `SocketChannel.write(buffer)` call returns having written fewer bytes than the buffer contained. Is this a bug, and how should the caller handle it?
+### Q9. A non-blocking `SocketChannel.write(buffer)` call returns having written fewer bytes than the buffer contained. Is this a bug, and how should the caller handle it? {#q9}
 
 **Question:**
 A non-blocking `SocketChannel.write(buffer)` call returns having written fewer bytes than the buffer contained. Is this a bug, and how should the caller handle it?
@@ -327,7 +327,7 @@ A partial write on a non-blocking channel is normal — track the unwritten rema
 
 ---
 
-### Q10. What resource-leak risk is specific to NIO channels that's less common with classic `java.io` streams, and how do you guard against it?
+### Q10. What resource-leak risk is specific to NIO channels that's less common with classic `java.io` streams, and how do you guard against it? {#q10}
 
 **Question:**
 What resource-leak risk is specific to NIO channels that's less common with classic `java.io` streams, and how do you guard against it?
@@ -356,7 +356,7 @@ Unclosed NIO channels leak OS file descriptors (not just memory) because the sel
 
 ---
 
-### Q11. How does `AsynchronousFileChannel` with a `CompletionHandler` differ from the `Selector`-based non-blocking model, and when would you choose it?
+### Q11. How does `AsynchronousFileChannel` with a `CompletionHandler` differ from the `Selector`-based non-blocking model, and when would you choose it? {#q11}
 
 **Question:**
 How does `AsynchronousFileChannel` with a `CompletionHandler` differ from the `Selector`-based non-blocking model, and when would you choose it?
@@ -386,7 +386,7 @@ Checks whether the candidate distinguishes readiness-based (Selector) from compl
 
 ---
 
-### Q12. What does "pinning" mean for virtual threads, and why does it specifically threaten the I/O-scalability benefit they're meant to provide?
+### Q12. What does "pinning" mean for virtual threads, and why does it specifically threaten the I/O-scalability benefit they're meant to provide? {#q12}
 
 **Question:**
 What does "pinning" mean for virtual threads, and why does it specifically threaten the I/O-scalability benefit they're meant to provide?
@@ -416,7 +416,7 @@ A virtual thread pinned inside a `synchronized` block or native call can't unmou
 
 ---
 
-### Q13. What's a "gathering write," and what real-world protocol/format situation is it designed for?
+### Q13. What's a "gathering write," and what real-world protocol/format situation is it designed for? {#q13}
 
 **Question:**
 What's a "gathering write," and what real-world protocol/format situation is it designed for?
@@ -445,7 +445,7 @@ Gathering/scattering I/O writes-from or reads-into multiple buffers in a single 
 
 ---
 
-### Q14. When would you actually still choose Selector-based NIO or a reactive/Netty-style stack over blocking code on virtual threads, given virtual threads exist now?
+### Q14. When would you actually still choose Selector-based NIO or a reactive/Netty-style stack over blocking code on virtual threads, given virtual threads exist now? {#q14}
 
 **Question:**
 When would you actually still choose Selector-based NIO or a reactive/Netty-style stack over blocking code on virtual threads, given virtual threads exist now?
@@ -474,7 +474,7 @@ Virtual threads solve thread cost, not capacity management — reactive/NIO stac
 
 ---
 
-### Q15. Why would allocating a `ByteBuffer` with `allocateDirect()` instead of `allocate()` sometimes make things *slower*, not faster?
+### Q15. Why would allocating a `ByteBuffer` with `allocateDirect()` instead of `allocate()` sometimes make things *slower*, not faster? {#q15}
 
 **Question:**
 Why would allocating a `ByteBuffer` with `allocateDirect()` instead of `allocate()` sometimes make things *slower*, not faster?
@@ -503,7 +503,7 @@ Direct buffers avoid a native-I/O copy but cost more to allocate/free and are re
 
 ---
 
-### Q16. What is a memory-mapped file (`FileChannel.map()`), and what real problem does it solve compared to normal `read()`/`write()` calls?
+### Q16. What is a memory-mapped file (`FileChannel.map()`), and what real problem does it solve compared to normal `read()`/`write()` calls? {#q16}
 
 **Question:**
 What is a memory-mapped file (`FileChannel.map()`), and what real problem does it solve compared to normal `read()`/`write()` calls?
@@ -532,7 +532,7 @@ Memory-mapped files let you access file contents as regular memory via OS paging
 
 ---
 
-### Q17. Why does `InputStreamReader`/`OutputStreamWriter` exist as a bridge between byte streams and character streams, and what problem does it prevent?
+### Q17. Why does `InputStreamReader`/`OutputStreamWriter` exist as a bridge between byte streams and character streams, and what problem does it prevent? {#q17}
 
 **Question:**
 Why does `InputStreamReader`/`OutputStreamWriter` exist as a bridge between byte streams and character streams, and what problem does it prevent?
@@ -561,7 +561,7 @@ A fundamentals-level question checking whether the candidate treats character en
 
 ---
 
-### Q18. How does the thread-per-connection model directly cause `OutOfMemoryError: unable to create new native thread`, and what does that error actually mean?
+### Q18. How does the thread-per-connection model directly cause `OutOfMemoryError: unable to create new native thread`, and what does that error actually mean? {#q18}
 
 **Question:**
 How does the thread-per-connection model directly cause `OutOfMemoryError: unable to create new native thread`, and what does that error actually mean?
@@ -590,7 +590,7 @@ Checks whether the candidate can correctly diagnose this specific OOM variant as
 
 ---
 
-### Q19. Why can't you register a `FileChannel` with a `Selector` the way you can register a `SocketChannel`?
+### Q19. Why can't you register a `FileChannel` with a `Selector` the way you can register a `SocketChannel`? {#q19}
 
 **Question:**
 Why can't you register a `FileChannel` with a `Selector` the way you can register a `SocketChannel`?
@@ -620,7 +620,7 @@ Tests whether the candidate understands *why* the JDK's I/O API is split the way
 
 ---
 
-### Q20. You need to send a large static file to many concurrent clients as efficiently as possible. Walk through the design decisions, from I/O model down to the actual send call.
+### Q20. You need to send a large static file to many concurrent clients as efficiently as possible. Walk through the design decisions, from I/O model down to the actual send call. {#q20}
 
 **Question:**
 You need to send a large static file to many concurrent clients as efficiently as possible. Walk through the design decisions, from I/O model down to the actual send call.

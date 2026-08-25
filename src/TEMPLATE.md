@@ -7,7 +7,7 @@ title: "<Topic> Interview — <Subtopic>"
 
 <One-paragraph intro naming the subtopic and what this set covers.>
 
-### Q1. <Question title/text>
+### Q1. <Question title/text> {#q1}
 
 **Question:**
 <the interview question itself, verbatim as it would be asked>
@@ -46,7 +46,7 @@ days/weeks later without re-reading everything above>
 
 ---
 
-### Q2. <Question title/text>
+### Q2. <Question title/text> {#q2}
 
 **Question:**
 ...
@@ -75,12 +75,14 @@ days/weeks later without re-reading everything above>
 ---
 
 <!--
-  Repeat through Q20. See src/README.md for the full contract this template
-  implements: mandatory coverage categories (fundamentals, internals,
-  performance diagnosis, SE theory + practice, real-world problems, pitfalls,
-  advanced features, trade-offs), the References requirement (verified
-  official documentation only, checked online before writing the answer),
-  and when a Code example subsection is warranted.
+  Repeat through Q20 (heading pattern: "### Q<N>. <title> {#q<N>}" — the
+  {#qN} anchor is mandatory, it's what search results deep-link to). See
+  src/README.md for the full contract this template implements: mandatory
+  coverage categories (fundamentals, internals, performance diagnosis, SE
+  theory + practice, real-world problems, pitfalls, advanced features,
+  trade-offs), the References requirement (verified official documentation
+  only, checked online before writing the answer), and when a Code example
+  subsection is warranted.
 -->
 
 ---

@@ -11,7 +11,7 @@ semantics, caching, security, versioning, pagination, rate limiting, and how
 these decisions play out under real production load — plus the trade-offs
 against gRPC and GraphQL.
 
-### Q1. What is REST, and what makes an API "RESTful" rather than just "an API over HTTP"?
+### Q1. What is REST, and what makes an API "RESTful" rather than just "an API over HTTP"? {#q1}
 
 **Question:**
 What is REST, and what makes an API "RESTful" rather than just "an API over HTTP"?
@@ -41,7 +41,7 @@ Full REST requires HATEOAS-driven hypermedia, not just HTTP verbs + JSON — mos
 
 ---
 
-### Q2. Why is statelessness a core REST constraint, and what breaks if you violate it?
+### Q2. Why is statelessness a core REST constraint, and what breaks if you violate it? {#q2}
 
 **Question:**
 Why is statelessness a core REST constraint, and what breaks if you violate it?
@@ -78,7 +78,7 @@ Statelessness means every request is self-contained, enabling free load-balancin
 
 ---
 
-### Q3. What's the difference between a "safe" and an "idempotent" HTTP method, and why does it matter for retries and caches?
+### Q3. What's the difference between a "safe" and an "idempotent" HTTP method, and why does it matter for retries and caches? {#q3}
 
 **Question:**
 What's the difference between a "safe" and an "idempotent" HTTP method, and why does it matter for retries and caches?
@@ -107,7 +107,7 @@ Safe = read-only; idempotent = repeating it has the same end state — idempoten
 
 ---
 
-### Q4. Walk through PUT vs PATCH vs POST for updating a resource — when would you use each?
+### Q4. Walk through PUT vs PATCH vs POST for updating a resource — when would you use each? {#q4}
 
 **Question:**
 Walk through PUT vs PATCH vs POST for updating a resource — when would you use each?
@@ -151,7 +151,7 @@ PUT replaces the whole resource, PATCH applies a partial change, POST is for cre
 
 ---
 
-### Q5. When do you return 400 vs 422, and 401 vs 403?
+### Q5. When do you return 400 vs 422, and 401 vs 403? {#q5}
 
 **Question:**
 When do you return 400 vs 422, and 401 vs 403?
@@ -181,7 +181,7 @@ Tests precision with the client-error status code space, and whether the candida
 
 ---
 
-### Q6. A client's POST to create a payment times out — they don't know if it succeeded. How do you make this safe to retry?
+### Q6. A client's POST to create a payment times out — they don't know if it succeeded. How do you make this safe to retry? {#q6}
 
 **Question:**
 A client's POST to create a payment times out — they don't know if it succeeded. How do you make this safe to retry?
@@ -219,7 +219,7 @@ An idempotency key lets the server cache and replay the first response to a retr
 
 ---
 
-### Q7. What are the main API versioning strategies, and what are the trade-offs?
+### Q7. What are the main API versioning strategies, and what are the trade-offs? {#q7}
 
 **Question:**
 What are the main API versioning strategies, and what are the trade-offs?
@@ -248,7 +248,7 @@ URI versioning is simple but leaks into every path, header/content-negotiation v
 
 ---
 
-### Q8. Offset-based vs. cursor-based pagination — how do they work, and why does it matter at scale?
+### Q8. Offset-based vs. cursor-based pagination — how do they work, and why does it matter at scale? {#q8}
 
 **Question:**
 Offset-based vs. cursor-based pagination — how do they work, and why does it matter at scale?
@@ -286,7 +286,7 @@ Offset pagination scans and discards skipped rows, getting slower and less stabl
 
 ---
 
-### Q9. How does rate limiting actually work under the hood — walk through the token bucket algorithm?
+### Q9. How does rate limiting actually work under the hood — walk through the token bucket algorithm? {#q9}
 
 **Question:**
 How does rate limiting actually work under the hood — walk through the token bucket algorithm?
@@ -331,7 +331,7 @@ A token bucket allows bursts up to its capacity while enforcing a steady refill 
 
 ---
 
-### Q10. Explain HTTP caching: Cache-Control, ETag/If-None-Match, and when a 304 gets returned.
+### Q10. Explain HTTP caching: Cache-Control, ETag/If-None-Match, and when a 304 gets returned. {#q10}
 
 **Question:**
 Explain HTTP caching: Cache-Control, ETag/If-None-Match, and when a 304 gets returned.
@@ -376,7 +376,7 @@ Cache-Control governs storability/freshness, ETag + If-None-Match let the server
 
 ---
 
-### Q11. What is CORS, why does the browser enforce it, and what triggers a preflight request?
+### Q11. What is CORS, why does the browser enforce it, and what triggers a preflight request? {#q11}
 
 **Question:**
 What is CORS, why does the browser enforce it, and what triggers a preflight request?
@@ -418,7 +418,7 @@ CORS lets a server opt specific origins into cross-origin access; the browser pr
 
 ---
 
-### Q12. Walk through the OAuth 2.0 authorization code flow, and explain when you'd use client credentials instead.
+### Q12. Walk through the OAuth 2.0 authorization code flow, and explain when you'd use client credentials instead. {#q12}
 
 **Question:**
 Walk through the OAuth 2.0 authorization code flow, and explain when you'd use client credentials instead.
@@ -459,7 +459,7 @@ Authorization code flow keeps the access token off the browser via a back-channe
 
 ---
 
-### Q13. What is HATEOAS, and why does Roy Fielding say most "REST APIs" aren't actually REST?
+### Q13. What is HATEOAS, and why does Roy Fielding say most "REST APIs" aren't actually REST? {#q13}
 
 **Question:**
 What is HATEOAS, and why does Roy Fielding say most "REST APIs" aren't actually REST?
@@ -488,7 +488,7 @@ HATEOAS means clients navigate via links returned in responses instead of hardco
 
 ---
 
-### Q14. Production users report an API endpoint is "slow." Walk through how you'd diagnose it.
+### Q14. Production users report an API endpoint is "slow." Walk through how you'd diagnose it. {#q14}
 
 **Question:**
 Production users report an API endpoint is "slow." Walk through how you'd diagnose it.
@@ -518,7 +518,7 @@ Diagnosing 'slow' starts with p95/p99 latency and distributed tracing to isolate
 
 ---
 
-### Q15. What's a "chatty" API, and how does it relate to the N+1 problem?
+### Q15. What's a "chatty" API, and how does it relate to the N+1 problem? {#q15}
 
 **Question:**
 What's a "chatty" API, and how does it relate to the N+1 problem?
@@ -560,7 +560,7 @@ A chatty/N+1 API pays one round trip per related item instead of batching them �
 
 ---
 
-### Q16. Why do persistent (keep-alive) connections matter for API performance, and what's actually happening at the TCP/HTTP layer?
+### Q16. Why do persistent (keep-alive) connections matter for API performance, and what's actually happening at the TCP/HTTP layer? {#q16}
 
 **Question:**
 Why do persistent (keep-alive) connections matter for API performance, and what's actually happening at the TCP/HTTP layer?
@@ -590,7 +590,7 @@ HTTP/1.1 keep-alive reuses a TCP connection across requests to avoid repeated ha
 
 ---
 
-### Q17. Compare gRPC and REST — when would you choose gRPC for an API?
+### Q17. Compare gRPC and REST — when would you choose gRPC for an API? {#q17}
 
 **Question:**
 Compare gRPC and REST — when would you choose gRPC for an API?
@@ -620,7 +620,7 @@ gRPC trades REST's human-debuggable JSON and browser-native accessibility for bi
 
 ---
 
-### Q18. Compare GraphQL and REST — what real problem does GraphQL solve?
+### Q18. Compare GraphQL and REST — what real problem does GraphQL solve? {#q18}
 
 **Question:**
 Compare GraphQL and REST — what real problem does GraphQL solve?
@@ -650,7 +650,7 @@ GraphQL lets the client specify exactly the fields/shape it needs in one request
 
 ---
 
-### Q19. A downstream API your service depends on starts failing intermittently — how does the circuit breaker pattern help, and how is it different from just retrying?
+### Q19. A downstream API your service depends on starts failing intermittently — how does the circuit breaker pattern help, and how is it different from just retrying? {#q19}
 
 **Question:**
 A downstream API your service depends on starts failing intermittently — how does the circuit breaker pattern help, and how is it different from just retrying?
@@ -687,7 +687,7 @@ Retry handles transient blips; a circuit breaker trips open after sustained fail
 
 ---
 
-### Q20. What is backpressure, and why does it matter when one API/service produces data faster than a downstream consumer can process it?
+### Q20. What is backpressure, and why does it matter when one API/service produces data faster than a downstream consumer can process it? {#q20}
 
 **Question:**
 What is backpressure, and why does it matter when one API/service produces data faster than a downstream consumer can process it?

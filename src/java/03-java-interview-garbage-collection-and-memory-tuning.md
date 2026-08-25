@@ -7,7 +7,7 @@ title: "Java Interview — Garbage Collection & Memory Tuning"
 
 This set covers the JVM's garbage-collected heap in depth: why generational collection exists, how the modern collectors (G1, ZGC, Shenandoah) actually work internally, the tools you reach for to diagnose a GC or memory problem in production, and the classic pitfalls that cause "memory leaks" in a garbage-collected language.
 
-### Q1. Why is the Java heap divided into a young and an old generation instead of collecting the whole heap uniformly?
+### Q1. Why is the Java heap divided into a young and an old generation instead of collecting the whole heap uniformly? {#q1}
 
 **Question:**
 Why is the Java heap divided into a young and an old generation instead of collecting the whole heap uniformly?
@@ -39,7 +39,7 @@ The heap is split into young/old generations because most objects die young (wea
 
 ---
 
-### Q2. What are "GC roots," and why does the collector need them?
+### Q2. What are "GC roots," and why does the collector need them? {#q2}
 
 **Question:**
 What are "GC roots," and why does the collector need them?
@@ -71,7 +71,7 @@ GC roots (stack locals, static fields, active JNI refs, etc.) are the starting p
 
 ---
 
-### Q3. Walk through how G1 organizes the heap and what a "mixed collection" is.
+### Q3. Walk through how G1 organizes the heap and what a "mixed collection" is. {#q3}
 
 **Question:**
 Walk through how G1 organizes the heap and what a "mixed collection" is.
@@ -112,7 +112,7 @@ G1 divides the heap into equal-sized regions logically tagged Eden/Survivor/Old,
 
 ---
 
-### Q4. What is a remembered set, and why does G1 need one per region?
+### Q4. What is a remembered set, and why does G1 need one per region? {#q4}
 
 **Question:**
 What is a remembered set, and why does G1 need one per region?
@@ -144,7 +144,7 @@ A remembered set is a per-region index of incoming cross-region references (trac
 
 ---
 
-### Q5. What is a TLAB, and what problem does it solve?
+### Q5. What is a TLAB, and what problem does it solve? {#q5}
 
 **Question:**
 What is a TLAB, and what problem does it solve?
@@ -175,7 +175,7 @@ A TLAB is a thread-exclusive slice of Eden that lets HotSpot allocate objects vi
 
 ---
 
-### Q6. Your service has occasional multi-second "stop the world" pauses in production. Walk through how you'd diagnose the cause.
+### Q6. Your service has occasional multi-second "stop the world" pauses in production. Walk through how you'd diagnose the cause. {#q6}
 
 **Question:**
 Your service has occasional multi-second "stop the world" pauses in production. Walk through how you'd diagnose the cause.
@@ -223,7 +223,7 @@ Diagnose multi-second STW pauses by correlating GC logs (`-Xlog:gc*`) and `jstat
 
 ---
 
-### Q7. What does `jstat -gcutil` show, and how would you use it to spot a problem live?
+### Q7. What does `jstat -gcutil` show, and how would you use it to spot a problem live? {#q7}
 
 **Question:**
 What does `jstat -gcutil` show, and how would you use it to spot a problem live?
@@ -259,7 +259,7 @@ Tests hands-on familiarity with the actual tools used day-to-day for GC triage, 
 
 ---
 
-### Q8. What's the difference between `jcmd <pid> GC.heap_info` and `jcmd <pid> GC.run`, and when would you use each in production?
+### Q8. What's the difference between `jcmd <pid> GC.heap_info` and `jcmd <pid> GC.run`, and when would you use each in production? {#q8}
 
 **Question:**
 What's the difference between `jcmd <pid> GC.heap_info` and `jcmd <pid> GC.run`, and when would you use each in production?
@@ -295,7 +295,7 @@ Checks whether the candidate treats "trigger a GC" as a deliberate, understood a
 
 ---
 
-### Q9. A long-lived static `List` keeps growing over the life of the application, even though entries are logically "done" and no longer needed. Why doesn't the garbage collector clean it up?
+### Q9. A long-lived static `List` keeps growing over the life of the application, even though entries are logically "done" and no longer needed. Why doesn't the garbage collector clean it up? {#q9}
 
 **Question:**
 A long-lived static `List` keeps growing over the life of the application, even though entries are logically "done" and no longer needed. Why doesn't the garbage collector clean it up?
@@ -335,7 +335,7 @@ A static field is itself a GC root, so anything it references stays reachable fo
 
 ---
 
-### Q10. Why is it easy to accidentally leak memory via `ThreadLocal` in a thread-pooled environment (like a servlet container or an `ExecutorService`), and how do you avoid it?
+### Q10. Why is it easy to accidentally leak memory via `ThreadLocal` in a thread-pooled environment (like a servlet container or an `ExecutorService`), and how do you avoid it? {#q10}
 
 **Question:**
 Why is it easy to accidentally leak memory via `ThreadLocal` in a thread-pooled environment (like a servlet container or an `ExecutorService`), and how do you avoid it?
@@ -378,7 +378,7 @@ Pooled threads outlive individual tasks, so a `ThreadLocal.set()` without a matc
 
 ---
 
-### Q11. What is ZGC, and how does it achieve pause times that don't scale with heap size?
+### Q11. What is ZGC, and how does it achieve pause times that don't scale with heap size? {#q11}
 
 **Question:**
 What is ZGC, and how does it achieve pause times that don't scale with heap size?
@@ -414,7 +414,7 @@ ZGC keeps pause times independent of heap size by doing marking, relocation, and
 
 ---
 
-### Q12. How does Shenandoah achieve heap-size-independent pause times, and how does its core mechanism differ from ZGC's?
+### Q12. How does Shenandoah achieve heap-size-independent pause times, and how does its core mechanism differ from ZGC's? {#q12}
 
 **Question:**
 How does Shenandoah achieve heap-size-independent pause times, and how does its core mechanism differ from ZGC's?
@@ -448,7 +448,7 @@ Shenandoah also compacts concurrently for heap-size-independent pauses, but uses
 
 ---
 
-### Q13. What does G1's "String deduplication" feature do, and what problem does it solve?
+### Q13. What does G1's "String deduplication" feature do, and what problem does it solve? {#q13}
 
 **Question:**
 What does G1's "String deduplication" feature do, and what problem does it solve?
@@ -482,7 +482,7 @@ G1's string deduplication repoints content-identical `String`s to share one back
 
 ---
 
-### Q14. G1 has been the JVM's default collector since JDK 9. When would you deliberately choose a different collector instead?
+### Q14. G1 has been the JVM's default collector since JDK 9. When would you deliberately choose a different collector instead? {#q14}
 
 **Question:**
 G1 has been the JVM's default collector since JDK 9. When would you deliberately choose a different collector instead?
@@ -519,7 +519,7 @@ G1 is the balanced default; pick Parallel for pure-throughput batch workloads wi
 
 ---
 
-### Q15. What's the practical difference between "allocation rate" being too high and an actual memory leak, and why does it matter which one you're dealing with?
+### Q15. What's the practical difference between "allocation rate" being too high and an actual memory leak, and why does it matter which one you're dealing with? {#q15}
 
 **Question:**
 What's the practical difference between "allocation rate" being too high and an actual memory leak, and why does it matter which one you're dealing with?
@@ -551,7 +551,7 @@ A high allocation rate shows frequent young-gen collections with flat old-gen oc
 
 ---
 
-### Q16. What's the risk of tuning GC flags aggressively before you've actually measured a problem?
+### Q16. What's the risk of tuning GC flags aggressively before you've actually measured a problem? {#q16}
 
 **Question:**
 What's the risk of tuning GC flags aggressively before you've actually measured a problem?
@@ -582,7 +582,7 @@ Speculative GC tuning risks fighting the collector's own adaptive ergonomics and
 
 ---
 
-### Q17. What does it mean for a garbage collector to be "concurrent" vs. "parallel," and why are these two different axes?
+### Q17. What does it mean for a garbage collector to be "concurrent" vs. "parallel," and why are these two different axes? {#q17}
 
 **Question:**
 What does it mean for a garbage collector to be "concurrent" vs. "parallel," and why are these two different axes?
@@ -616,7 +616,7 @@ A precision-of-vocabulary check that also probes real depth — candidates who c
 
 ---
 
-### Q18. What's the relationship between object header size, alignment, and how many objects fit on the heap — and why would a candidate be expected to care about this in an interview?
+### Q18. What's the relationship between object header size, alignment, and how many objects fit on the heap — and why would a candidate be expected to care about this in an interview? {#q18}
 
 **Question:**
 What's the relationship between object header size, alignment, and how many objects fit on the heap — and why would a candidate be expected to care about this in an interview?
@@ -656,7 +656,7 @@ Every object pays a fixed header-plus-alignment overhead, so large numbers of sm
 
 ---
 
-### Q19. How would you validate that a GC-tuning change actually improved things, rather than just looking different?
+### Q19. How would you validate that a GC-tuning change actually improved things, rather than just looking different? {#q19}
 
 **Question:**
 How would you validate that a GC-tuning change actually improved things, rather than just looking different?
@@ -688,7 +688,7 @@ Validate a GC-tuning change by comparing the same metrics (pause-time percentile
 
 ---
 
-### Q20. Summarize the trade-off space across Parallel, G1, ZGC, and Shenandoah — how would you decide which one fits a given service?
+### Q20. Summarize the trade-off space across Parallel, G1, ZGC, and Shenandoah — how would you decide which one fits a given service? {#q20}
 
 **Question:**
 Summarize the trade-off space across Parallel, G1, ZGC, and Shenandoah — how would you decide which one fits a given service?

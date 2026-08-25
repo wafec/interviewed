@@ -11,7 +11,7 @@ static generation, the mechanics of hydration, streaming SSR with Suspense,
 and React Server Components (RSC) — the newer model where components run
 only on the server and never ship to the client at all.
 
-### Q1. What's the difference between CSR, SSR, and SSG, and what problem does each solve?
+### Q1. What's the difference between CSR, SSR, and SSG, and what problem does each solve? {#q1}
 
 **Question:**
 Walk me through client-side rendering, server-side rendering, and static
@@ -94,7 +94,7 @@ CSR trades slow first paint for fast builds, SSR trades server cost for fast con
 
 ---
 
-### Q2. What exactly does `hydrateRoot` do, and what must be true about the server and client output for it to work?
+### Q2. What exactly does `hydrateRoot` do, and what must be true about the server and client output for it to work? {#q2}
 
 **Question:**
 Explain what `hydrateRoot` does under the hood. What's the contract between
@@ -162,7 +162,7 @@ hydrateRoot reuses existing server-rendered DOM nodes instead of re-rendering, s
 
 ---
 
-### Q3. What is a React Server Component, and how is it fundamentally different from a component that's merely server-side rendered?
+### Q3. What is a React Server Component, and how is it fundamentally different from a component that's merely server-side rendered? {#q3}
 
 **Question:**
 People often conflate "my component runs during SSR" with "my component is
@@ -238,7 +238,7 @@ A Server Component's code never ships to the client at all — only its rendered
 
 ---
 
-### Q4. How does streaming SSR with `<Suspense>` change what the user experiences compared to traditional (non-streaming) SSR?
+### Q4. How does streaming SSR with `<Suspense>` change what the user experiences compared to traditional (non-streaming) SSR? {#q4}
 
 **Question:**
 Explain how `renderToPipeableStream` combined with `<Suspense>` boundaries
@@ -308,7 +308,7 @@ Streaming SSR sends a ready shell immediately and streams each Suspense boundary
 
 ---
 
-### Q5. How do you diagnose a hydration mismatch in production when you can't just read the dev-mode console warning?
+### Q5. How do you diagnose a hydration mismatch in production when you can't just read the dev-mode console warning? {#q5}
 
 **Question:**
 A user reports a page "flickers" or that clicks sometimes don't register
@@ -385,7 +385,7 @@ Reproduce with a dev build to see the exact diff, then correlate a post-load con
 
 ---
 
-### Q6. Why does React Server Components' "zero bundle size" property matter for performance, beyond just download size?
+### Q6. Why does React Server Components' "zero bundle size" property matter for performance, beyond just download size? {#q6}
 
 **Question:**
 Server Components ship zero bytes of their own code to the client. Walk me
@@ -448,7 +448,7 @@ Zero bundle size means less JS to download, parse, and hydrate, which directly c
 
 ---
 
-### Q7. What is the "waterfall" problem in data fetching, and how do Server Components address it differently than `useEffect`-based fetching?
+### Q7. What is the "waterfall" problem in data fetching, and how do Server Components address it differently than `useEffect`-based fetching? {#q7}
 
 **Question:**
 Explain the classic client-side data-fetching waterfall problem, and how
@@ -529,7 +529,7 @@ Server Components can fetch data concurrently during render (no mount-order depe
 
 ---
 
-### Q8. What is `useId` for, and why can't you just use an incrementing counter or `Math.random()` to generate unique DOM ids in a server-rendered app?
+### Q8. What is `useId` for, and why can't you just use an incrementing counter or `Math.random()` to generate unique DOM ids in a server-rendered app? {#q8}
 
 **Question:**
 You need unique `id` attributes to wire up `aria-describedby` between a
@@ -600,7 +600,7 @@ useId derives ids from stable tree position so they match between server and cli
 
 ---
 
-### Q9. What are Server Functions (formerly "Server Actions"), and how do they support progressive enhancement?
+### Q9. What are Server Functions (formerly "Server Actions"), and how do they support progressive enhancement? {#q9}
 
 **Question:**
 Explain what a Server Function is, how a Client Component invokes one, and
@@ -685,7 +685,7 @@ Server Functions ('use server') let a form submit as a real HTML POST before JS 
 
 ---
 
-### Q10. When would you deliberately choose NOT to adopt React Server Components / an SSR framework, and stick with a plain client-rendered SPA?
+### Q10. When would you deliberately choose NOT to adopt React Server Components / an SSR framework, and stick with a plain client-rendered SPA? {#q10}
 
 **Question:**
 Given everything RSC and streaming SSR give you, when is a plain
@@ -752,7 +752,7 @@ RSC/SSR complexity only pays off when SEO/first-paint or heavy server-only depen
 
 ---
 
-### Q11. Explain the RSC payload — what actually gets sent over the wire for a Server Component tree, and how is it different from HTML or JSON?
+### Q11. Explain the RSC payload — what actually gets sent over the wire for a Server Component tree, and how is it different from HTML or JSON? {#q11}
 
 **Question:**
 When a Server Component renders, what format is the result sent to the
@@ -812,7 +812,7 @@ The RSC payload is a streaming format encoding both server-rendered content and 
 
 ---
 
-### Q12. What's a common pitfall when Server Components pass props to Client Components, and why does it happen?
+### Q12. What's a common pitfall when Server Components pass props to Client Components, and why does it happen? {#q12}
 
 **Question:**
 A developer tries to pass a class instance or a non-Server function as a
@@ -880,7 +880,7 @@ Only serializable values (primitives, plain objects/arrays, Dates, Server Functi
 
 ---
 
-### Q13. How does `<Suspense>` fallback content interact with SEO/crawlers during streaming SSR — is there a risk of a crawler indexing the loading skeleton instead of the real content?
+### Q13. How does `<Suspense>` fallback content interact with SEO/crawlers during streaming SSR — is there a risk of a crawler indexing the loading skeleton instead of the real content? {#q13}
 
 **Question:**
 With streaming SSR, the browser initially receives Suspense fallbacks
@@ -958,7 +958,7 @@ Waiting for onAllReady instead of onShellReady sends crawlers one complete docum
 
 ---
 
-### Q14. What's "selective hydration," and how does it let a page become interactive faster than hydrating top-to-bottom?
+### Q14. What's "selective hydration," and how does it let a page become interactive faster than hydrating top-to-bottom? {#q14}
 
 **Question:**
 Explain selective hydration — how does React decide what to hydrate first
@@ -1016,7 +1016,7 @@ Selective hydration lets React hydrate whichever Suspense boundary the user actu
 
 ---
 
-### Q15. What role does `suppressHydrationWarning` play, and why is it explicitly documented as "not a fix"?
+### Q15. What role does `suppressHydrationWarning` play, and why is it explicitly documented as "not a fix"? {#q15}
 
 **Question:**
 When and how should you use `suppressHydrationWarning`? Why does the
@@ -1082,7 +1082,7 @@ suppressHydrationWarning only silences the warning on one element one level deep
 
 ---
 
-### Q16. How would you use the browser's Performance/Network panel (or React DevTools) to confirm whether a slow-feeling SSR page is bottlenecked on server render time vs. client hydration time?
+### Q16. How would you use the browser's Performance/Network panel (or React DevTools) to confirm whether a slow-feeling SSR page is bottlenecked on server render time vs. client hydration time? {#q16}
 
 **Question:**
 A server-rendered page feels slow. Walk me through how you'd figure out
@@ -1163,7 +1163,7 @@ Isolate the bottleneck by phase — TTFB for server/render time, streaming durat
 
 ---
 
-### Q17. What's the theoretical requirement React's render function has always had, and why does that requirement become load-bearing (not just good practice) once SSR/hydration enters the picture?
+### Q17. What's the theoretical requirement React's render function has always had, and why does that requirement become load-bearing (not just good practice) once SSR/hydration enters the picture? {#q17}
 
 **Question:**
 React has always said render functions should be "pure." In a purely
@@ -1233,7 +1233,7 @@ Purity is cosmetic in pure CSR but load-bearing under SSR, because hydration's c
 
 ---
 
-### Q18. What's the real-world business/product problem that motivated Server Components' existence, beyond "it's a nice performance optimization"?
+### Q18. What's the real-world business/product problem that motivated Server Components' existence, beyond "it's a nice performance optimization"? {#q18}
 
 **Question:**
 Frame this differently: what production pain, before Server Components
@@ -1297,7 +1297,7 @@ RSC exists to stop shipping server-only-usable code to the client just to avoid 
 
 ---
 
-### Q19. What common anti-pattern happens when teams migrate an existing CSR app to SSR/RSC without rethinking their data-fetching code, and why does it happen?
+### Q19. What common anti-pattern happens when teams migrate an existing CSR app to SSR/RSC without rethinking their data-fetching code, and why does it happen? {#q19}
 
 **Question:**
 A team migrates an existing client-rendered app to an SSR/RSC framework
@@ -1357,7 +1357,7 @@ Migrating to SSR/RSC without moving initial-load fetches out of client useEffect
 
 ---
 
-### Q20. Compare React Server Components to a traditional SSR-only framework approach (server renders HTML, full client bundle still ships) — what do you gain, and what new complexity do you take on?
+### Q20. Compare React Server Components to a traditional SSR-only framework approach (server renders HTML, full client bundle still ships) — what do you gain, and what new complexity do you take on? {#q20}
 
 **Question:**
 Give me a balanced comparison: React Server Components vs. "classic" SSR

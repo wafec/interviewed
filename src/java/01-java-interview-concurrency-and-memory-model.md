@@ -11,7 +11,7 @@ internals), to how you actually diagnose contention and GC-driven performance
 problems in production, plus the modern `java.util.concurrent` toolkit
 (`CompletableFuture`, `StampedLock`, virtual threads).
 
-### Q1. What is the difference between a race condition and a data race?
+### Q1. What is the difference between a race condition and a data race? {#q1}
 
 **Question:**
 What's the difference between a "race condition" and a "data race" in Java, and why does the distinction matter?
@@ -63,7 +63,7 @@ A data race is undefined memory-visibility behavior (no happens-before edge); a 
 
 ---
 
-### Q2. What does "happens-before" mean in the Java Memory Model, and name three ways to establish it.
+### Q2. What does "happens-before" mean in the Java Memory Model, and name three ways to establish it. {#q2}
 
 **Question:**
 Explain the "happens-before" relationship in the JMM. Give at least three concrete ways a Java program establishes a happens-before edge between two threads.
@@ -121,7 +121,7 @@ Happens-before is the JMM's visibility+ordering guarantee, established by monito
 
 ---
 
-### Q3. What does `volatile` actually guarantee, and what does it NOT guarantee?
+### Q3. What does `volatile` actually guarantee, and what does it NOT guarantee? {#q3}
 
 **Question:**
 What does declaring a field `volatile` guarantee in Java? What common mistake do people make assuming `volatile` gives them more than it does?
@@ -165,7 +165,7 @@ volatile guarantees visibility and ordering, but not atomicity of compound opera
 
 ---
 
-### Q4. `synchronized` vs `ReentrantLock` — when would you choose one over the other?
+### Q4. `synchronized` vs `ReentrantLock` — when would you choose one over the other? {#q4}
 
 **Question:**
 Compare `synchronized` blocks and `java.util.concurrent.locks.ReentrantLock`. When would you pick `ReentrantLock` over plain `synchronized`?
@@ -217,7 +217,7 @@ synchronized is simpler and free of leak risk; reach for ReentrantLock only when
 
 ---
 
-### Q5. What actually happens internally when a thread enters and exits a `synchronized` block?
+### Q5. What actually happens internally when a thread enters and exits a `synchronized` block? {#q5}
 
 **Question:**
 Walk through what happens at the JVM level when a thread enters and exits a `synchronized` block — what is the "monitor," and what do `monitorenter`/`monitorexit` do?
@@ -265,7 +265,7 @@ synchronized compiles to monitorenter/monitorexit; the JVM starts cheap (CAS-bas
 
 ---
 
-### Q6. Semaphore vs. Mutex/Lock — what's the actual difference?
+### Q6. Semaphore vs. Mutex/Lock — what's the actual difference? {#q6}
 
 **Question:**
 What's the conceptual difference between a `Semaphore` and a mutual-exclusion lock (`Mutex`/`ReentrantLock`)? When would you use a `Semaphore` with a permit count greater than 1?
@@ -312,7 +312,7 @@ A mutex enforces single-owner exclusive access; a Semaphore is a counting constr
 
 ---
 
-### Q7. What causes a deadlock, and how do you prevent one?
+### Q7. What causes a deadlock, and how do you prevent one? {#q7}
 
 **Question:**
 What are the necessary conditions for a deadlock? Give a concrete Java example and describe two concrete prevention strategies.
@@ -366,7 +366,7 @@ Deadlock needs mutual exclusion + hold-and-wait + no preemption + circular wait;
 
 ---
 
-### Q8. How do you diagnose a production issue caused by thread contention?
+### Q8. How do you diagnose a production issue caused by thread contention? {#q8}
 
 **Question:**
 A service's p99 latency has spiked and CPU usage looks normal (not maxed out) — you suspect thread contention/lock blocking rather than raw compute. What's your methodology and what tools do you reach for?
@@ -415,7 +415,7 @@ Diagnose contention with thread dumps (jcmd Thread.print) and JFR lock-contentio
 
 ---
 
-### Q9. What is `ThreadLocal`, and what's the classic pitfall with it in a thread-pooled environment?
+### Q9. What is `ThreadLocal`, and what's the classic pitfall with it in a thread-pooled environment? {#q9}
 
 **Question:**
 What problem does `ThreadLocal` solve? What's the well-known memory-leak pitfall when using it inside an application running on a thread pool (e.g. a web server), and how do you avoid it?
@@ -462,7 +462,7 @@ ThreadLocal leaks in pooled threads because the thread (and its ThreadLocalMap) 
 
 ---
 
-### Q10. How does `ConcurrentHashMap` achieve thread safety without locking the whole table?
+### Q10. How does `ConcurrentHashMap` achieve thread safety without locking the whole table? {#q10}
 
 **Question:**
 How does `ConcurrentHashMap` provide thread-safe access with much better concurrency than a synchronized `HashMap`? How did its internal locking strategy change between Java 7 and Java 8+?
@@ -503,7 +503,7 @@ ConcurrentHashMap moved from Java 7's fixed 16-way segment locking to Java 8's p
 
 ---
 
-### Q11. What is `AbstractQueuedSynchronizer` (AQS), and why does it matter even if you never use it directly?
+### Q11. What is `AbstractQueuedSynchronizer` (AQS), and why does it matter even if you never use it directly? {#q11}
 
 **Question:**
 What is `AbstractQueuedSynchronizer`? Why is it significant to understand even though most developers never touch it directly?
@@ -535,7 +535,7 @@ AQS is the shared CAS-based wait-queue framework underneath ReentrantLock, Semap
 
 ---
 
-### Q12. `Future` vs `CompletableFuture` — what problem does `CompletableFuture` actually solve?
+### Q12. `Future` vs `CompletableFuture` — what problem does `CompletableFuture` actually solve? {#q12}
 
 **Question:**
 What limitation of the plain `Future` interface does `CompletableFuture` address? Walk through a realistic use case chaining async operations.
@@ -579,7 +579,7 @@ CompletableFuture adds non-blocking, composable chaining (thenApply/thenCompose/
 
 ---
 
-### Q13. How do you size a thread pool (`ThreadPoolExecutor`), and what happens when the queue fills up?
+### Q13. How do you size a thread pool (`ThreadPoolExecutor`), and what happens when the queue fills up? {#q13}
 
 **Question:**
 How would you choose `corePoolSize`/`maximumPoolSize` for a `ThreadPoolExecutor`? What actually happens when submitted tasks exceed capacity, and what are the rejection options?
@@ -622,7 +622,7 @@ Size CPU-bound pools near N_cpu and I/O-bound pools much larger; a full bounded 
 
 ---
 
-### Q14. What problem do virtual threads (JEP 444, Java 21) solve, and what do they NOT fix?
+### Q14. What problem do virtual threads (JEP 444, Java 21) solve, and what do they NOT fix? {#q14}
 
 **Question:**
 What problem do Java's virtual threads (finalized in JDK 21 via JEP 444) solve? What limitations or gotchas remain, especially around `synchronized` and native code?
@@ -655,7 +655,7 @@ Virtual threads (JEP 444) make blocking I/O code scale like async code by unmoun
 
 ---
 
-### Q15. `CountDownLatch` vs `CyclicBarrier` — what's the difference and when would you use each?
+### Q15. `CountDownLatch` vs `CyclicBarrier` — what's the difference and when would you use each? {#q15}
 
 **Question:**
 What's the functional difference between `CountDownLatch` and `CyclicBarrier`? Give a realistic use case for each.
@@ -705,7 +705,7 @@ CountDownLatch is a one-shot, non-resettable gate; CyclicBarrier is a reusable r
 
 ---
 
-### Q16. What is `StampedLock`'s optimistic read mode, and why can it outperform `ReentrantReadWriteLock`?
+### Q16. What is `StampedLock`'s optimistic read mode, and why can it outperform `ReentrantReadWriteLock`? {#q16}
 
 **Question:**
 What does `StampedLock`'s optimistic read mode do, and why can it be significantly faster than a traditional read-write lock under read-heavy workloads?
@@ -756,7 +756,7 @@ StampedLock's optimistic read skips locking entirely and validates afterward, be
 
 ---
 
-### Q17. What is false sharing, and how would you detect and fix it?
+### Q17. What is false sharing, and how would you detect and fix it? {#q17}
 
 **Question:**
 What is "false sharing" in the context of multi-threaded performance? How would you detect it, and how do you fix it in Java?
@@ -807,7 +807,7 @@ False sharing is cache-line-level contention between unrelated variables written
 
 ---
 
-### Q18. How does GC pause time show up as a "performance problem," and how do you diagnose it separately from application-level slowness?
+### Q18. How does GC pause time show up as a "performance problem," and how do you diagnose it separately from application-level slowness? {#q18}
 
 **Question:**
 A service has occasional latency spikes that don't correlate with request volume. How would you determine whether garbage collection is the cause, and what would you look at in G1 GC specifically?
@@ -848,7 +848,7 @@ Stop-the-world GC pauses look like app freezes with no CPU/throughput spike; for
 
 ---
 
-### Q19. Why are immutable objects considered "automatically thread-safe," and what are the rules to actually make a class immutable in Java?
+### Q19. Why are immutable objects considered "automatically thread-safe," and what are the rules to actually make a class immutable in Java? {#q19}
 
 **Question:**
 Why does immutability give you thread safety "for free"? What are the concrete rules for making a Java class truly immutable (not just having `final` fields)?
@@ -898,7 +898,7 @@ Immutable objects need no locking because nothing can change after construction 
 
 ---
 
-### Q20. What's the difference between deadlock, livelock, and starvation?
+### Q20. What's the difference between deadlock, livelock, and starvation? {#q20}
 
 **Question:**
 Deadlock, livelock, and starvation are all "liveness" failures in concurrent programs. What distinguishes them, and give a realistic example of each.

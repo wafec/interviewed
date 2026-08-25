@@ -1,0 +1,242 @@
+[
+  {
+    "id": "dotnet-clr-and-async-internals-q1",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What's the difference between a value type and a reference type in C#, and where does each actually live in memory?",
+    "tldr": "Value types copy their data; reference types copy a pointer to heap data — storage location depends on where the variable is declared, not the type category alone.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q1"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q2",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What happens during boxing, and why is it expensive?",
+    "tldr": "Boxing heap-allocates a copy of a value type behind an object reference, adding GC pressure — that's the entire cost.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q2"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q3",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What does the compiler actually generate for an `async` method?",
+    "tldr": "An async method compiles to a state machine that runs synchronously until it hits an incomplete await, then returns control and resumes later via a registered continuation.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q3"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q4",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What is `SynchronizationContext`, and what does `ConfigureAwait(false)` actually do?",
+    "tldr": "SynchronizationContext decides where a continuation resumes; ConfigureAwait(false) skips capturing it, avoiding marshaling overhead and a class of deadlocks.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q4"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q5",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "Why should you almost never use `async void`?",
+    "tldr": "async void has no Task to observe, so callers can't await it and its exceptions crash the process instead of being catchable — avoid it except for event handlers.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q5"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q6",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "How does blocking on an async call (`.Result` / `.Wait()`) cause a deadlock?",
+    "tldr": "The deadlock needs a captured single-threaded context plus a synchronous block on the task — the blocked thread can never run the continuation.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q6"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q7",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What are the GC generations, and why does the CLR use them?",
+    "tldr": "Gen0/1/2 age-based collection lets the GC do frequent, cheap Gen0 sweeps and rarely pay for an expensive full-heap Gen2 scan.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q7"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q8",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "Workstation GC vs. Server GC — what's the difference, and when would you pick each?",
+    "tldr": "Workstation GC favors low footprint/latency on shared or constrained hardware; Server GC parallelizes across cores for throughput and is ASP.NET Core's default.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q8"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q9",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "A .NET service is running slow in production and you suspect GC pressure — what's your diagnostic methodology?",
+    "tldr": "Diagnose GC pressure with dotnet-counters for a first read, then dotnet-trace/dotnet-gcdump to pinpoint allocation sources — fix, then re-measure with the same tools.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q9"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q10",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What is tiered compilation, and how do ReadyToRun and Native AOT relate to it?",
+    "tldr": "Tiered compilation JITs fast-then-optimized; ReadyToRun ships precompiled code for a faster cold start; Native AOT drops the JIT entirely for the fastest startup at the cost of dynamic features.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q10"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q11",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What problem do `Span<T>` and `Memory<T>` solve?",
+    "tldr": "Span<T>/Memory<T> let you slice contiguous memory without copying or allocating; Span is stack-only for safety, Memory is the heap-storable counterpart.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q11"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q12",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What is thread pool starvation, and how does it happen in a .NET service?",
+    "tldr": "Thread pool starvation happens when blocking calls tie up worker threads faster than the pool can grow new ones, stalling queued work despite low CPU.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q12"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q13",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "`Task` vs `ValueTask` — what's the difference, and when should you actually use `ValueTask`?",
+    "tldr": "Task always allocates; ValueTask avoids allocation for synchronously-available results but comes with single-await and no-premature-access constraints — profile before switching.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q13"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q14",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "Why does .NET have both `Dispose()` and finalizers, and how do they interact?",
+    "tldr": "Dispose() is deterministic cleanup for unmanaged resources; a finalizer is the GC's non-deterministic safety net, and GC.SuppressFinalize skips it once Dispose already ran.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q14"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q15",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "How can a .NET application \"leak\" memory even though it has a garbage collector?",
+    "tldr": "Managed leaks happen when something unintended keeps a reference alive (static events, unbounded caches, captured closures) — it's a reachability problem, not a missing-free problem.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q15"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q16",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What's your methodology for benchmarking a micro-optimization in .NET, and why not just wrap it in a `Stopwatch`?",
+    "tldr": "A single Stopwatch run is dominated by JIT warm-up and GC noise; BenchmarkDotNet controls for both and reports allocations alongside timing.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q16"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q17",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What's the N+1 query problem in EF Core, and how do you avoid it?",
+    "tldr": "Lazy-loaded navigation properties accessed in a loop trigger one query per entity (N+1); fix with eager (.Include()) or explicit loading so the extra round trip is visible and intentional.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q17"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q18",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What are the three DI service lifetimes in ASP.NET Core, and what's the most common lifetime-related bug?",
+    "tldr": "Transient/Scoped/Singleton control instance lifetime; injecting a Scoped service into a Singleton creates a captive dependency that silently becomes permanent shared state.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q18"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q19",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "How does the ASP.NET Core middleware pipeline work, and why does order matter?",
+    "tldr": "Middleware is a chain of nested request delegates run in registration order, so anything a later middleware depends on (like an authenticated identity) must be established earlier in the chain.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q19"
+  },
+  {
+    "id": "dotnet-clr-and-async-internals-q20",
+    "topic": "dotnet",
+    "subtopic": "clr-and-async-internals",
+    "file": "01-dotnet-interview-clr-and-async-internals",
+    "title": "What does Native AOT trade away, and when is it the wrong choice?",
+    "tldr": "Native AOT drops the JIT and dynamic loading/reflection entirely for the fastest startup — the wrong choice for apps needing plugin loading or heavy runtime reflection.",
+    "tags": [
+      "clr-and-async-internals"
+    ],
+    "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q20"
+  }
+]

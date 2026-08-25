@@ -11,7 +11,7 @@ actually store and resize data, how the Streams pipeline achieves laziness
 and short-circuiting, where these abstractions leak performance, and when to
 reach for a loop instead of a stream.
 
-### Q1. What is the general contract between `hashCode()` and `equals()`, and why does breaking it silently corrupt a `HashMap`?
+### Q1. What is the general contract between `hashCode()` and `equals()`, and why does breaking it silently corrupt a `HashMap`? {#q1}
 
 **Question:**
 Explain the contract between `hashCode()` and `equals()` in Java. What actually goes wrong if you override `equals()` but not `hashCode()`, and then use the object as a `HashMap` key?
@@ -59,7 +59,7 @@ Equal objects must have equal hash codes — override `equals()` without `hashCo
 
 ---
 
-### Q2. Walk through what happens internally when a `HashMap` resizes.
+### Q2. Walk through what happens internally when a `HashMap` resizes. {#q2}
 
 **Question:**
 `HashMap` starts with a default capacity of 16. What triggers a resize, and what actually happens to the existing entries when it resizes?
@@ -94,7 +94,7 @@ Resize triggers at `capacity × 0.75` and rehashes every entry — O(n), so pre-
 
 ---
 
-### Q3. What is HashMap treeification, and when does it kick in?
+### Q3. What is HashMap treeification, and when does it kick in? {#q3}
 
 **Question:**
 Since Java 8, `HashMap` can convert a bucket's linked list into a tree structure. When does this happen, and why?
@@ -124,7 +124,7 @@ A bucket with 8+ colliding entries (and table capacity ≥ 64) becomes a red-bla
 
 ---
 
-### Q4. `ArrayList` claims "amortized constant time" for `add()`. What does that actually mean, and how does the list grow internally?
+### Q4. `ArrayList` claims "amortized constant time" for `add()`. What does that actually mean, and how does the list grow internally? {#q4}
 
 **Question:**
 `ArrayList#add` is documented as amortized O(1). Explain what "amortized" means here and what happens under the hood when the backing array is full.
@@ -161,7 +161,7 @@ Tests whether "O(1)" is understood as a precise claim with conditions, not a mag
 
 ---
 
-### Q5. When would you actually reach for `LinkedList` over `ArrayList`?
+### Q5. When would you actually reach for `LinkedList` over `ArrayList`? {#q5}
 
 **Question:**
 `ArrayList` and `LinkedList` both implement `List`. What's the real difference in practice, and is there a legitimate case for choosing `LinkedList`?
@@ -191,7 +191,7 @@ Separates candidates who know Big-O from those who also understand constant fact
 
 ---
 
-### Q6. Compare `HashMap`, `LinkedHashMap`, and `TreeMap` — when do you reach for each?
+### Q6. Compare `HashMap`, `LinkedHashMap`, and `TreeMap` — when do you reach for each? {#q6}
 
 **Question:**
 All three implement `Map`. What's the actual difference in ordering guarantees and performance, and how would you choose between them?
@@ -236,7 +236,7 @@ Tests whether the candidate picks data structures by their actual guarantees (or
 
 ---
 
-### Q7. What does it mean that `TreeMap` provides "guaranteed log(n)" time, and what's the underlying structure?
+### Q7. What does it mean that `TreeMap` provides "guaranteed log(n)" time, and what's the underlying structure? {#q7}
 
 **Question:**
 The `TreeMap` Javadoc says it provides guaranteed log(n) time for `containsKey`, `get`, `put`, and `remove`. What's actually backing that guarantee?
@@ -265,7 +265,7 @@ Connects a library-level API guarantee back to the CS fundamentals (BST balancin
 
 ---
 
-### Q8. What does "fail-fast" mean for `HashMap`/`ArrayList` iterators, and why is it explicitly *not* a reliability guarantee?
+### Q8. What does "fail-fast" mean for `HashMap`/`ArrayList` iterators, and why is it explicitly *not* a reliability guarantee? {#q8}
 
 **Question:**
 `ConcurrentModificationException` — what triggers it, and why does the Javadoc warn you not to rely on it?
@@ -305,7 +305,7 @@ Fail-fast `ConcurrentModificationException` is best-effort bug detection via `mo
 
 ---
 
-### Q9. Why is it dangerous to use a mutable object as a `HashMap` key?
+### Q9. Why is it dangerous to use a mutable object as a `HashMap` key? {#q9}
 
 **Question:**
 What goes wrong if you use a mutable object (say, a `List<Integer>` or a POJO with setters) as a `HashMap` key and then mutate it after insertion?
@@ -333,7 +333,7 @@ Mutating a key after insertion changes its `hashCode()`, so the entry sits in th
 
 ---
 
-### Q10. What does it mean that Java Streams are lazy, and why does that matter?
+### Q10. What does it mean that Java Streams are lazy, and why does that matter? {#q10}
 
 **Question:**
 Explain the difference between intermediate and terminal stream operations, and what "laziness" actually buys you.
@@ -371,7 +371,7 @@ Nothing runs until a terminal operation is called — laziness enables single-pa
 
 ---
 
-### Q11. What are "non-interference" and "statelessness" in the context of stream behavioral parameters, and what breaks if you violate them?
+### Q11. What are "non-interference" and "statelessness" in the context of stream behavioral parameters, and what breaks if you violate them? {#q11}
 
 **Question:**
 The Streams documentation requires that lambdas passed to stream operations be "non-interfering" and (usually) "stateless." What do those terms mean, and what actually goes wrong if you ignore them?
@@ -410,7 +410,7 @@ Stream lambdas must not mutate the source (non-interference) or depend on shared
 
 ---
 
-### Q12. What's actually happening when you call `.parallelStream()`, and why can it make things *slower*?
+### Q12. What's actually happening when you call `.parallelStream()`, and why can it make things *slower*? {#q12}
 
 **Question:**
 `.parallelStream()` looks like a one-line way to speed up processing. When does it actually help, and when does it backfire?
@@ -439,7 +439,7 @@ Parallel streams share the common `ForkJoinPool` and only help with large, cheap
 
 ---
 
-### Q13. What is `Collectors.groupingBy` doing internally, and what's a common mistake with it?
+### Q13. What is `Collectors.groupingBy` doing internally, and what's a common mistake with it? {#q13}
 
 **Question:**
 Explain what `Collectors.groupingBy` does and walk through a common mistake developers make when using it.
@@ -477,7 +477,7 @@ Checks familiarity with the `Collectors` toolkit beyond `toList()`, and whether 
 
 ---
 
-### Q14. What is `Optional` actually meant to be used for, according to its own documentation?
+### Q14. What is `Optional` actually meant to be used for, according to its own documentation? {#q14}
 
 **Question:**
 `Optional<T>` gets used all over the place in modern Java codebases — as return types, but also sometimes as fields or method parameters. What does the official guidance actually say, and why?
@@ -505,7 +505,7 @@ Tests whether the candidate can cite the *actual* documented intent of a heavily
 
 ---
 
-### Q15. What real-world problem did the Streams API (Java 8) actually solve that plain loops didn't?
+### Q15. What real-world problem did the Streams API (Java 8) actually solve that plain loops didn't? {#q15}
 
 **Question:**
 Java had `for` loops and the Collections Framework for over a decade before Streams arrived in Java 8. What problem were Streams actually introduced to solve?
@@ -533,7 +533,7 @@ Streams decouple *what* from *how*, unlocking transparent parallelism and operat
 
 ---
 
-### Q16. You're told a hot code path using streams is slower than expected. How do you actually diagnose whether the streams are the problem?
+### Q16. You're told a hot code path using streams is slower than expected. How do you actually diagnose whether the streams are the problem? {#q16}
 
 **Question:**
 Walk through how you would investigate a performance complaint about a stream-heavy method — what tools, what methodology?
@@ -564,7 +564,7 @@ Diagnose stream performance with JMH + JFR/async-profiler flame graphs, not gues
 
 ---
 
-### Q17. What happens if you call `.stream()` on an unbounded source without a short-circuiting operation?
+### Q17. What happens if you call `.stream()` on an unbounded source without a short-circuiting operation? {#q17}
 
 **Question:**
 `Stream.iterate(0, n -> n + 1)` produces a conceptually infinite stream. What happens if you call `.collect(Collectors.toList())` directly on it, and how do you use it safely?
@@ -601,7 +601,7 @@ An infinite stream with no short-circuiting operation (`.limit()`, `.findFirst()
 
 ---
 
-### Q18. `Collectors.toList()` vs. manually building a `List` in a loop — is there really a meaningful difference for a simple filter-and-map?
+### Q18. `Collectors.toList()` vs. manually building a `List` in a loop — is there really a meaningful difference for a simple filter-and-map? {#q18}
 
 **Question:**
 For a simple "filter this list, then map to another type" operation, is there a real, measurable reason to prefer a stream over a plain loop, or is it purely a style preference?
@@ -629,7 +629,7 @@ For simple single-pass filter-map, streams vs. loops is mostly style; streams' r
 
 ---
 
-### Q19. What does `unordered()` do, and why would `Collectors.groupingByConcurrent` require it (or an unordered source) to run truly concurrently?
+### Q19. What does `unordered()` do, and why would `Collectors.groupingByConcurrent` require it (or an unordered source) to run truly concurrently? {#q19}
 
 **Question:**
 `Collectors.groupingByConcurrent` is documented as enabling concurrent reduction — but only under certain conditions. What are they, and why?
@@ -659,7 +659,7 @@ A deeper-cut question testing whether the candidate has gone past "parallel stre
 
 ---
 
-### Q20. If you had to explain, end to end, why `HashMap.get()` is "usually O(1) but not guaranteed," what would you say?
+### Q20. If you had to explain, end to end, why `HashMap.get()` is "usually O(1) but not guaranteed," what would you say? {#q20}
 
 **Question:**
 Tie together everything about `HashMap` internals: why is `get()` typically described as O(1), and under what conditions does that stop being true?

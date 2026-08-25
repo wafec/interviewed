@@ -25,3 +25,8 @@ for the exact per-question structure.
 
 [Take a quiz]({{ "/quiz/" | relative_url }}) — pick topics/tags, answer a random
 set of multiple-choice questions, and get scored with explanations at the end.
+
+## Search
+
+[Search all questions]({{ "/search/" | relative_url }}) — keyword search across every
+topic, ranked by best match.

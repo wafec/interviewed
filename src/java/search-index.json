@@ -1,0 +1,1682 @@
+[
+  {
+    "id": "java-concurrency-and-memory-model-q1",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What is the difference between a race condition and a data race?",
+    "tldr": "A data race is undefined memory-visibility behavior (no happens-before edge); a race condition is a broader logic bug from bad timing, and can exist even with zero data races.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q1"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q2",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What does \"happens-before\" mean in the Java Memory Model, and name three ways to establish it.",
+    "tldr": "Happens-before is the JMM's visibility+ordering guarantee, established by monitor lock/unlock, volatile write/read, Thread.start()/join(), and java.util.concurrent handoffs — and it's transitive.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q2"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q3",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What does `volatile` actually guarantee, and what does it NOT guarantee?",
+    "tldr": "volatile guarantees visibility and ordering, but not atomicity of compound operations like count++ — use AtomicInteger or a lock for that.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q3"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q4",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "`synchronized` vs `ReentrantLock` — when would you choose one over the other?",
+    "tldr": "synchronized is simpler and free of leak risk; reach for ReentrantLock only when you need tryLock/timeouts, interruptible waits, fairness, or multiple Conditions.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q4"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q5",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What actually happens internally when a thread enters and exits a `synchronized` block?",
+    "tldr": "synchronized compiles to monitorenter/monitorexit; the JVM starts cheap (CAS-based lightweight locking) and only inflates to a heavyweight OS-backed monitor under real contention.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q5"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q6",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "Semaphore vs. Mutex/Lock — what's the actual difference?",
+    "tldr": "A mutex enforces single-owner exclusive access; a Semaphore is a counting construct with no ownership, letting up to N threads in and any thread release.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q6"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q7",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What causes a deadlock, and how do you prevent one?",
+    "tldr": "Deadlock needs mutual exclusion + hold-and-wait + no preemption + circular wait; prevent it with a fixed global lock order or tryLock timeouts.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q7"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q8",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "How do you diagnose a production issue caused by thread contention?",
+    "tldr": "Diagnose contention with thread dumps (jcmd Thread.print) and JFR lock-contention events, not guesswork — then narrow the critical section and re-measure to confirm the fix worked.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q8"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q9",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What is `ThreadLocal`, and what's the classic pitfall with it in a thread-pooled environment?",
+    "tldr": "ThreadLocal leaks in pooled threads because the thread (and its ThreadLocalMap) outlives the task — always remove() in a finally block.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q9"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q10",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "How does `ConcurrentHashMap` achieve thread safety without locking the whole table?",
+    "tldr": "ConcurrentHashMap moved from Java 7's fixed 16-way segment locking to Java 8's per-bin CAS/synchronized strategy, giving get() lock-free reads and atomic compound ops throughout.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q10"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q11",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What is `AbstractQueuedSynchronizer` (AQS), and why does it matter even if you never use it directly?",
+    "tldr": "AQS is the shared CAS-based wait-queue framework underneath ReentrantLock, Semaphore, and CountDownLatch — each just interprets one int state field differently.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q11"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q12",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "`Future` vs `CompletableFuture` — what problem does `CompletableFuture` actually solve?",
+    "tldr": "CompletableFuture adds non-blocking, composable chaining (thenApply/thenCompose/thenCombine) on top of plain Future's blocking-only get().",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q12"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q13",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "How do you size a thread pool (`ThreadPoolExecutor`), and what happens when the queue fills up?",
+    "tldr": "Size CPU-bound pools near N_cpu and I/O-bound pools much larger; a full bounded queue plus a full pool triggers the configured RejectedExecutionHandler — an unbounded queue defeats that backpressure entirely.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q13"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q14",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What problem do virtual threads (JEP 444, Java 21) solve, and what do they NOT fix?",
+    "tldr": "Virtual threads (JEP 444) make blocking I/O code scale like async code by unmounting from the carrier thread while blocked — they don't add CPU parallelism for compute-bound work.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q14"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q15",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "`CountDownLatch` vs `CyclicBarrier` — what's the difference and when would you use each?",
+    "tldr": "CountDownLatch is a one-shot, non-resettable gate; CyclicBarrier is a reusable rendezvous point that resets automatically once all parties arrive.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q15"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q16",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What is `StampedLock`'s optimistic read mode, and why can it outperform `ReentrantReadWriteLock`?",
+    "tldr": "StampedLock's optimistic read skips locking entirely and validates afterward, beating ReentrantReadWriteLock under heavy read concurrency by avoiding any shared-state update on the fast path.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q16"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q17",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What is false sharing, and how would you detect and fix it?",
+    "tldr": "False sharing is cache-line-level contention between unrelated variables written by different threads — invisible to lock-contention tools, fixed by padding or @Contended.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q17"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q18",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "How does GC pause time show up as a \"performance problem,\" and how do you diagnose it separately from application-level slowness?",
+    "tldr": "Stop-the-world GC pauses look like app freezes with no CPU/throughput spike; for G1, a Full GC (not routine mixed collections) is the real red flag to investigate.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q18"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q19",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "Why are immutable objects considered \"automatically thread-safe,\" and what are the rules to actually make a class immutable in Java?",
+    "tldr": "Immutable objects need no locking because nothing can change after construction — but final only protects the reference, so mutable fields still need defensive copying.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q19"
+  },
+  {
+    "id": "java-concurrency-and-memory-model-q20",
+    "topic": "java",
+    "subtopic": "concurrency-and-memory-model",
+    "file": "01-java-interview-concurrency-and-memory-model",
+    "title": "What's the difference between deadlock, livelock, and starvation?",
+    "tldr": "Deadlock is permanent blocking, livelock is active-but-unproductive interaction, and starvation is a thread perpetually denied resources by unfair scheduling — each needs a different fix.",
+    "tags": [
+      "concurrency-and-memory-model"
+    ],
+    "url": "/src/java/01-java-interview-concurrency-and-memory-model.html#q20"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q1",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What is the general contract between `hashCode()` and `equals()`, and why does breaking it silently corrupt a `HashMap`?",
+    "tldr": "Equal objects must have equal hash codes — override `equals()` without `hashCode()` and a `HashMap` silently \"loses\" logically-present keys.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q1"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q2",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "Walk through what happens internally when a `HashMap` resizes.",
+    "tldr": "Resize triggers at `capacity × 0.75` and rehashes every entry — O(n), so pre-size a `HashMap` when the final size is known.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q2"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q3",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What is HashMap treeification, and when does it kick in?",
+    "tldr": "A bucket with 8+ colliding entries (and table capacity ≥ 64) becomes a red-black tree instead of a linked list, capping worst-case lookup at O(log n).",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q3"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q4",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "`ArrayList` claims \"amortized constant time\" for `add()`. What does that actually mean, and how does the list grow internally?",
+    "tldr": "`ArrayList.add()` is O(1) amortized over a full growth sequence, but any single call can spike to O(n) when the backing array reallocates and copies.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q4"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q5",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "When would you actually reach for `LinkedList` over `ArrayList`?",
+    "tldr": "`ArrayList` wins almost always (cache locality, no node overhead); `LinkedList` only earns its keep for frequent both-ends insert/remove — and even then `ArrayDeque` usually beats it.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q5"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q6",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "Compare `HashMap`, `LinkedHashMap`, and `TreeMap` — when do you reach for each?",
+    "tldr": "`HashMap` = no order, O(1); `LinkedHashMap` = insertion/access order, O(1); `TreeMap` = sorted + range queries, O(log n) — pick by the guarantee you actually need.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q6"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q7",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What does it mean that `TreeMap` provides \"guaranteed log(n)\" time, and what's the underlying structure?",
+    "tldr": "`TreeMap` is a self-balancing red-black tree, so its O(log n) is a worst-case guarantee, unlike a naive BST that can degrade to O(n) on sorted input.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q7"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q8",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What does \"fail-fast\" mean for `HashMap`/`ArrayList` iterators, and why is it explicitly *not* a reliability guarantee?",
+    "tldr": "Fail-fast `ConcurrentModificationException` is best-effort bug detection via `modCount`, not a concurrency safety guarantee — it can miss races entirely.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q8"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q9",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "Why is it dangerous to use a mutable object as a `HashMap` key?",
+    "tldr": "Mutating a key after insertion changes its `hashCode()`, so the entry sits in the wrong bucket and becomes silently unreachable — always use immutable map keys.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q9"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q10",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What does it mean that Java Streams are lazy, and why does that matter?",
+    "tldr": "Nothing runs until a terminal operation is called — laziness enables single-pass fusion and short-circuiting, but also means a dangling `.map()` with no terminal op is a silent no-op.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q10"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q11",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What are \"non-interference\" and \"statelessness\" in the context of stream behavioral parameters, and what breaks if you violate them?",
+    "tldr": "Stream lambdas must not mutate the source (non-interference) or depend on shared mutable state (statelessness) — violating either risks exceptions or data races, especially under `.parallel()`.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q11"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q12",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What's actually happening when you call `.parallelStream()`, and why can it make things *slower*?",
+    "tldr": "Parallel streams share the common `ForkJoinPool` and only help with large, cheaply-splittable sources and substantial per-element work — otherwise coordination overhead makes them slower; always benchmark, don't assume.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q12"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q13",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What is `Collectors.groupingBy` doing internally, and what's a common mistake with it?",
+    "tldr": "`groupingBy` builds a `Map<K, List<T>>` (or a downstream-reduced value) but omits keys with zero matches entirely — unlike SQL, so `.get()` on an empty group returns `null`, not an empty list.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q13"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q14",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What is `Optional` actually meant to be used for, according to its own documentation?",
+    "tldr": "`Optional` is documented as primarily a return type for \"might be absent\" results, not a field/parameter type — it isn't even `Serializable`.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q14"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q15",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What real-world problem did the Streams API (Java 8) actually solve that plain loops didn't?",
+    "tldr": "Streams decouple *what* from *how*, unlocking transparent parallelism and operator fusion — but plain loops still win for simple, debuggable, single-pass cases.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q15"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q16",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "You're told a hot code path using streams is slower than expected. How do you actually diagnose whether the streams are the problem?",
+    "tldr": "Diagnose stream performance with JMH + JFR/async-profiler flame graphs, not guesswork — common culprits are autoboxing, redundant materialization, and misapplied `.parallelStream()`.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q16"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q17",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What happens if you call `.stream()` on an unbounded source without a short-circuiting operation?",
+    "tldr": "An infinite stream with no short-circuiting operation (`.limit()`, `.findFirst()`, etc.) hangs forever and eventually OOMs.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q17"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q18",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "`Collectors.toList()` vs. manually building a `List` in a loop — is there really a meaningful difference for a simple filter-and-map?",
+    "tldr": "For simple single-pass filter-map, streams vs. loops is mostly style; streams' real edge is multi-step pipelines avoiding intermediate materialization via operator fusion.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q18"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q19",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "What does `unordered()` do, and why would `Collectors.groupingByConcurrent` require it (or an unordered source) to run truly concurrently?",
+    "tldr": "`groupingByConcurrent` only writes concurrently when the stream is unordered (or the collector is `UNORDERED`) — otherwise it silently falls back to a sequential merge, losing the concurrency benefit without any error.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q19"
+  },
+  {
+    "id": "java-collections-and-streams-internals-q20",
+    "topic": "java",
+    "subtopic": "collections-and-streams-internals",
+    "file": "02-java-interview-collections-and-streams-internals",
+    "title": "If you had to explain, end to end, why `HashMap.get()` is \"usually O(1) but not guaranteed,\" what would you say?",
+    "tldr": "`get()` is O(1) average-case under good hash distribution, with treeification (Java 8+) capping the worst case at O(log n) instead of the pre-8 O(n) collision-storm blowup.",
+    "tags": [
+      "collections-and-streams-internals"
+    ],
+    "url": "/src/java/02-java-interview-collections-and-streams-internals.html#q20"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q1",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "Why is the Java heap divided into a young and an old generation instead of collecting the whole heap uniformly?",
+    "tldr": "The heap is split into young/old generations because most objects die young (weak generational hypothesis), so collecting a small young generation frequently is far cheaper than scanning the whole heap every time.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q1"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q2",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What are \"GC roots,\" and why does the collector need them?",
+    "tldr": "GC roots (stack locals, static fields, active JNI refs, etc.) are the starting points HotSpot traces reachability from — anything unreachable from a root, including reference cycles, is garbage.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q2"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q3",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "Walk through how G1 organizes the heap and what a \"mixed collection\" is.",
+    "tldr": "G1 divides the heap into equal-sized regions logically tagged Eden/Survivor/Old, and after concurrent marking crosses the IHOP threshold it runs mixed collections that evacuate young regions plus the most garbage-rich old regions under a pause-time budget.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q3"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q4",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What is a remembered set, and why does G1 need one per region?",
+    "tldr": "A remembered set is a per-region index of incoming cross-region references (tracked via a card table) that lets G1 collect any subset of old regions without scanning the whole heap for references into it.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q4"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q5",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What is a TLAB, and what problem does it solve?",
+    "tldr": "A TLAB is a thread-exclusive slice of Eden that lets HotSpot allocate objects via a lock-free bump-the-pointer, avoiding synchronization on every allocation in a multithreaded app.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q5"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q6",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "Your service has occasional multi-second \"stop the world\" pauses in production. Walk through how you'd diagnose the cause.",
+    "tldr": "Diagnose multi-second STW pauses by correlating GC logs (`-Xlog:gc*`) and `jstat`/`jcmd GC.heap_info` with the pause times, then take a heap dump and analyze it in Eclipse MAT if old-gen occupancy is climbing and Full GCs reclaim little.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q6"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q7",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What does `jstat -gcutil` show, and how would you use it to spot a problem live?",
+    "tldr": "`jstat -gcutil` polls live heap-region occupancy and cumulative GC counts/times; a steadily climbing `O` column signals a leak, frequent `FGC` signals an undersized old gen/metaspace, and high `YGC`/`YGCT` signals allocation pressure.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q7"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q8",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What's the difference between `jcmd <pid> GC.heap_info` and `jcmd <pid> GC.run`, and when would you use each in production?",
+    "tldr": "`GC.heap_info` is a safe, read-only heap snapshot; `GC.run` actually triggers a collection (like `System.gc()`) and should be used deliberately, e.g. right before a heap dump to strip out not-yet-collected young-gen noise.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q8"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q9",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "A long-lived static `List` keeps growing over the life of the application, even though entries are logically \"done\" and no longer needed. Why doesn't the garbage collector clean it up?",
+    "tldr": "A static field is itself a GC root, so anything it references stays reachable forever regardless of whether the application logically considers it \"done\" — the fix is always at the application level (bound the collection, remove entries, or avoid strong references).",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q9"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q10",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "Why is it easy to accidentally leak memory via `ThreadLocal` in a thread-pooled environment (like a servlet container or an `ExecutorService`), and how do you avoid it?",
+    "tldr": "Pooled threads outlive individual tasks, so a `ThreadLocal.set()` without a matching `remove()` in `finally` leaks that value for the thread's entire pooled lifetime and can leak stale data into the next task on that thread.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q10"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q11",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What is ZGC, and how does it achieve pause times that don't scale with heap size?",
+    "tldr": "ZGC keeps pause times independent of heap size by doing marking, relocation, and reference processing concurrently with the app, using colored pointers and a load barrier to safely redirect references to relocated objects.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q11"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q12",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "How does Shenandoah achieve heap-size-independent pause times, and how does its core mechanism differ from ZGC's?",
+    "tldr": "Shenandoah also compacts concurrently for heap-size-independent pauses, but uses a per-object Brooks forwarding pointer plus CAS to redirect readers, instead of ZGC's colored-pointer/load-barrier scheme.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q12"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q13",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What does G1's \"String deduplication\" feature do, and what problem does it solve?",
+    "tldr": "G1's string deduplication repoints content-identical `String`s to share one backing character array during concurrent marking, reclaiming the roughly half of heap `String` data that's typically pure duplication — safe because `String` is immutable.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q13"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q14",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "G1 has been the JVM's default collector since JDK 9. When would you deliberately choose a different collector instead?",
+    "tldr": "G1 is the balanced default; pick Parallel for pure-throughput batch workloads with no latency requirement, and pick ZGC/Shenandoah when you need pause times that stay tiny regardless of heap size.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q14"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q15",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What's the practical difference between \"allocation rate\" being too high and an actual memory leak, and why does it matter which one you're dealing with?",
+    "tldr": "A high allocation rate shows frequent young-gen collections with flat old-gen occupancy, while a real leak shows old-gen occupancy climbing and not returning to a stable floor after full collections — they need opposite fixes.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q15"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q16",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What's the risk of tuning GC flags aggressively before you've actually measured a problem?",
+    "tldr": "Speculative GC tuning risks fighting the collector's own adaptive ergonomics and doesn't transfer between workloads; always measure a baseline, form a hypothesis, change one thing, and re-measure before trusting a tuning change.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q16"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q17",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What does it mean for a garbage collector to be \"concurrent\" vs. \"parallel,\" and why are these two different axes?",
+    "tldr": "\"Parallel\" describes using multiple GC threads to finish one stop-the-world pause faster; \"concurrent\" describes doing GC work while the app keeps running at all — a collector can be either, both, or neither, and they're independent axes.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q17"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q18",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "What's the relationship between object header size, alignment, and how many objects fit on the heap — and why would a candidate be expected to care about this in an interview?",
+    "tldr": "Every object pays a fixed header-plus-alignment overhead, so large numbers of small objects (like boxed `Integer`s) waste a large fraction of the heap on overhead alone, inflating both footprint and GC pause time relative to using a primitive representation.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q18"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q19",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "How would you validate that a GC-tuning change actually improved things, rather than just looking different?",
+    "tldr": "Validate a GC-tuning change by comparing the same metrics (pause-time percentiles for latency goals, `GCT`/throughput for throughput goals) under the same representative load before and after one isolated change, watching for regressions in dimensions you weren't optimizing.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q19"
+  },
+  {
+    "id": "java-garbage-collection-and-memory-tuning-q20",
+    "topic": "java",
+    "subtopic": "garbage-collection-and-memory-tuning",
+    "file": "03-java-interview-garbage-collection-and-memory-tuning",
+    "title": "Summarize the trade-off space across Parallel, G1, ZGC, and Shenandoah — how would you decide which one fits a given service?",
+    "tldr": "Parallel maximizes throughput, G1 balances throughput and bounded pause time as the sensible default, and ZGC/Shenandoah trade some throughput and footprint for pause times that stay independent of heap size — pick based on the service's actual constraint, not novelty.",
+    "tags": [
+      "garbage-collection-and-memory-tuning"
+    ],
+    "url": "/src/java/03-java-interview-garbage-collection-and-memory-tuning.html#q20"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q1",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What are the three phases the JVM goes through to turn a `.class` file into a runnable class, and what happens in each?",
+    "tldr": "Loading -> Linking (verify/prepare/resolve) -> Initialization runs lazily on first active use; compile-time constant inlining can make a class look like it never initializes.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q1"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q2",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "Explain the classloader delegation model: bootstrap, platform, and application classloaders.",
+    "tldr": "Parent-first delegation (bootstrap -> platform -> application) means core JDK classes can never be shadowed by an app-supplied same-named class.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q2"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q3",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What's the difference between `ClassNotFoundException`, `NoClassDefFoundError`, and `LinkageError`?",
+    "tldr": "`ClassNotFoundException` is an explicit dynamic-load failure; `NoClassDefFoundError` is an implicit load failure (often caused by an earlier static-init exception); `LinkageError` is the broader linking-failure family both roll up under.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q3"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q4",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What does bytecode verification actually check, and why does the JVM insist on doing it even for code compiled by a trusted compiler?",
+    "tldr": "Bytecode verification independently enforces type/memory safety on any bytecode regardless of origin, since the JVM can't assume it came from a trustworthy compiler.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q4"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q5",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What is symbolic reference resolution, and why is it lazy rather than happening all at once at link time?",
+    "tldr": "Resolution is lazy so a class can load and link even with an unresolvable reference, as long as the code path containing it is never executed — the root cause behind many runtime-only classpath failures.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q5"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q6",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "Explain tiered compilation: what C1 and C2 do, and why the JVM uses both instead of just always running the \"best\" compiler.",
+    "tldr": "Tiered compilation runs C1 first for fast warm-up, then promotes hot methods to C2 for peak throughput, avoiding the startup cost of always running the slower, more aggressive compiler.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q6"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q7",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What is escape analysis, and what optimizations does it unlock?",
+    "tldr": "Escape analysis lets the JIT scalar-replace, stack-allocate, or skip locking on objects proven never to escape — but it's a best-effort optimization, not a substitute for deliberate allocation discipline.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q7"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q8",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "How would you diagnose a Java application with unexpectedly slow startup/warm-up time?",
+    "tldr": "Diagnose startup regressions by separating classloading, JIT warm-up, and app-init using `-Xlog:class+load`, JIT compilation logs, and JFR, then validate any fix with real before/after measurement.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q8"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q9",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What is Application Class-Data Sharing (AppCDS), and what specific cost does it eliminate?",
+    "tldr": "AppCDS pre-parses and archives class metadata so later JVM starts skip re-parsing/re-verifying bytes — it cuts classloading cost specifically, not JIT warm-up.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q9"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q10",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What problem does the Java Platform Module System (JPMS, \"Jigsaw\") solve that packages and JARs alone couldn't?",
+    "tldr": "JPMS adds strong encapsulation and explicit, checkable module dependencies, closing the \"any public class is reachable\" and \"JAR hell\" gaps that packages and JARs alone never solved.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q10"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q11",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "Describe a real classloader-leak scenario in an application server, and what causes it.",
+    "tldr": "Classloader leaks in app servers come from stray references — unstopped threads, uncleared `ThreadLocal`s, `DriverManager` registrations — keeping an entire classloader (and everything it defined) reachable across redeploys.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q11"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q12",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What is \"duplicate classes on the classpath\" and why is it dangerous even when the JVM doesn't immediately error?",
+    "tldr": "Duplicate classes on the classpath silently resolve to whichever JAR is scanned first, causing environment-dependent behavior or confusing `NoSuchMethodError`s — the fix is build-time dependency-tree discipline, not a runtime workaround.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q12"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q13",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "When and why would you write a custom `ClassLoader`?",
+    "tldr": "Custom classloaders for cases like plugin isolation override `findClass()`, not `loadClass()`, so parent delegation for shared types still works while each plugin's private classes stay isolated.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q13"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q14",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What's the performance cost of using reflection, and why does it exist?",
+    "tldr": "Reflective calls are slower because dynamically-resolved types defeat JIT inlining and specialization — the standard mitigation is caching a resolved handle once rather than avoiding reflection altogether.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q14"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q15",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What is dynamic dispatch, and how does the JVM implement it at the bytecode level?",
+    "tldr": "`invokevirtual`/`invokeinterface` implement dynamic dispatch via a vtable-like lookup keyed on the receiver's runtime type; the JIT still inlines hot virtual calls speculatively behind a monomorphic type guard.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q15"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q16",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What is Project Leyden, and what problem is it trying to solve that AppCDS doesn't fully solve?",
+    "tldr": "Project Leyden's condensers move classloading/linking (and eventually JIT compilation) work to build time, extending past AppCDS to also target warm-up, while keeping full JVM dynamism unlike GraalVM Native Image's closed-world model.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q16"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q17",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What's the practical difference between static and dynamic linking/binding, and where does Java sit on that spectrum?",
+    "tldr": "Java deliberately mixes static linking (`invokestatic`/`invokespecial`) with dynamic linking (`invokevirtual`, classloading) — and binary compatibility rules mean some seemingly harmless source changes, like inlined constants, can still break already-compiled callers.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q17"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q18",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What does \"structural correctness\" mean in the context of a `.class` file, and what's roughly in a class file besides the bytecode itself?",
+    "tldr": "A `.class` file is a fully specified, language-agnostic binary format (constant pool, fields/methods, bytecode, attributes) — exactly what lets Kotlin, Scala, and other JVM languages target it and interoperate with Java.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q18"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q19",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "What's the trade-off between using reflection-based frameworks (classic Spring/Hibernate style) versus compile-time/annotation-processor-based approaches (like Dagger or Micronaut)?",
+    "tldr": "Reflection-based DI wires dependencies flexibly at runtime but pays a startup cost and surfaces errors late; compile-time DI (Dagger/Micronaut) trades some runtime flexibility for faster startup and build-time error detection, increasingly favored under containers/serverless and Native Image.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q19"
+  },
+  {
+    "id": "java-jvm-classloading-and-bytecode-q20",
+    "topic": "java",
+    "subtopic": "jvm-classloading-and-bytecode",
+    "file": "04-java-interview-jvm-classloading-and-bytecode",
+    "title": "Static vs. dynamic linking, revisited: what would you actually lose if the JVM only supported static (compile-time-fixed) method dispatch, no `invokevirtual`?",
+    "tldr": "Without dynamic dispatch, everyday Java polymorphism would break entirely; `invokestatic`/`invokespecial` exist specifically for calls that are provably never polymorphic, so they can skip dispatch overhead that would buy nothing.",
+    "tags": [
+      "jvm-classloading-and-bytecode"
+    ],
+    "url": "/src/java/04-java-interview-jvm-classloading-and-bytecode.html#q20"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q1",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's the difference between checked and unchecked exceptions in Java, and what's the design rule for choosing between them?",
+    "tldr": "Checked = caller can recover and it's part of the API contract; unchecked = programming bug, no declaration needed — most modern codebases lean unchecked because checked exceptions don't compose with lambdas/streams.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q1"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q2",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What does try-with-resources guarantee, and what happens if both the try block and the resource's `close()` throw?",
+    "tldr": "try-with-resources auto-closes any `AutoCloseable`; if both the try block and `close()` throw, the try block's exception wins and `close()`'s is attached to it as a suppressed exception.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q2"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q3",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "How does the JVM actually implement exception handling at the bytecode level — is it more like a branch or a lookup table?",
+    "tldr": "Try blocks are free on the non-throwing path — a per-method `exception_table` maps bytecode ranges to handlers, and `athrow` triggers a table lookup plus stack unwinding only when an exception is actually thrown.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q3"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q4",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's the surprising behavior when a `finally` block contains a `return` statement, and why should you avoid it?",
+    "tldr": "A `return`/`throw`/`break`/`continue` in `finally` unconditionally overrides the try/catch block's outcome, silently discarding any pending exception — deterministic per the JLS, but a well-known silent-failure footgun.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q4"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q5",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "In a profiler or production incident, how do you tell whether exceptions are actually a performance problem?",
+    "tldr": "Capture a JFR recording under load and look for `jdk.ExceptionThrown` event counts plus `fillInStackTrace` dominating a CPU flame graph — that's the signal exceptions are being used as control flow, not genuine errors.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q5"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q6",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's the \"fail-fast\" principle, and how does it relate to how you should design exception handling?",
+    "tldr": "Fail-fast means detecting and throwing at the point invalid state occurs rather than letting it silently propagate — Java's fail-fast iterators (`ConcurrentModificationException`) are the canonical example; fail-safe trades that correctness for availability instead.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q6"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q7",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "Why isn't plain try/catch enough to make a distributed system resilient, and what class of problems do patterns like retry/circuit-breaker/bulkhead/timeout solve that try/catch alone doesn't?",
+    "tldr": "try/catch only handles a single failed call — retry, circuit breaker, bulkhead, and timeout each address a distinct failure dimension (how often, when to stop, how many resources, how long to wait) that try/catch alone leaves unhandled, preventing cascading failure.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q7"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q8",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "Walk through the Retry pattern: when is it appropriate, and what's the single biggest precondition for using it safely?",
+    "tldr": "Retry only for transient faults, and only safely when the operation is idempotent — retrying a non-idempotent call after an ambiguous failure risks duplicate side effects like double-charging.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q8"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q9",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "Explain the circuit breaker's three core states and what triggers each transition.",
+    "tldr": "Closed tracks failure rate and lets calls through; open rejects calls immediately once a failure-rate threshold with a minimum sample size is hit; half-open lets a few trial calls decide whether to return to closed or back to open.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q9"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q10",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What problem does the Bulkhead pattern solve that a circuit breaker alone doesn't?",
+    "tldr": "Bulkhead caps concurrent calls per dependency so a slow-but-technically-succeeding dependency can't exhaust shared thread/resource capacity — a failure mode a circuit breaker alone doesn't catch.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q10"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q11",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "Why is catching `Exception` (or worse, `Throwable`) broadly considered an anti-pattern?",
+    "tldr": "Catching `Exception`/`Throwable` broadly hides real bugs and, for `Throwable`, risks swallowing unrecoverable `Error`s like `OutOfMemoryError` — catch only the specific types you can actually handle.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q11"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q12",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's wrong with an empty catch block, and how would you diagnose a production issue caused by one?",
+    "tldr": "An empty catch block silently discards the only evidence something went wrong, making the failure nearly undiagnosable later — always log with context, or explicitly document why ignoring it is safe.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q12"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q13",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's the risk of catching an exception and throwing a new one without preserving the original as the cause?",
+    "tldr": "Throwing a new exception without passing the original as `cause` destroys the root-cause stack trace — always chain via the cause-accepting constructor (or `initCause()` for legacy types).",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q13"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q14",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "Why can't you pass a lambda that throws a checked exception directly into a standard `Stream` operation like `.map()`?",
+    "tldr": "`Function<T,R>` (and other standard functional interfaces) declares no `throws` clause, so a lambda that throws a checked exception won't compile against it — the common fix is wrapping the checked exception as unchecked inside the lambda.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q14"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q15",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's the TimeLimiter pattern, and why is bounding call duration considered a resilience concern distinct from retry or circuit breaker?",
+    "tldr": "`TimeLimiter` bounds how long a single call may run, independent of retry/circuit-breaker logic — a call that just hangs wouldn't trigger either of those on its own since nothing has \"failed\" yet.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q15"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q16",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "How would you design a custom exception hierarchy for a service layer — what's the trade-off between a flat hierarchy and a deep one?",
+    "tldr": "Build a small hierarchy with subtypes only for outcomes callers will actually branch on — not one giant flat exception, not a deep tree mirroring every failure mode; sealed classes now let you check that hierarchy exhaustively.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q16"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q17",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "In a microservice calling three downstream services with resilience patterns applied, how would you observe and diagnose *which* resilience pattern is actually degrading user-facing latency or availability?",
+    "tldr": "Instrument each resilience component's own metrics (breaker state/failure rate, retry attempts, bulkhead saturation) and correlate spikes with user-facing latency/errors to find which pattern is actually degrading the experience.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q17"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q18",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "What's the difference between a checked exception used for \"expected\" domain outcomes (like `InsufficientFundsException`) and one used for genuinely exceptional infrastructure failures (like `IOException`) — should they be modeled the same way?",
+    "tldr": "Genuinely exceptional infrastructure failures and expected business outcomes shouldn't be modeled the same way — expected outcomes like insufficient funds are often better represented explicitly in the return type than thrown.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q18"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q19",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "When composing Resilience4j decorators around a call, what happens if the `Retry` is configured to retry on an exception type, but the `CircuitBreaker` is already open?",
+    "tldr": "With Retry as the outer decorator, each retry attempt still passes through an open CircuitBreaker and is rejected immediately via `CallNotPermittedException`, so retries don't burn attempts against a known-bad dependency.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q19"
+  },
+  {
+    "id": "java-exception-handling-and-resilience-patterns-q20",
+    "topic": "java",
+    "subtopic": "exception-handling-and-resilience-patterns",
+    "file": "05-java-interview-exception-handling-and-resilience-patterns",
+    "title": "Compare exceptions and a sealed-result-type approach as two different strategies for representing failure in a Java API. What are the trade-offs a library author should weigh?",
+    "tldr": "Exceptions give automatic propagation and rich diagnostics; sealed result types make failure explicit and compiler-exhaustive at the cost of manual propagation through every layer — the choice is as much about ecosystem fit as theory.",
+    "tags": [
+      "exception-handling-and-resilience-patterns"
+    ],
+    "url": "/src/java/05-java-interview-exception-handling-and-resilience-patterns.html#q20"
+  },
+  {
+    "id": "java-generics-and-type-system-q1",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What is type erasure, and what does the compiler actually do to a generic type?",
+    "tldr": "Type erasure replaces generic type parameters with `Object`/their bound at compile time so `List<String>` and `List` share one class at runtime, trading runtime reification for binary backward compatibility.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q1"
+  },
+  {
+    "id": "java-generics-and-type-system-q2",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why can't you write `new T[10]` inside a generic class, and what's the standard workaround?",
+    "tldr": "`new T[n]` is banned because the JVM needs a concrete runtime element type to create an array safely; the workaround is to allocate `Object[]` (or use `Array.newInstance` with an explicit `Class<T>`) and cast.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q2"
+  },
+  {
+    "id": "java-generics-and-type-system-q3",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What is a bridge method, and when does the compiler generate one?",
+    "tldr": "Bridge methods are compiler-synthesized overrides that reconcile a generic superclass method's erased signature with a subclass's more specific override, preserving polymorphism through erasure.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q3"
+  },
+  {
+    "id": "java-generics-and-type-system-q4",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What are bounded type parameters, and why would you use multiple bounds?",
+    "tldr": "`<T extends X>` restricts and unlocks: only types satisfying the bound can be used, and only the bound's methods are callable on `T`; multiple bounds combine with `&`, class bound first.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q4"
+  },
+  {
+    "id": "java-generics-and-type-system-q5",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What's the difference between `List<?>`, `List<? extends Number>`, and `List<? super Integer>`?",
+    "tldr": "`?` allows only reads as `Object`; `? extends T` allows safe reads as `T` but no writes; `? super T` allows safe writes of `T` but only `Object` reads.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q5"
+  },
+  {
+    "id": "java-generics-and-type-system-q6",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What is the PECS principle, and how would you apply it to designing a `copy(src, dest)` method?",
+    "tldr": "PECS: bound a parameter with `? extends T` if you only read from it (producer), `? super T` if you only write to it (consumer); never use a wildcard on a return type.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q6"
+  },
+  {
+    "id": "java-generics-and-type-system-q7",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why can't primitive types be used as generic type arguments, and what does that cost you?",
+    "tldr": "Primitives can't be type arguments because erasure needs a reference-type target; the `List<Integer>` workaround costs one heap allocation per boxed value, diagnosable via allocation profiling (async-profiler/JFR) and confirmed with JMH.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q7"
+  },
+  {
+    "id": "java-generics-and-type-system-q8",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What is a raw type, and why does the language still allow them?",
+    "tldr": "Raw types disable generic checking and exist only for pre-Java-5 backward compatibility; prefer `List<?>` in new code, which stays type-checked.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q8"
+  },
+  {
+    "id": "java-generics-and-type-system-q9",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What is heap pollution, and what's the simplest way to trigger it?",
+    "tldr": "Heap pollution is a parameterized-type reference pointing at an object of the wrong actual type, introduced silently by an unchecked operation and only caught later, at a read site, as a `ClassCastException`.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q9"
+  },
+  {
+    "id": "java-generics-and-type-system-q10",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why do generic varargs methods trigger an \"unchecked generics array creation\" warning, and what does `@SafeVarargs` actually do about it?",
+    "tldr": "Generic varargs erase to an unchecked array, risking heap pollution; `@SafeVarargs` only suppresses the warning after the programmer manually verifies the body is safe, and is restricted to non-overridable methods so that promise can't be silently broken by a subclass.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q10"
+  },
+  {
+    "id": "java-generics-and-type-system-q11",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why are Java arrays covariant but generic types invariant, and what does that cost arrays?",
+    "tldr": "Arrays are covariant (with a runtime `ArrayStoreException` safety net) because they predate generics; generics are invariant by default and catch the equivalent error at compile time instead, with no runtime check needed.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q11"
+  },
+  {
+    "id": "java-generics-and-type-system-q12",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What is a self-bounded (recursive) generic type, and why is `Enum` declared as `Enum<E extends Enum<E>>`?",
+    "tldr": "`Enum<E extends Enum<E>>` is a self-bounded generic that restricts `compareTo` to the same concrete enum type, preventing cross-enum comparisons at compile time — the same trick powers \"return-type-correct\" fluent builder hierarchies.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q12"
+  },
+  {
+    "id": "java-generics-and-type-system-q13",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "How does type inference work for generic method calls, and what changed in Java 8's \"target typing\"?",
+    "tldr": "Type inference derives generic type arguments from call context; Java 8 expanded that context (\"target typing\") to include method-argument positions, not just assignments/returns, and it's distinct from (though related to) the diamond operator.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q13"
+  },
+  {
+    "id": "java-generics-and-type-system-q14",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why can't you write `if (list instanceof List<String>)`, and what's the correct way to check element types at runtime?",
+    "tldr": "`instanceof` can't check parameterized-type arguments because they're erased at runtime; use `instanceof List<?>` for the reifiable check, and the super-type-token trick (retained generic-superclass metadata) if you genuinely need to smuggle a type argument past erasure.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q14"
+  },
+  {
+    "id": "java-generics-and-type-system-q15",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why were generics added to Java in Java 5, and what real bug class did they eliminate?",
+    "tldr": "Generics eliminated pervasive unchecked-cast `ClassCastException` bugs from collection usage by catching element-type mismatches at compile time instead of at a distant runtime read site.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q15"
+  },
+  {
+    "id": "java-generics-and-type-system-q16",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What's the wildcard capture problem, and how does the \"helper method\" pattern fix it?",
+    "tldr": "Wildcard capture prevents the compiler from proving a `get()` and `set()` on the same `List<?>` agree on type within one statement; delegate to a private generic helper method with a real type parameter to fix it.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q16"
+  },
+  {
+    "id": "java-generics-and-type-system-q17",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "When designing a public API method, when should you use a wildcard versus an exact type parameter?",
+    "tldr": "Use an exact type parameter when a method both reads and writes the same element type; use `? extends T`/`? super T` to widen caller compatibility when the method is purely a producer or consumer of that type — `Collections.sort`'s signature is the canonical real-world example.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q17"
+  },
+  {
+    "id": "java-generics-and-type-system-q18",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "Why can't you overload two methods that differ only by generic type argument?",
+    "tldr": "Overloads that differ only by generic type argument erase to the same signature and are rejected as duplicates; use distinct method names, a `Class<T>` token, or a functional parameter instead.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q18"
+  },
+  {
+    "id": "java-generics-and-type-system-q19",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What's the difference between a generic *class* and a generic *method*, and when would a static utility method need its own type parameter even inside a non-generic class?",
+    "tldr": "A class-level type parameter belongs to the type and is shared by its instance members; a method-level type parameter is scoped to a single call and lets even non-generic (or differently-generic) classes have generic static/instance methods — and a generic method can introduce its own type parameter distinct from its enclosing class's.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q19"
+  },
+  {
+    "id": "java-generics-and-type-system-q20",
+    "topic": "java",
+    "subtopic": "generics-and-type-system",
+    "file": "06-java-interview-generics-and-type-system",
+    "title": "What's the practical trade-off between a generic API and a `Class<T>`-token-based API when you need runtime type information?",
+    "tldr": "`Class<T>` gives generic APIs a reified runtime type handle that erasure otherwise destroys, but it can't represent a parameterized target type itself (`List<User>`) — that gap is filled by the `TypeToken` super-type-token pattern, and mature libraries offer both, reserving the heavier mechanism for when it's actually needed.",
+    "tags": [
+      "generics-and-type-system"
+    ],
+    "url": "/src/java/06-java-interview-generics-and-type-system.html#q20"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q1",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What's the fundamental architectural difference between `java.io` streams and `java.nio` channels/buffers?",
+    "tldr": "`java.io` blocks the calling thread per operation; `java.nio` is buffer-oriented and lets a `Selector` multiplex many non-blocking channels on one thread — a distinction virtual threads have partially made moot for typical server code.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q1"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q2",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "How does a `Selector` let one thread monitor thousands of channels without polling each one in a loop?",
+    "tldr": "`select()` blocks while the OS's native readiness API (epoll/kqueue) does the actual multiplexing; the thread only wakes up to handle channels that are already ready.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q2"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q3",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What does `FileChannel.transferTo()` do that a manual read/write loop doesn't, and why does that matter for performance?",
+    "tldr": "`transferTo()` can let the OS move bytes straight from the file page cache to the destination without a user-space copy — but its return value must be checked/looped since it may transfer less than requested.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q3"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q4",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "Your synchronous, thread-per-connection server starts failing to accept new connections under load, even though CPU usage is low. What's the likely cause and how do you confirm it?",
+    "tldr": "Low CPU with connection failures under a thread-per-connection design usually means OS-thread/stack exhaustion — confirm via thread dumps showing many threads parked in blocking I/O, near the pool/OS thread ceiling.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q4"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q5",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "How would you profile a service you suspect is I/O-bound (spending most of its time waiting on sockets/disk) rather than CPU-bound?",
+    "tldr": "Use JFR's socket/file I/O events (or wall-clock, not CPU, profiling) to see time blocked in I/O, then corroborate with OS-level socket buffer stats to tell network latency from application-side backpressure.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q5"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q6",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "From an architecture-theory standpoint, what's the fundamental trade-off between a thread-per-request model and an event-driven (reactor) model?",
+    "tldr": "Thread-per-request trades OS-thread cost for simple sequential code and stack traces; event-driven models trade that simplicity for cheap multiplexed concurrency — virtual threads try to collapse this trade-off.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q6"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q7",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "Why do high-throughput frameworks like Netty build on top of NIO instead of just using virtual threads with blocking I/O?",
+    "tldr": "Netty/reactive stacks still earn their keep for backpressure control and pooled-buffer memory efficiency at extreme throughput; for typical CRUD services, blocking code on virtual threads is now the simpler default.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q7"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q8",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What's wrong with this NIO code, and what would actually happen when it runs?",
+    "tldr": "Forgetting `flip()` between a read and a write on the same buffer writes the empty remainder, not the data just read — `compact()` is the variant that preserves unread bytes instead of discarding them.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q8"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q9",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "A non-blocking `SocketChannel.write(buffer)` call returns having written fewer bytes than the buffer contained. Is this a bug, and how should the caller handle it?",
+    "tldr": "A partial write on a non-blocking channel is normal — track the unwritten remainder and resume on an `OP_WRITE` readiness notification, not a busy retry loop.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q9"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q10",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What resource-leak risk is specific to NIO channels that's less common with classic `java.io` streams, and how do you guard against it?",
+    "tldr": "Unclosed NIO channels leak OS file descriptors (not just memory) because the selector holds a reference via the key — close channels on every path, including exceptions, and monitor fd counts.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q10"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q11",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "How does `AsynchronousFileChannel` with a `CompletionHandler` differ from the `Selector`-based non-blocking model, and when would you choose it?",
+    "tldr": "`AsynchronousFileChannel`/`CompletionHandler` is completion-based (callback fires when the OS finishes the operation) rather than readiness-based like `Selector`, and it's the mechanism for non-blocking file I/O since file channels aren't selectable.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q11"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q12",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What does \"pinning\" mean for virtual threads, and why does it specifically threaten the I/O-scalability benefit they're meant to provide?",
+    "tldr": "A virtual thread pinned inside a `synchronized` block or native call can't unmount during blocking I/O, so it blocks its carrier directly — detectable via JFR's `jdk.VirtualThreadPinned` events, fixable (pre-JDK 24) by switching to `ReentrantLock`.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q12"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q13",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What's a \"gathering write,\" and what real-world protocol/format situation is it designed for?",
+    "tldr": "Gathering/scattering I/O writes-from or reads-into multiple buffers in a single syscall, avoiding both per-buffer syscall overhead and manual buffer-combining copies — ideal for header+body protocol framing.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q13"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q14",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "When would you actually still choose Selector-based NIO or a reactive/Netty-style stack over blocking code on virtual threads, given virtual threads exist now?",
+    "tldr": "Virtual threads solve thread cost, not capacity management — reactive/NIO stacks still win when you need explicit backpressure, pooled-buffer memory control, or existing reactive-ecosystem integration.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q14"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q15",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "Why would allocating a `ByteBuffer` with `allocateDirect()` instead of `allocate()` sometimes make things *slower*, not faster?",
+    "tldr": "Direct buffers avoid a native-I/O copy but cost more to allocate/free and are reclaimed only when GC notices their Java wrapper is dead — so allocating many short-lived ones can be slower and riskier than reusing pooled ones or just using heap buffers.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q15"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q16",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "What is a memory-mapped file (`FileChannel.map()`), and what real problem does it solve compared to normal `read()`/`write()` calls?",
+    "tldr": "Memory-mapped files let you access file contents as regular memory via OS paging, avoiding per-call syscall overhead for large, non-sequential access — but writes' durability timing is unspecified without an explicit `force()` call.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q16"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q17",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "Why does `InputStreamReader`/`OutputStreamWriter` exist as a bridge between byte streams and character streams, and what problem does it prevent?",
+    "tldr": "`InputStreamReader`/`OutputStreamWriter` bridge raw bytes to characters via an explicit `Charset` — always specify it explicitly, since relying on the platform default causes environment-dependent mojibake bugs.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q17"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q18",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "How does the thread-per-connection model directly cause `OutOfMemoryError: unable to create new native thread`, and what does that error actually mean?",
+    "tldr": "`unable to create new native thread` is an OS thread-creation failure (stack/kernel-resource limits), not a heap issue — raising `ulimit`/pool size only delays the same structural ceiling that NIO or virtual threads remove entirely.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q18"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q19",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "Why can't you register a `FileChannel` with a `Selector` the way you can register a `SocketChannel`?",
+    "tldr": "`FileChannel` isn't selectable because local-file \"readiness\" doesn't map onto the OS event-notification model sockets use — file async I/O instead uses the completion-based `AsynchronousFileChannel` model.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q19"
+  },
+  {
+    "id": "java-io-nio-and-networking-performance-q20",
+    "topic": "java",
+    "subtopic": "io-nio-and-networking-performance",
+    "file": "07-java-interview-io-nio-and-networking-performance",
+    "title": "You need to send a large static file to many concurrent clients as efficiently as possible. Walk through the design decisions, from I/O model down to the actual send call.",
+    "tldr": "For large-file fan-out: avoid thread-per-connection, use `transferTo()`'s zero-copy path with correct partial-transfer looping, and reach for Netty's `FileRegion`/backpressure only at the highest scale — but cache small hot files in memory instead, where zero-copy's benefit is marginal.",
+    "tags": [
+      "io-nio-and-networking-performance"
+    ],
+    "url": "/src/java/07-java-interview-io-nio-and-networking-performance.html#q20"
+  }
+]

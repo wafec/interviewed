@@ -11,3 +11,4 @@ exclude:
   - .claude/
   - src/TEMPLATE.md
   - src/QUIZ_TEMPLATE.json
+  - src/SEARCH_INDEX_TEMPLATE.json

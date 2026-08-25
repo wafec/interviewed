@@ -1,0 +1,242 @@
+[
+  {
+    "id": "api-rest-api-design-fundamentals-q1",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What is REST, and what makes an API \"RESTful\" rather than just \"an API over HTTP\"?",
+    "tldr": "Full REST requires HATEOAS-driven hypermedia, not just HTTP verbs + JSON — most production 'REST' APIs are a pragmatic subset that skips it.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q1"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q2",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Why is statelessness a core REST constraint, and what breaks if you violate it?",
+    "tldr": "Statelessness means every request is self-contained, enabling free load-balancing and clean failover — violating it forces sticky sessions.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q2"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q3",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What's the difference between a \"safe\" and an \"idempotent\" HTTP method, and why does it matter for retries and caches?",
+    "tldr": "Safe = read-only; idempotent = repeating it has the same end state — idempotent requests are safe to auto-retry, POST/PATCH by default are neither.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q3"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q4",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Walk through PUT vs PATCH vs POST for updating a resource — when would you use each?",
+    "tldr": "PUT replaces the whole resource, PATCH applies a partial change, POST is for creation or non-idempotent actions — mixing up PUT with a partial body silently nulls fields.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q4"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q5",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "When do you return 400 vs 422, and 401 vs 403?",
+    "tldr": "400 is malformed syntax, 422 is well-formed but business-invalid; 401 means unauthenticated, 403 means authenticated but not permitted.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q5"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q6",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "A client's POST to create a payment times out — they don't know if it succeeded. How do you make this safe to retry?",
+    "tldr": "An idempotency key lets the server cache and replay the first response to a retried POST, making non-idempotent operations like payments safe to retry.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q6"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q7",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What are the main API versioning strategies, and what are the trade-offs?",
+    "tldr": "URI versioning is simple but leaks into every path, header/content-negotiation versioning is purer but less discoverable — additive, backward-compatible changes avoid needing a bump at all.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q7"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q8",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Offset-based vs. cursor-based pagination — how do they work, and why does it matter at scale?",
+    "tldr": "Offset pagination scans and discards skipped rows, getting slower and less stable at depth; cursor pagination anchors to an indexed value and stays fast and stable regardless of depth.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q8"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q9",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "How does rate limiting actually work under the hood — walk through the token bucket algorithm?",
+    "tldr": "A token bucket allows bursts up to its capacity while enforcing a steady refill rate, avoiding the boundary-burst flaw of a naive fixed-window counter.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q9"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q10",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Explain HTTP caching: Cache-Control, ETag/If-None-Match, and when a 304 gets returned.",
+    "tldr": "Cache-Control governs storability/freshness, ETag + If-None-Match let the server issue a bodyless 304 when the cached copy is still valid.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q10"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q11",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What is CORS, why does the browser enforce it, and what triggers a preflight request?",
+    "tldr": "CORS lets a server opt specific origins into cross-origin access; the browser preflights any 'non-simple' request (non-GET/HEAD/POST, custom headers, or an unusual Content-Type) with an OPTIONS check first.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q11"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q12",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Walk through the OAuth 2.0 authorization code flow, and explain when you'd use client credentials instead.",
+    "tldr": "Authorization code flow keeps the access token off the browser via a back-channel exchange, for use whenever a human user grants access; client credentials skips the user entirely for service-to-service calls.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q12"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q13",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What is HATEOAS, and why does Roy Fielding say most \"REST APIs\" aren't actually REST?",
+    "tldr": "HATEOAS means clients navigate via links returned in responses instead of hardcoded URIs — without it, Fielding considers an API 'HTTP RPC,' not true REST.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q13"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q14",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Production users report an API endpoint is \"slow.\" Walk through how you'd diagnose it.",
+    "tldr": "Diagnosing 'slow' starts with p95/p99 latency and distributed tracing to isolate which layer (DB, downstream call, app code) is actually responsible, then fix and re-measure against the same metrics.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q14"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q15",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What's a \"chatty\" API, and how does it relate to the N+1 problem?",
+    "tldr": "A chatty/N+1 API pays one round trip per related item instead of batching them — fixed with bulk endpoints, embedding, or a query language that lets the client shape one request.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q15"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q16",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Why do persistent (keep-alive) connections matter for API performance, and what's actually happening at the TCP/HTTP layer?",
+    "tldr": "HTTP/1.1 keep-alive reuses a TCP connection across requests to avoid repeated handshake cost; HTTP/2 goes further by multiplexing multiple requests over one connection at once.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q16"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q17",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Compare gRPC and REST — when would you choose gRPC for an API?",
+    "tldr": "gRPC trades REST's human-debuggable JSON and browser-native accessibility for binary protobuf, native streaming, and strong typing — best for internal service-to-service calls, not public APIs.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q17"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q18",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "Compare GraphQL and REST — what real problem does GraphQL solve?",
+    "tldr": "GraphQL lets the client specify exactly the fields/shape it needs in one request, solving REST's over-fetching and under-fetching — at the cost of new caching and query-cost risks.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q18"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q19",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "A downstream API your service depends on starts failing intermittently — how does the circuit breaker pattern help, and how is it different from just retrying?",
+    "tldr": "Retry handles transient blips; a circuit breaker trips open after sustained failures to fail fast and protect both caller and callee from cascading overload, then half-opens to probe recovery.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q19"
+  },
+  {
+    "id": "api-rest-api-design-fundamentals-q20",
+    "topic": "api",
+    "subtopic": "rest-api-design-fundamentals",
+    "file": "01-api-interview-rest-api-design-fundamentals",
+    "title": "What is backpressure, and why does it matter when one API/service produces data faster than a downstream consumer can process it?",
+    "tldr": "Backpressure lets a slow consumer signal capacity back to a fast producer so it throttles instead of overwhelming buffers — without it, unhandled producers must be dropped, buffered, or errored on the consumer side.",
+    "tags": [
+      "rest-api-design-fundamentals"
+    ],
+    "url": "/src/api/01-api-interview-rest-api-design-fundamentals.html#q20"
+  }
+]

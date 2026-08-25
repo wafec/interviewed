@@ -14,7 +14,7 @@ apps responsive (`startTransition`, `useDeferredValue`, Suspense), and the
 methodology/tools (React DevTools Profiler, the `<Profiler>` API, Core Web
 Vitals' INP) for actually diagnosing a slow React app instead of guessing.
 
-### Q1. Walk me through what happens, step by step, when you call `setState` in a React component.
+### Q1. Walk me through what happens, step by step, when you call `setState` in a React component. {#q1}
 
 **Question:**
 Walk me through what happens, step by step, when you call `setState` in a React component.
@@ -87,7 +87,7 @@ minimal DOM diff, leaving unrelated nodes (and their state) untouched.
 
 ---
 
-### Q2. How does React decide whether to preserve or reset a component's state between renders, and where does the `key` prop fit in?
+### Q2. How does React decide whether to preserve or reset a component's state between renders, and where does the `key` prop fit in? {#q2}
 
 **Question:**
 How does React decide whether to preserve or reset a component's state between renders, and where does the `key` prop fit in?
@@ -152,7 +152,7 @@ component itself — `key` overrides that identity to force a reset.
 
 ---
 
-### Q3. What is React Fiber, and what problem was it introduced to solve?
+### Q3. What is React Fiber, and what problem was it introduced to solve? {#q3}
 
 **Question:**
 What is React Fiber, and what problem was it introduced to solve?
@@ -212,7 +212,7 @@ Fiber is React's incremental, interruptible reconciliation engine, replacing the
 
 ---
 
-### Q4. What does `React.memo` actually do, and what's the most common way it fails to prevent a re-render even though "nothing changed"?
+### Q4. What does `React.memo` actually do, and what's the most common way it fails to prevent a re-render even though "nothing changed"? {#q4}
 
 **Question:**
 What does `React.memo` actually do, and what's the most common way it fails to prevent a re-render even though "nothing changed"?
@@ -279,7 +279,7 @@ otherwise it's dead weight.
 
 ---
 
-### Q5. When should you reach for `useMemo`, and how do you decide if a calculation is "expensive enough" to justify it?
+### Q5. When should you reach for `useMemo`, and how do you decide if a calculation is "expensive enough" to justify it? {#q5}
 
 **Question:**
 When should you reach for `useMemo`, and how do you decide if a calculation is "expensive enough" to justify it?
@@ -345,7 +345,7 @@ Use `useMemo` only after profiling shows a calculation is genuinely expensive or
 
 ---
 
-### Q6. What's the actual difference between `useMemo` and `useCallback`?
+### Q6. What's the actual difference between `useMemo` and `useCallback`? {#q6}
 
 **Question:**
 What's the actual difference between `useMemo` and `useCallback`?
@@ -405,7 +405,7 @@ reason about the downstream consequence of skipping one.
 
 ---
 
-### Q7. What is a "stale closure" bug in a `useEffect`, and why does the dependency array exist?
+### Q7. What is a "stale closure" bug in a `useEffect`, and why does the dependency array exist? {#q7}
 
 **Question:**
 What is a "stale closure" bug in a `useEffect`, and why does the dependency array exist?
@@ -471,7 +471,7 @@ A stale closure happens when an Effect keeps using values from the render it was
 
 ---
 
-### Q8. What changed about state-update batching in React 18, and how do you opt out when you need a synchronous DOM update?
+### Q8. What changed about state-update batching in React 18, and how do you opt out when you need a synchronous DOM update? {#q8}
 
 **Question:**
 What changed about state-update batching in React 18, and how do you opt out when you need a synchronous DOM update?
@@ -537,7 +537,7 @@ React 18 batches all state updates everywhere by default; `flushSync` opts a spe
 
 ---
 
-### Q9. What problem does `startTransition` solve, and how does it relate to "urgent" vs. "non-urgent" updates?
+### Q9. What problem does `startTransition` solve, and how does it relate to "urgent" vs. "non-urgent" updates? {#q9}
 
 **Question:**
 What problem does `startTransition` solve, and how does it relate to "urgent" vs. "non-urgent" updates?
@@ -605,7 +605,7 @@ instead of treating them as interchangeable.
 
 ---
 
-### Q10. How does `<Suspense>` decide when to show its fallback, and what's a common mistake that makes people think "Suspense isn't working"?
+### Q10. How does `<Suspense>` decide when to show its fallback, and what's a common mistake that makes people think "Suspense isn't working"? {#q10}
 
 **Question:**
 How does `<Suspense>` decide when to show its fallback, and what's a common mistake that makes people think "Suspense isn't working"?
@@ -672,7 +672,7 @@ Suspense only reacts to a recognized set of suspension mechanisms (like `use()`)
 
 ---
 
-### Q11. What are React Server Components, and how do they differ from the client components most React developers are used to?
+### Q11. What are React Server Components, and how do they differ from the client components most React developers are used to? {#q11}
 
 **Question:**
 What are React Server Components, and how do they differ from the client components most React developers are used to?
@@ -737,7 +737,7 @@ Server Components run only on the server and never ship code to the client; inte
 
 ---
 
-### Q12. What do error boundaries actually catch, and what's a mistake teams commonly make assuming an error boundary will handle it?
+### Q12. What do error boundaries actually catch, and what's a mistake teams commonly make assuming an error boundary will handle it? {#q12}
 
 **Question:**
 What do error boundaries actually catch, and what's a mistake teams commonly make assuming an error boundary will handle it?
@@ -805,7 +805,7 @@ Error boundaries only catch render/lifecycle/constructor errors in their subtree
 
 ---
 
-### Q13. Why must Hooks always be called in the same order on every render, never inside a condition or loop?
+### Q13. Why must Hooks always be called in the same order on every render, never inside a condition or loop? {#q13}
 
 **Question:**
 Why must Hooks always be called in the same order on every render, never inside a condition or loop?
@@ -875,7 +875,7 @@ React tracks hook state by call order per fiber, not by name, so hooks must be c
 
 ---
 
-### Q14. A teammate says "the app feels laggy when I type in this filter box." What's your actual methodology for diagnosing this, step by step?
+### Q14. A teammate says "the app feels laggy when I type in this filter box." What's your actual methodology for diagnosing this, step by step? {#q14}
 
 **Question:**
 A teammate says "the app feels laggy when I type in this filter box." What's your actual methodology for diagnosing this, step by step?
@@ -943,7 +943,7 @@ Diagnose React perf by profiling first (DevTools Profiler/`<Profiler>`), then ch
 
 ---
 
-### Q15. How does the `<Profiler>` component's `onRender` callback let you distinguish "this render was slow" from "this render was unnecessary but cheap"?
+### Q15. How does the `<Profiler>` component's `onRender` callback let you distinguish "this render was slow" from "this render was unnecessary but cheap"? {#q15}
 
 **Question:**
 How does the `<Profiler>` component's `onRender` callback let you distinguish "this render was slow" from "this render was unnecessary but cheap"?
@@ -1005,7 +1005,7 @@ profiling work.
 
 ---
 
-### Q16. If you put frequently-changing state into React Context so multiple components can read it, what performance problem are you likely to introduce?
+### Q16. If you put frequently-changing state into React Context so multiple components can read it, what performance problem are you likely to introduce? {#q16}
 
 **Question:**
 If you put frequently-changing state into React Context so multiple components can read it, what performance problem are you likely to introduce?
@@ -1073,7 +1073,7 @@ Every Context consumer re-renders on any value change, regardless of which field
 
 ---
 
-### Q17. "React uses a virtual DOM, so it's always faster than manipulating the real DOM directly." Is that a fair statement — how would you correct it?
+### Q17. "React uses a virtual DOM, so it's always faster than manipulating the real DOM directly." Is that a fair statement — how would you correct it? {#q17}
 
 **Question:**
 "React uses a virtual DOM, so it's always faster than manipulating the real DOM directly." Is that a fair statement — how would you correct it?
@@ -1133,7 +1133,7 @@ The virtual DOM isn't inherently faster than raw DOM calls — its value is enab
 
 ---
 
-### Q18. What does `useDeferredValue` do, and how is it different from debouncing the same input with `setTimeout`?
+### Q18. What does `useDeferredValue` do, and how is it different from debouncing the same input with `setTimeout`? {#q18}
 
 **Question:**
 What does `useDeferredValue` do, and how is it different from debouncing the same input with `setTimeout`?
@@ -1202,7 +1202,7 @@ API.
 
 ---
 
-### Q19. You're asked to reduce re-renders across a mid-size React app with no profiling data yet. What's your prioritized approach, and why in that order?
+### Q19. You're asked to reduce re-renders across a mid-size React app with no profiling data yet. What's your prioritized approach, and why in that order? {#q19}
 
 **Question:**
 You're asked to reduce re-renders across a mid-size React app with no profiling data yet. What's your prioritized approach, and why in that order?
@@ -1269,7 +1269,7 @@ Fix re-renders by profiling first, then targeting high-fan-out/frequently-firing
 
 ---
 
-### Q20. Compare Context + `useReducer` against an external state-management library for cross-cutting app state. What's the actual trade-off, not just "Context is built-in"?
+### Q20. Compare Context + `useReducer` against an external state-management library for cross-cutting app state. What's the actual trade-off, not just "Context is built-in"? {#q20}
 
 **Question:**
 Compare Context + `useReducer` against an external state-management library for cross-cutting app state. What's the actual trade-off, not just "Context is built-in"?

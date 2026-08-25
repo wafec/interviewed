@@ -12,7 +12,7 @@ deployment strategies, and the performance-diagnosis methodology that's now
 a staple of senior cloud interviews. Examples lean on AWS (the most commonly
 interviewed cloud platform) but the underlying patterns are vendor-neutral.
 
-### Q1. What's the difference between horizontal and vertical scaling, and why do cloud architectures default to horizontal?
+### Q1. What's the difference between horizontal and vertical scaling, and why do cloud architectures default to horizontal? {#q1}
 
 **Question:**
 Explain horizontal vs. vertical scaling. Why does AWS's Well-Architected Framework recommend horizontal scaling as the default strategy?
@@ -51,7 +51,7 @@ Vertical scaling has a hard ceiling and a single point of failure; horizontal sc
 
 ---
 
-### Q2. How does a load balancer decide which backend to send a request to, and what happens when a backend fails its health check?
+### Q2. How does a load balancer decide which backend to send a request to, and what happens when a backend fails its health check? {#q2}
 
 **Question:**
 Walk me through how an Application Load Balancer routes a request and how it reacts when a target becomes unhealthy.
@@ -88,7 +88,7 @@ An ALB routes via a configurable algorithm (round robin, least-outstanding-reque
 
 ---
 
-### Q3. A service's p99 latency suddenly doubled in production. Walk me through how you'd diagnose it.
+### Q3. A service's p99 latency suddenly doubled in production. Walk me through how you'd diagnose it. {#q3}
 
 **Question:**
 Your API's p99 latency jumped from 200ms to 400ms after a deploy, with no error rate increase. What's your investigation process and what tools do you reach for?
@@ -118,7 +118,7 @@ Diagnose a latency regression by correlating metrics with the deploy, then distr
 
 ---
 
-### Q4. Explain the CAP theorem and how it shows up in real cloud database choices.
+### Q4. Explain the CAP theorem and how it shows up in real cloud database choices. {#q4}
 
 **Question:**
 What does CAP theorem actually constrain, and how would you use it to justify choosing DynamoDB with eventual consistency over a strongly consistent relational setup?
@@ -147,7 +147,7 @@ CAP forces a consistency-vs-availability trade-off only during a network partiti
 
 ---
 
-### Q5. What problem does the circuit breaker pattern solve, and what are its states?
+### Q5. What problem does the circuit breaker pattern solve, and what are its states? {#q5}
 
 **Question:**
 Why would you put a circuit breaker in front of a downstream service call instead of just retrying on failure?
@@ -194,7 +194,7 @@ A circuit breaker trips open after a failure threshold to fail fast and stop cas
 
 ---
 
-### Q6. What is the "thundering herd" problem in the context of retries, and how does jitter fix it?
+### Q6. What is the "thundering herd" problem in the context of retries, and how does jitter fix it? {#q6}
 
 **Question:**
 Your service and 999 other clients all get throttled by a downstream dependency at the same moment. If they all retry with the same exponential backoff, what goes wrong, and how does jitter help?
@@ -233,7 +233,7 @@ Synchronized retry schedules cause repeated traffic spikes (thundering herd); ji
 
 ---
 
-### Q7. What does the cooldown period do in an Auto Scaling group, and why does it apply asymmetrically to scale-out vs. scale-in?
+### Q7. What does the cooldown period do in an Auto Scaling group, and why does it apply asymmetrically to scale-out vs. scale-in? {#q7}
 
 **Question:**
 Explain what the ASG cooldown period is for, and why scale-in is typically more conservative than scale-out.
@@ -263,7 +263,7 @@ ASG cooldown pauses further scaling until the last action's effect is measurable
 
 ---
 
-### Q8. When would you choose predictive scaling over target-tracking (reactive) scaling?
+### Q8. When would you choose predictive scaling over target-tracking (reactive) scaling? {#q8}
 
 **Question:**
 Your traffic has a predictable daily spike at 9am as users log in. Reactive target-tracking scaling is causing a latency spike every morning before it catches up. What would you change?
@@ -292,7 +292,7 @@ Reactive target-tracking scaling only reacts after a metric breach, causing lag 
 
 ---
 
-### Q9. What's the difference between Multi-AZ and Multi-Region deployment, and what failure modes does each protect against?
+### Q9. What's the difference between Multi-AZ and Multi-Region deployment, and what failure modes does each protect against? {#q9}
 
 **Question:**
 Why might a system be Multi-AZ but not Multi-Region, and what risk does that leave unaddressed?
@@ -322,7 +322,7 @@ Multi-AZ protects against a single data-center failure with low latency cost; Mu
 
 ---
 
-### Q10. What is the bulkhead pattern and how does it prevent one failing component from taking down the whole system?
+### Q10. What is the bulkhead pattern and how does it prevent one failing component from taking down the whole system? {#q10}
 
 **Question:**
 Explain the bulkhead pattern with a concrete example of resource exhaustion it prevents.
@@ -351,7 +351,7 @@ The bulkhead pattern isolates resource pools (threads, connections) per dependen
 
 ---
 
-### Q11. How does the token bucket algorithm work, and how does AWS API Gateway use it for throttling?
+### Q11. How does the token bucket algorithm work, and how does AWS API Gateway use it for throttling? {#q11}
 
 **Question:**
 Explain the token bucket rate-limiting algorithm and the difference between its "rate" and "burst" parameters.
@@ -398,7 +398,7 @@ A token bucket allows bursts up to its capacity while enforcing a steady refill 
 
 ---
 
-### Q12. What does idempotency mean for a distributed operation, and how would you implement an idempotent Lambda handler that processes payments?
+### Q12. What does idempotency mean for a distributed operation, and how would you implement an idempotent Lambda handler that processes payments? {#q12}
 
 **Question:**
 Why does a network-retriable API call need to be idempotent, and how would you enforce that for a "charge customer" Lambda function?
@@ -441,7 +441,7 @@ Idempotency means retrying an operation with the same key produces the same resu
 
 ---
 
-### Q13. What causes a Lambda "cold start," and when does provisioned concurrency not fully eliminate it?
+### Q13. What causes a Lambda "cold start," and when does provisioned concurrency not fully eliminate it? {#q13}
 
 **Question:**
 Explain what actually happens during a Lambda cold start, and a scenario where provisioned concurrency doesn't save you from one.
@@ -471,7 +471,7 @@ A cold start is the latency of creating a fresh execution environment (code load
 
 ---
 
-### Q14. Why does Amazon RDS Proxy exist, and what problem does connection pooling solve that connection limits alone don't?
+### Q14. Why does Amazon RDS Proxy exist, and what problem does connection pooling solve that connection limits alone don't? {#q14}
 
 **Question:**
 Your Lambda-based API is overwhelming your RDS instance with connections during traffic spikes. Why does adding RDS Proxy fix this, mechanically?
@@ -501,7 +501,7 @@ RDS Proxy pools and multiplexes many app-side connections onto a smaller, stable
 
 ---
 
-### Q15. What's the difference between a blue-green deployment and a canary deployment, and when would you pick one over the other?
+### Q15. What's the difference between a blue-green deployment and a canary deployment, and when would you pick one over the other? {#q15}
 
 **Question:**
 Compare blue-green and canary deployment strategies. What determines which one you'd use for a high-traffic payment service?
@@ -530,7 +530,7 @@ Blue-green cuts all traffic over after separate validation; canary shifts a smal
 
 ---
 
-### Q16. How does consistent hashing help a distributed data store like DynamoDB scale, and what problem does it solve versus simple modulo hashing?
+### Q16. How does consistent hashing help a distributed data store like DynamoDB scale, and what problem does it solve versus simple modulo hashing? {#q16}
 
 **Question:**
 Why can't a distributed hash table just use `hash(key) % number_of_nodes` to decide which node owns a key?
@@ -560,7 +560,7 @@ Naive modulo hashing remaps nearly every key when the node count changes; consis
 
 ---
 
-### Q17. How does SQS provide backpressure, and what's the role of visibility timeout and a dead-letter queue in preventing a poison message from blocking a queue forever?
+### Q17. How does SQS provide backpressure, and what's the role of visibility timeout and a dead-letter queue in preventing a poison message from blocking a queue forever? {#q17}
 
 **Question:**
 A malformed message keeps failing to process and keeps reappearing in your SQS queue, slowing down every other consumer. What mechanisms prevent this, and how would you configure them?
@@ -598,7 +598,7 @@ SQS's visibility timeout hides a received message until it's deleted or the time
 
 ---
 
-### Q18. What is chaos engineering, and how would you run a controlled experiment on AWS without risking an uncontrolled outage?
+### Q18. What is chaos engineering, and how would you run a controlled experiment on AWS without risking an uncontrolled outage? {#q18}
 
 **Question:**
 Explain chaos engineering as a discipline, and how AWS Fault Injection Simulator lets you run experiments safely in production.
@@ -627,7 +627,7 @@ Chaos engineering deliberately injects failure to verify resilience mechanisms a
 
 ---
 
-### Q19. How do EC2 Spot Instances achieve up to 90% cost savings, and what architecture decisions do you need to make to use them safely?
+### Q19. How do EC2 Spot Instances achieve up to 90% cost savings, and what architecture decisions do you need to make to use them safely? {#q19}
 
 **Question:**
 Explain how Spot Instance pricing and interruption work, and how you'd design a workload to tolerate interruptions.
@@ -658,7 +658,7 @@ Spot Instances trade a 2-minute reclaim notice for up to 90% cost savings — sa
 
 ---
 
-### Q20. You need to add rate limiting, retries, circuit breaking, and bulkheads to a service mesh — which of these belong in application code vs. infrastructure, and why?
+### Q20. You need to add rate limiting, retries, circuit breaking, and bulkheads to a service mesh — which of these belong in application code vs. infrastructure, and why? {#q20}
 
 **Question:**
 Given the resilience patterns discussed in this set (retries, circuit breakers, bulkheads, rate limiting), which would you implement in application code versus push down into infrastructure (e.g. a service mesh sidecar like Envoy, or API Gateway), and what's the trade-off?

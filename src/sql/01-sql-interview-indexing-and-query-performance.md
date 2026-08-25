@@ -12,7 +12,7 @@ logs), locking/concurrency internals, and the trade-offs senior engineers are
 expected to reason about (index type choice, isolation levels, clustered vs
 secondary indexes, when *not* to index).
 
-### Q1. What is a database index, and why does it make reads faster?
+### Q1. What is a database index, and why does it make reads faster? {#q1}
 
 **Question:**
 What is a database index? Why does adding one to a column speed up queries
@@ -77,7 +77,7 @@ An index is an ordered structure (usually a B-tree) enabling O(log n) lookups in
 
 ---
 
-### Q2. How does a B-tree index actually work internally?
+### Q2. How does a B-tree index actually work internally? {#q2}
 
 **Question:**
 Walk me through how a B-tree index is structured internally, and why lookups
@@ -137,7 +137,7 @@ A B-tree's shallow, multi-key nodes keep lookups O(log n); leaf nodes are sorted
 
 ---
 
-### Q3. How does column order matter in a composite (multicolumn) index?
+### Q3. How does column order matter in a composite (multicolumn) index? {#q3}
 
 **Question:**
 You create an index on `(a, b, c)`. Does that index help a query that filters
@@ -210,7 +210,7 @@ A composite index only helps queries that constrain a leftmost-contiguous prefix
 
 ---
 
-### Q4. What is a covering index / index-only scan?
+### Q4. What is a covering index / index-only scan? {#q4}
 
 **Question:**
 What's an index-only scan, and how would you design an index to make one
@@ -281,7 +281,7 @@ An index-only scan answers a query entirely from the index (skipping the heap) w
 
 ---
 
-### Q5. How do you read an `EXPLAIN ANALYZE` output to find a bad plan?
+### Q5. How do you read an `EXPLAIN ANALYZE` output to find a bad plan? {#q5}
 
 **Question:**
 A query is slow. You run `EXPLAIN ANALYZE` on it. What are you looking for
@@ -358,7 +358,7 @@ EXPLAIN ANALYZE shows planned vs. actual cost/rows per node — look for seq sca
 
 ---
 
-### Q6. How do you find your worst-performing queries in a live production database?
+### Q6. How do you find your worst-performing queries in a live production database? {#q6}
 
 **Question:**
 You're on call and the database is under heavy load. How do you identify
@@ -430,7 +430,7 @@ Use aggregate tooling like pg_stat_statements (or MySQL's slow query log) sorted
 
 ---
 
-### Q7. Why do stale table statistics cause bad query plans?
+### Q7. Why do stale table statistics cause bad query plans? {#q7}
 
 **Question:**
 A query was fast last month and is slow today, even though the query and
@@ -497,7 +497,7 @@ Query plans are estimates built from statistics gathered by ANALYZE — if data 
 
 ---
 
-### Q8. What is MVCC, and why does it mean readers don't block writers?
+### Q8. What is MVCC, and why does it mean readers don't block writers? {#q8}
 
 **Question:**
 In PostgreSQL, a long-running `SELECT` doesn't block an `UPDATE` on the same
@@ -554,7 +554,7 @@ MVCC keeps old row versions visible to in-flight transactions instead of blockin
 
 ---
 
-### Q9. Walk through PostgreSQL's row-level lock modes and how `SELECT ... FOR UPDATE` affects concurrency.
+### Q9. Walk through PostgreSQL's row-level lock modes and how `SELECT ... FOR UPDATE` affects concurrency. {#q9}
 
 **Question:**
 What's the difference between `SELECT ... FOR UPDATE` and
@@ -628,7 +628,7 @@ FOR UPDATE takes an exclusive row lock (blocks all other lockers), FOR SHARE tak
 
 ---
 
-### Q10. Why is an index lookup O(log n) and a full scan O(n) — and when does that stop mattering?
+### Q10. Why is an index lookup O(log n) and a full scan O(n) — and when does that stop mattering? {#q10}
 
 **Question:**
 In big-O terms, why is indexed lookup so much faster than a table scan, and
@@ -687,7 +687,7 @@ Index lookups are O(log n) vs. a scan's O(n), but that edge shrinks or reverses 
 
 ---
 
-### Q11. What real-world problem do indexes solve, and what did databases do before them?
+### Q11. What real-world problem do indexes solve, and what did databases do before them? {#q11}
 
 **Question:**
 Why do indexes exist as a separate feature instead of the database just
@@ -746,7 +746,7 @@ Indexes trade a small ongoing write cost for near-constant-time reads, avoiding 
 
 ---
 
-### Q12. What's the risk of over-indexing a table?
+### Q12. What's the risk of over-indexing a table? {#q12}
 
 **Question:**
 A teammate suggests "just add an index on every column we filter on,
@@ -806,7 +806,7 @@ Every index adds real write, storage, and planner-overhead costs — index delib
 
 ---
 
-### Q13. Why does wrapping an indexed column in a function or implicit cast stop the index from being used?
+### Q13. Why does wrapping an indexed column in a function or implicit cast stop the index from being used? {#q13}
 
 **Question:**
 You have an index on `orders(created_at)`, but
@@ -879,7 +879,7 @@ Wrapping an indexed column in a function or implicit cast makes the condition no
 
 ---
 
-### Q14. What's a partial index, and when would you use one?
+### Q14. What's a partial index, and when would you use one? {#q14}
 
 **Question:**
 What's a partial index? Give a real scenario where it would be a better
@@ -947,7 +947,7 @@ A partial index only covers rows matching a predicate, saving space/write cost w
 
 ---
 
-### Q15. B-tree vs. Hash index — what's the actual trade-off?
+### Q15. B-tree vs. Hash index — what's the actual trade-off? {#q15}
 
 **Question:**
 When would you choose a hash index over a B-tree index, if ever?
@@ -1003,7 +1003,7 @@ B-tree supports equality, ranges, and sorting; hash indexes support only equalit
 
 ---
 
-### Q16. What's the difference between a clustered and a non-clustered (secondary) index?
+### Q16. What's the difference between a clustered and a non-clustered (secondary) index? {#q16}
 
 **Question:**
 In MySQL/InnoDB, what does it mean that the primary key is the "clustered
@@ -1067,7 +1067,7 @@ In InnoDB the primary key IS the table's physical storage (clustered index); eve
 
 ---
 
-### Q17. What is parameter sniffing, and how does it cause a query to suddenly get slow?
+### Q17. What is parameter sniffing, and how does it cause a query to suddenly get slow? {#q17}
 
 **Question:**
 A stored procedure runs fast for most callers but suddenly becomes very slow
@@ -1128,7 +1128,7 @@ Parameter sniffing caches a plan built from the first execution's parameter valu
 
 ---
 
-### Q18. What is the N+1 query problem, and how do you detect and fix it?
+### Q18. What is the N+1 query problem, and how do you detect and fix it? {#q18}
 
 **Question:**
 An API endpoint that lists 50 orders is making 51 database queries. What's
@@ -1201,7 +1201,7 @@ The N+1 problem is one query per parent row from a lazily-loaded relation access
 
 ---
 
-### Q19. Why does PostgreSQL need `VACUUM`, and how does bloat degrade performance?
+### Q19. Why does PostgreSQL need `VACUUM`, and how does bloat degrade performance? {#q19}
 
 **Question:**
 A table that should be small based on row count is taking up far more disk
@@ -1270,7 +1270,7 @@ MVCC leaves dead tuples behind after UPDATE/DELETE; unreclaimed dead tuples bloa
 
 ---
 
-### Q20. How do transaction isolation levels trade correctness for concurrency/performance?
+### Q20. How do transaction isolation levels trade correctness for concurrency/performance? {#q20}
 
 **Question:**
 What's the difference between `READ COMMITTED` and `SERIALIZABLE`, and why

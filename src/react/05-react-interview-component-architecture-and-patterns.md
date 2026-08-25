@@ -12,7 +12,7 @@ components, render props, HOCs), classic anti-patterns (prop drilling, god
 components, key misuse), and the trade-offs behind larger architectural
 choices like state colocation and micro-frontends.
 
-### Q1. React's docs explicitly recommend composition over inheritance for reusing component logic. Why, and what's the idiomatic way to compose components?
+### Q1. React's docs explicitly recommend composition over inheritance for reusing component logic. Why, and what's the idiomatic way to compose components? {#q1}
 
 **Question:**
 Why does React recommend composition over inheritance, and what's the idiomatic pattern for building flexible, reusable components?
@@ -61,7 +61,7 @@ React favors composition/containment (`props.children`, JSX slots) over class in
 
 ---
 
-### Q2. What's the difference between a controlled and an uncontrolled component in React, and when would you pick one over the other?
+### Q2. What's the difference between a controlled and an uncontrolled component in React, and when would you pick one over the other? {#q2}
 
 **Question:**
 Explain controlled vs. uncontrolled components, and describe a scenario where you'd deliberately choose an uncontrolled component.
@@ -104,7 +104,7 @@ Controlled components lift state to a parent as the single source of truth; unco
 
 ---
 
-### Q3. What is "prop drilling," and what are React's built-in ways to avoid it?
+### Q3. What is "prop drilling," and what are React's built-in ways to avoid it? {#q3}
 
 **Question:**
 Explain prop drilling as an anti-pattern, and name at least two ways React lets you avoid it.
@@ -133,7 +133,7 @@ Prop drilling is passing props through components that don't need them; fix with
 
 ---
 
-### Q4. When a Context value changes, which components re-render? Walk through the internals.
+### Q4. When a Context value changes, which components re-render? Walk through the internals. {#q4}
 
 **Question:**
 If a Context Provider's value changes, exactly which components re-render — and does it matter how many intermediate components sit between the Provider and a consumer?
@@ -184,7 +184,7 @@ Every consumer of a changed Context re-renders regardless of which field it read
 
 ---
 
-### Q5. `React.memo` is often used to stop a component from re-rendering. What comparison does it actually perform, and when does a memoized component re-render anyway?
+### Q5. `React.memo` is often used to stop a component from re-rendering. What comparison does it actually perform, and when does a memoized component re-render anyway? {#q5}
 
 **Question:**
 Explain exactly what `React.memo` compares by default, and list the cases where a memoized component still re-renders despite unchanged props.
@@ -230,7 +230,7 @@ This is a classic trap question: many candidates "know" `memo` prevents re-rende
 
 ---
 
-### Q6. What does `createPortal` do, and how does event propagation work for content rendered through a portal?
+### Q6. What does `createPortal` do, and how does event propagation work for content rendered through a portal? {#q6}
 
 **Question:**
 Explain what a React portal is, a real use case for one, and how click events on portal content propagate — through the DOM tree or the React tree?
@@ -273,7 +273,7 @@ This checks whether the candidate understands that React's component tree and th
 
 ---
 
-### Q7. How would you diagnose which component is causing a sluggish UI — what tools do you reach for and what's your process?
+### Q7. How would you diagnose which component is causing a sluggish UI — what tools do you reach for and what's your process? {#q7}
 
 **Question:**
 A page feels janky when typing into a search box. Walk through your methodology and tooling to find and fix the cause.
@@ -302,7 +302,7 @@ Measure with the React DevTools Profiler flamegraph, distinguish "too many re-re
 
 ---
 
-### Q8. What is list virtualization, and when is it worth the added complexity?
+### Q8. What is list virtualization, and when is it worth the added complexity? {#q8}
 
 **Question:**
 Explain what list/row virtualization does, why it improves performance, and a case where you would *not* bother with it.
@@ -331,7 +331,7 @@ List virtualization renders only visible rows plus a buffer to keep DOM node cou
 
 ---
 
-### Q9. How does `React.lazy` + `Suspense` enable code-splitting, and what are its hard requirements?
+### Q9. How does `React.lazy` + `Suspense` enable code-splitting, and what are its hard requirements? {#q9}
 
 **Question:**
 Explain how `React.lazy` reduces initial bundle size, and list its constraints (export shape, where it must be declared, what must wrap it).
@@ -376,7 +376,7 @@ This tests whether the candidate understands `lazy`/`Suspense` as a mechanical c
 
 ---
 
-### Q10. How does the Single Responsibility Principle apply to React component design in practice?
+### Q10. How does the Single Responsibility Principle apply to React component design in practice? {#q10}
 
 **Question:**
 Explain what "single responsibility" means for a React component, with a concrete example of a component that violates it and how you'd split it.
@@ -405,7 +405,7 @@ Split "what renders" from "how data is fetched" from "business logic" via custom
 
 ---
 
-### Q11. What is the compound components pattern, and what problem does it solve that plain prop-based configuration doesn't?
+### Q11. What is the compound components pattern, and what problem does it solve that plain prop-based configuration doesn't? {#q11}
 
 **Question:**
 Describe the compound components pattern (e.g. `<Select><Select.Option /></Select>`) and explain what it buys you over a single component with a big prop API.
@@ -451,7 +451,7 @@ Compound components share implicit state via Context while exposing a JSX-compos
 
 ---
 
-### Q12. What is the "render props" pattern, and why has it largely been superseded by hooks?
+### Q12. What is the "render props" pattern, and why has it largely been superseded by hooks? {#q12}
 
 **Question:**
 Explain the render props pattern with an example, and why custom hooks are now generally preferred for the same use case.
@@ -492,7 +492,7 @@ Render props delegate rendering via a function prop; mostly replaced by custom h
 
 ---
 
-### Q13. Compare higher-order components (HOCs) to custom hooks for sharing logic. What are the concrete downsides of HOCs that hooks fix?
+### Q13. Compare higher-order components (HOCs) to custom hooks for sharing logic. What are the concrete downsides of HOCs that hooks fix? {#q13}
 
 **Question:**
 What is a higher-order component, and what specific problems with HOCs motivated the move to hooks?
@@ -521,7 +521,7 @@ HOCs suffer prop collisions, wrapper hell, and indirect prop origins; hooks fix 
 
 ---
 
-### Q14. What are error boundaries, what's their hard technical constraint, and what do they explicitly not catch?
+### Q14. What are error boundaries, what's their hard technical constraint, and what do they explicitly not catch? {#q14}
 
 **Question:**
 Explain what an error boundary is, why it currently must be a class component, and list what kinds of errors it will *not* catch.
@@ -567,7 +567,7 @@ Error boundaries are class components (no hook equivalent) that catch render-pha
 
 ---
 
-### Q15. What's the difference between using array index as a `key` vs. a stable ID, and when does index-as-key actually cause a visible bug?
+### Q15. What's the difference between using array index as a `key` vs. a stable ID, and when does index-as-key actually cause a visible bug? {#q15}
 
 **Question:**
 Explain why React warns against (or discourages) using array index as `key`, and construct a concrete scenario where it produces an observable bug, not just a performance issue.
@@ -609,7 +609,7 @@ Using array index as `key` makes React misattribute state to the wrong item afte
 
 ---
 
-### Q16. `useMemo`/`useCallback` are frequently overused. What's the actual cost of memoizing something that didn't need it, and how do you decide when it's worth it?
+### Q16. `useMemo`/`useCallback` are frequently overused. What's the actual cost of memoizing something that didn't need it, and how do you decide when it's worth it? {#q16}
 
 **Question:**
 Explain the real cost of wrapping a value/function in `useMemo`/`useCallback` unnecessarily, and describe your rule of thumb for when it's actually worth doing.
@@ -639,7 +639,7 @@ Memoization has real cost (dependency comparisons, retained closures) and only p
 
 ---
 
-### Q17. Compare a monolithic single-SPA component architecture to a micro-frontend architecture. What real problem does splitting into micro-frontends solve, and what does it cost you?
+### Q17. Compare a monolithic single-SPA component architecture to a micro-frontend architecture. What real problem does splitting into micro-frontends solve, and what does it cost you? {#q17}
 
 **Question:**
 When would you actually recommend a micro-frontend architecture over a single React application, and what are the concrete downsides?
@@ -668,7 +668,7 @@ Micro-frontends solve an organizational/team-scaling problem (independent owners
 
 ---
 
-### Q18. What does "state colocation" mean, and what's a concrete example of moving state in the *wrong* direction (too high) that hurts performance?
+### Q18. What does "state colocation" mean, and what's a concrete example of moving state in the *wrong* direction (too high) that hurts performance? {#q18}
 
 **Question:**
 Explain state colocation, and give a concrete example of a component whose state should be moved down (not up) — and what the concrete performance cost of leaving it high is.
@@ -697,7 +697,7 @@ State colocation keeps state in the component that actually uses it; lifting it 
 
 ---
 
-### Q19. How do you decide between building a bespoke internal component pattern (e.g. your own compound-components form library) vs. adopting an established library?
+### Q19. How do you decide between building a bespoke internal component pattern (e.g. your own compound-components form library) vs. adopting an established library? {#q19}
 
 **Question:**
 A team is debating writing their own compound-components-based form system versus adopting something like React Hook Form or Formik. How would you evaluate that decision?
@@ -726,7 +726,7 @@ Adopt an established form library (e.g. React Hook Form) unless requirements are
 
 ---
 
-### Q20. What's the difference between a "presentational" and a "container" component, and is that split still considered good practice today?
+### Q20. What's the difference between a "presentational" and a "container" component, and is that split still considered good practice today? {#q20}
 
 **Question:**
 Explain the presentational/container component split, and whether you'd still recommend it in a modern (hooks-based) React codebase.

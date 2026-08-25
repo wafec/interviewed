@@ -1,0 +1,1202 @@
+[
+  {
+    "id": "react-rendering-performance-and-reconciliation-q1",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "Walk me through what happens, step by step, when you call `setState` in a React component.",
+    "tldr": "React's update cycle is trigger → render → commit; commit applies only the",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q1"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q2",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "How does React decide whether to preserve or reset a component's state between renders, and where does the `key` prop fit in?",
+    "tldr": "State is tied to a component's position in the render tree, not the",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q2"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q3",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What is React Fiber, and what problem was it introduced to solve?",
+    "tldr": "Fiber is React's incremental, interruptible reconciliation engine, replacing the old synchronous stack reconciler and enabling prioritized/concurrent rendering.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q3"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q4",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What does `React.memo` actually do, and what's the most common way it fails to prevent a re-render even though \"nothing changed\"?",
+    "tldr": "`memo` skips a re-render only when props are shallowly equal — a new object/array/function reference on every parent render defeats it.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q4"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q5",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "When should you reach for `useMemo`, and how do you decide if a calculation is \"expensive enough\" to justify it?",
+    "tldr": "Use `useMemo` only after profiling shows a calculation is genuinely expensive or its reference stability matters downstream, not by default.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q5"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q6",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What's the actual difference between `useMemo` and `useCallback`?",
+    "tldr": "`useMemo` caches a value, `useCallback` caches a function reference — `useCallback(fn, deps)` is just `useMemo(() => fn, deps)`.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q6"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q7",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What is a \"stale closure\" bug in a `useEffect`, and why does the dependency array exist?",
+    "tldr": "A stale closure happens when an Effect keeps using values from the render it was created in; the dependency array exists to re-run it with fresh values.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q7"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q8",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What changed about state-update batching in React 18, and how do you opt out when you need a synchronous DOM update?",
+    "tldr": "React 18 batches all state updates everywhere by default; `flushSync` opts a specific update out for a synchronous DOM commit.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q8"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q9",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What problem does `startTransition` solve, and how does it relate to \"urgent\" vs. \"non-urgent\" updates?",
+    "tldr": "`startTransition` marks a state update as low-priority/interruptible so it doesn't block urgent updates like typing.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q9"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q10",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "How does `<Suspense>` decide when to show its fallback, and what's a common mistake that makes people think \"Suspense isn't working\"?",
+    "tldr": "Suspense only reacts to a recognized set of suspension mechanisms (like `use()`) — data fetched in `useEffect` is invisible to it.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q10"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q11",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What are React Server Components, and how do they differ from the client components most React developers are used to?",
+    "tldr": "Server Components run only on the server and never ship code to the client; interactivity has to live in a `\"use client\"` component.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q11"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q12",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What do error boundaries actually catch, and what's a mistake teams commonly make assuming an error boundary will handle it?",
+    "tldr": "Error boundaries only catch render/lifecycle/constructor errors in their subtree — not errors from event handlers or async callbacks.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q12"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q13",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "Why must Hooks always be called in the same order on every render, never inside a condition or loop?",
+    "tldr": "React tracks hook state by call order per fiber, not by name, so hooks must be called unconditionally in the same order every render.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q13"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q14",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "A teammate says \"the app feels laggy when I type in this filter box.\" What's your actual methodology for diagnosing this, step by step?",
+    "tldr": "Diagnose React perf by profiling first (DevTools Profiler/`<Profiler>`), then check unstable references, unmemoized Context, and unnecessary work — never guess-and-memoize.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q14"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q15",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "How does the `<Profiler>` component's `onRender` callback let you distinguish \"this render was slow\" from \"this render was unnecessary but cheap\"?",
+    "tldr": "`<Profiler>`'s `actualDuration` vs `baseDuration` tells you whether memoization is actually skipping work or the render genuinely has to redo it all.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q15"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q16",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "If you put frequently-changing state into React Context so multiple components can read it, what performance problem are you likely to introduce?",
+    "tldr": "Every Context consumer re-renders on any value change, regardless of which field it reads or whether it's memoized — fast-changing state has a wide blast radius there.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q16"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q17",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "\"React uses a virtual DOM, so it's always faster than manipulating the real DOM directly.\" Is that a fair statement — how would you correct it?",
+    "tldr": "The virtual DOM isn't inherently faster than raw DOM calls — its value is enabling correct, declarative UI, not per-op speed.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q17"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q18",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "What does `useDeferredValue` do, and how is it different from debouncing the same input with `setTimeout`?",
+    "tldr": "`useDeferredValue` adaptively lags a value only as long as the actual expensive render takes, unlike a fixed-timer `setTimeout` debounce.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q18"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q19",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "You're asked to reduce re-renders across a mid-size React app with no profiling data yet. What's your prioritized approach, and why in that order?",
+    "tldr": "Fix re-renders by profiling first, then targeting high-fan-out/frequently-firing components and unstable Context references before reaching for `useMemo`/`useCallback`.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q19"
+  },
+  {
+    "id": "react-rendering-performance-and-reconciliation-q20",
+    "topic": "react",
+    "subtopic": "rendering-performance-and-reconciliation",
+    "file": "01-react-interview-rendering-performance-and-reconciliation",
+    "title": "Compare Context + `useReducer` against an external state-management library for cross-cutting app state. What's the actual trade-off, not just \"Context is built-in\"?",
+    "tldr": "Context + `useReducer` is free but re-renders all consumers on any change; selector-based external stores trade a dependency for fine-grained, slice-level re-render control.",
+    "tags": [
+      "rendering-performance-and-reconciliation"
+    ],
+    "url": "/src/react/01-react-interview-rendering-performance-and-reconciliation.html#q20"
+  },
+  {
+    "id": "react-hooks-and-state-management-q1",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "Why can't you mutate state directly in React (e.g. `state.push(x)` on an array in state), and what should you do instead?",
+    "tldr": "Mutating state in place leaves its reference unchanged, so React can't detect the change — always pass a new object/array to the setter.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q1"
+  },
+  {
+    "id": "react-hooks-and-state-management-q2",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "React 18 introduced \"automatic batching.\" What does that mean, and how is it different from React 17's batching behavior?",
+    "tldr": "React 18's automatic batching extends batching (many setStates → one re-render) to timeouts/promises/native handlers, not just React event handlers; `flushSync` opts a specific update out.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q2"
+  },
+  {
+    "id": "react-hooks-and-state-management-q3",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "Why must Hooks always be called in the same order on every render (the \"Rules of Hooks\"), and what breaks internally if that rule is violated?",
+    "tldr": "Hooks are tracked by call position in a per-fiber linked list, not by name — calling one conditionally shifts that order and corrupts state, hence the Rules of Hooks.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q3"
+  },
+  {
+    "id": "react-hooks-and-state-management-q4",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What is a \"stale closure\" bug in a `useEffect`, and how does an incomplete dependency array cause it?",
+    "tldr": "A stale closure happens when an effect's callback captured an old value and the effect never re-runs to refresh it, because that value was left out of the dependency array.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q4"
+  },
+  {
+    "id": "react-hooks-and-state-management-q5",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "`useMemo` and `useCallback` both \"cache\" something between renders. When do they actually help performance, and when are they pointless or even harmful?",
+    "tldr": "`useMemo`/`useCallback` only pay off when the computation is genuinely expensive or referential stability matters downstream (memoized children, hook deps) — otherwise they're pure overhead.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q5"
+  },
+  {
+    "id": "react-hooks-and-state-management-q6",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "Walk through your methodology for diagnosing \"this component re-renders too often\" in a real app.",
+    "tldr": "Diagnose excess re-renders with the React DevTools Profiler's \"why did this render\" data, fix the actual cause (unstable references, broad Context), then re-profile to confirm.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q6"
+  },
+  {
+    "id": "react-hooks-and-state-management-q7",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What's wrong with initializing state from a prop and then never updating it — e.g. `const [items, setItems] = useState(props.items)`?",
+    "tldr": "`useState`'s initializer only runs on mount, so state seeded from a prop silently stops tracking that prop once it changes later.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q7"
+  },
+  {
+    "id": "react-hooks-and-state-management-q8",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What real problem does \"lifting state up\" solve, and what pain does Context solve that lifting state up alone doesn't?",
+    "tldr": "Lifting state up gives sibling components one shared source of truth; Context avoids threading that value through every intermediate layer as props (\"prop drilling\").",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q8"
+  },
+  {
+    "id": "react-hooks-and-state-management-q9",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "When would you reach for Context vs. an external state library (Redux, Zustand, Jotai) for global-ish state?",
+    "tldr": "Context suits infrequently-changing, broadly-read values; external stores (Redux/Zustand/Jotai) suit large, frequently-changing state that needs fine-grained subscriptions.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q9"
+  },
+  {
+    "id": "react-hooks-and-state-management-q10",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "If a Context's value is an object like `{ user, theme, setTheme }`, and a component only reads `theme`, does it still re-render when `user` changes? Why?",
+    "tldr": "`useContext` subscribes to the whole context value, so any field changing re-renders every consumer regardless of which field it actually destructures.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q10"
+  },
+  {
+    "id": "react-hooks-and-state-management-q11",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "When would you reach for `useReducer` instead of several `useState` calls?",
+    "tldr": "`useReducer` centralizes related state transitions into one pure function, which scattered `useState` setters across handlers can't do as cleanly.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q11"
+  },
+  {
+    "id": "react-hooks-and-state-management-q12",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What happens if you pass an inline object or function as a `useEffect` dependency, e.g. `useEffect(() => {...}, [{ id }])` or `useEffect(() => {...}, [() => {}])`?",
+    "tldr": "Inline object/array/function literals get a new reference every render, so as dependencies they make an effect re-run on every render regardless of content.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q12"
+  },
+  {
+    "id": "react-hooks-and-state-management-q13",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What is \"tearing\" in the context of concurrent React, and how does `useSyncExternalStore` prevent it?",
+    "tldr": "Tearing is inconsistent data shown across a UI mid concurrent-render; `useSyncExternalStore` prevents it by forcing a synchronous consistency check before commit.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q13"
+  },
+  {
+    "id": "react-hooks-and-state-management-q14",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What's the difference between `useRef` and `useState`, and when would using `useRef` for something be a mistake?",
+    "tldr": "`useRef` persists a value across renders without triggering a re-render — using it for anything that should visibly update the UI is a bug.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q14"
+  },
+  {
+    "id": "react-hooks-and-state-management-q15",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "A parent passes an `onClick` handler to a memoized child (`React.memo`). Even though the handler is defined as an arrow function inline in the parent, the child re-renders every time the parent does. Why, and how do you fix it?",
+    "tldr": "`React.memo`'s shallow-equality check fails on a fresh inline function reference each render; `useCallback` stabilizes that reference so the check can pass.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q15"
+  },
+  {
+    "id": "react-hooks-and-state-management-q16",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "What does it mean that a custom hook doesn't share state between the components that use it — and why is that the case, given it's \"just a function\"?",
+    "tldr": "A custom hook shares reusable logic, not state — each caller gets its own independent `useState`/`useRef` instance tied to its own fiber.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q16"
+  },
+  {
+    "id": "react-hooks-and-state-management-q17",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "React's docs describe function components (and reducers) as needing to be \"pure.\" What does that mean concretely, and what's an example of an impure component that still often \"seems to work\"?",
+    "tldr": "A pure component's output depends only on its inputs with no side effects, since React may call it more than once per render (e.g. `StrictMode`); mutating outside state during render breaks that.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q17"
+  },
+  {
+    "id": "react-hooks-and-state-management-q18",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "Why does React's `StrictMode` intentionally call your component function, state initializers, and reducers twice in development?",
+    "tldr": "`StrictMode` double-invokes functions that are supposed to be pure so any observable difference between the two calls immediately exposes an impurity bug.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q18"
+  },
+  {
+    "id": "react-hooks-and-state-management-q19",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "React 19.2 introduced `useEffectEvent`. What problem does it solve that plain `useEffect` + dependency arrays couldn't solve cleanly?",
+    "tldr": "`useEffectEvent` lets an effect read the latest props/state for non-reactive logic without listing them as dependencies or triggering unwanted re-runs.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q19"
+  },
+  {
+    "id": "react-hooks-and-state-management-q20",
+    "topic": "react",
+    "subtopic": "hooks-and-state-management",
+    "file": "02-react-interview-hooks-and-state-management",
+    "title": "You're handed a component where a `useEffect` fires an API call, and the team suspects it's causing duplicate requests in production (not just the known `StrictMode` dev double-invoke). What's your process for confirming and fixing this?",
+    "tldr": "Duplicate production requests from an effect usually trace to an unstable dependency, an unmounted-but-uncancelled fetch, or duplicate sibling fetches — diagnose via the Network tab + Profiler, fix with stable deps and an `AbortController` cleanup.",
+    "tags": [
+      "hooks-and-state-management"
+    ],
+    "url": "/src/react/02-react-interview-hooks-and-state-management.html#q20"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q1",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What is \"concurrent rendering\" in React 18, and what problem does it solve compared to the legacy synchronous renderer?",
+    "tldr": "Concurrent rendering makes React's render work interruptible/pausable so urgent updates (like typing) aren't blocked, but it's opt-in per update via APIs like `startTransition`, not a global behavior change.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q1"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q2",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What is a \"Fiber\" in React's internals, and how does it enable interruptible rendering?",
+    "tldr": "A Fiber is a resumable unit-of-work node replacing the old recursive call stack, letting React pause, resume, or abort rendering between units instead of being locked into one uninterruptible pass.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q2"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q3",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What are \"lanes\" in React's scheduler, and how do they relate to update priority?",
+    "tldr": "Lanes are a bitmask React uses to track multiple simultaneous pending updates per fiber at different priorities, enabling cheap bitwise prioritization instead of comparing scalar priority numbers.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q3"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q4",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What does it mean for a component to \"suspend,\" and what actually happens under the hood?",
+    "tldr": "A component suspends by throwing an unresolved Promise during render (e.g. via `use()`); React catches it, shows the nearest boundary's fallback, and retries once the Promise resolves — effects run too late to trigger this.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q4"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q5",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What's the difference between `startTransition` and `useDeferredValue`, and when would you reach for each?",
+    "tldr": "Use `startTransition` when you own the `setState` call; use `useDeferredValue` when you only have a value/prop you don't control the setter for — never wrap a controlled input's own value in either.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q5"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q6",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "How do you diagnose jank caused by a large, low-priority update blocking urgent user input, and what's the fix?",
+    "tldr": "Diagnose with the DevTools Profiler + browser Performance panel to find the long blocking render, then fix by marking the expensive update as a transition (`startTransition`/`useDeferredValue`) so input stays responsive.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q6"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q7",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "Why does React only reveal newly-ready Suspense content \"at most once every 300ms,\" and what problem does that solve?",
+    "tldr": "React throttles Suspense content reveals to roughly once per 300ms so multiple boundaries resolving close together appear together, avoiding a jarring one-at-a-time popping-in effect.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q7"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q8",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What real-world problem did \"automatic batching\" in React 18 solve?",
+    "tldr": "React 18 made batching automatic everywhere (timeouts, promises, native handlers), not just inside React event handlers, avoiding wasted extra re-renders; `flushSync` opts out when needed.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q8"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q9",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What \"waterfall\" problem does Suspense for data fetching solve, and how?",
+    "tldr": "Suspense fixes fetch waterfalls only if fetches are also initiated early/in-parallel (render-as-you-fetch) — merely swapping `useEffect` for `use()` without restructuring when fetches start still serializes them.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q9"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q10",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What's a common mistake when placing `<Suspense>` boundaries, and what effect does it have?",
+    "tldr": "One coarse Suspense boundary makes fast content wait behind the slowest sibling; nest boundaries around independently-loading pieces so fast content reveals immediately.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q10"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q11",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What happens if you trigger a Suspense-causing update without wrapping it in `startTransition`?",
+    "tldr": "Without `startTransition`, a suspending update immediately flashes visible content back to the fallback; wrapping it in a transition keeps old content visible (with `isPending`) until the new content is ready.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q11"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q12",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What's a common misuse of `useTransition` that developers run into, related to async functions?",
+    "tldr": "Only the synchronous part of a `startTransition` callback (before the first `await`) is tracked as the transition — `setState` calls after an `await` need their own nested `startTransition` or they run as urgent updates.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q12"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q13",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What is \"selective hydration,\" and what problem does it solve for streaming SSR?",
+    "tldr": "Selective hydration hydrates each Suspense boundary independently and prioritizes whichever one the user is interacting with, instead of hydrating in a fixed order regardless of streaming arrival.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q13"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q14",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "Walk through how `renderToPipeableStream` streams a page that has nested Suspense boundaries.",
+    "tldr": "`renderToPipeableStream` sends the shell first (`onShellReady`), streams each Suspense boundary's content as it resolves (out of order), and fires `onAllReady` once everything is done, e.g. for crawlers.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q14"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q15",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What are React Server Components, and how do they relate to Suspense?",
+    "tldr": "Server Components render server-side only and never ship JS to the client; they can pass unawaited Promises down to Client Components, which `use()` them and suspend, tying RSC data-fetching into the same Suspense mechanism.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q15"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q16",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What's a real downside/trade-off of marking an update as a transition with `useTransition`?",
+    "tldr": "Transitions can be interrupted/discarded and add no extra CPU throughput — they only reprioritize work, so they're wrong for updates needing guaranteed, immediate, predictable feedback.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q16"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q17",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "How would you use the React DevTools Profiler to figure out *which* component is causing dropped frames during an interaction?",
+    "tldr": "Record the interaction in the Profiler, read the flame/ranked chart for long/self-time-heavy renders and their re-render cause, cross-check with the browser Performance panel for actual blocked frames, then re-profile after the fix.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q17"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q18",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "What problem does `useSyncExternalStore` solve, and what is \"tearing\" in the context of concurrent rendering?",
+    "tldr": "Tearing is inconsistent UI reads of a mutable external store during a paused/resumed concurrent render; `useSyncExternalStore` guarantees a consistent snapshot by re-checking and falling back to a synchronous render if the store changed mid-flight.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q18"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q19",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "Compare React's cooperative scheduling model to OS-level preemptive thread scheduling — what's the underlying CS concept, and where does React's approach fall short of true preemption?",
+    "tldr": "React's scheduling is cooperative (yields only between fibers), not preemptive — it can't interrupt one component's own expensive synchronous render, which must be fixed by restructuring the work, not the scheduler.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q19"
+  },
+  {
+    "id": "react-concurrent-features-and-suspense-q20",
+    "topic": "react",
+    "subtopic": "concurrent-features-and-suspense",
+    "file": "03-react-interview-concurrent-features-and-suspense",
+    "title": "Suppose you suspend on a transition and the boundary was already showing content — does the user see the fallback again? What governs this?",
+    "tldr": "A transition-triggered re-suspension keeps already-revealed content visible instead of flashing back to the fallback — the same \"don't discard useful old content\" idea `useDeferredValue` applies at the value level.",
+    "tags": [
+      "concurrent-features-and-suspense"
+    ],
+    "url": "/src/react/03-react-interview-concurrent-features-and-suspense.html#q20"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q1",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What's the difference between CSR, SSR, and SSG, and what problem does each solve?",
+    "tldr": "CSR trades slow first paint for fast builds, SSR trades server cost for fast content + an interactivity gap, SSG trades freshness for the fastest possible delivery.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q1"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q2",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What exactly does `hydrateRoot` do, and what must be true about the server and client output for it to work?",
+    "tldr": "hydrateRoot reuses existing server-rendered DOM nodes instead of re-rendering, so server and client output must match exactly or React falls back to a full, costly client re-render.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q2"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q3",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What is a React Server Component, and how is it fundamentally different from a component that's merely server-side rendered?",
+    "tldr": "A Server Component's code never ships to the client at all — only its rendered output does — unlike a normal SSR'd component whose JS still gets bundled for hydration.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q3"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q4",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "How does streaming SSR with `<Suspense>` change what the user experiences compared to traditional (non-streaming) SSR?",
+    "tldr": "Streaming SSR sends a ready shell immediately and streams each Suspense boundary's real content in as it resolves, instead of blocking the whole response on the slowest piece.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q4"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q5",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "How do you diagnose a hydration mismatch in production when you can't just read the dev-mode console warning?",
+    "tldr": "Reproduce with a dev build to see the exact diff, then correlate a post-load content flash with a full client re-render of the mismatched subtree.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q5"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q6",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "Why does React Server Components' \"zero bundle size\" property matter for performance, beyond just download size?",
+    "tldr": "Zero bundle size means less JS to download, parse, and hydrate, which directly cuts Time to Interactive and improves INP — not just a smaller download.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q6"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q7",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What is the \"waterfall\" problem in data fetching, and how do Server Components address it differently than `useEffect`-based fetching?",
+    "tldr": "Server Components can fetch data concurrently during render (no mount-order dependency), collapsing the client-side useEffect waterfall into parallel server-side awaits.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q7"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q8",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What is `useId` for, and why can't you just use an incrementing counter or `Math.random()` to generate unique DOM ids in a server-rendered app?",
+    "tldr": "useId derives ids from stable tree position so they match between server and client renders, unlike a counter or Math.random() which can diverge and break hydration.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q8"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q9",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What are Server Functions (formerly \"Server Actions\"), and how do they support progressive enhancement?",
+    "tldr": "Server Functions ('use server') let a form submit as a real HTML POST before JS loads, then get replayed once hydration completes — graceful degradation, not an all-or-nothing feature.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q9"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q10",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "When would you deliberately choose NOT to adopt React Server Components / an SSR framework, and stick with a plain client-rendered SPA?",
+    "tldr": "RSC/SSR complexity only pays off when SEO/first-paint or heavy server-only dependencies matter; behind-auth, highly interactive, or infra-constrained apps can stay plain CSR.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q10"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q11",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "Explain the RSC payload — what actually gets sent over the wire for a Server Component tree, and how is it different from HTML or JSON?",
+    "tldr": "The RSC payload is a streaming format encoding both server-rendered content and references to Client Components to mount, which plain HTML or JSON can't express.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q11"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q12",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What's a common pitfall when Server Components pass props to Client Components, and why does it happen?",
+    "tldr": "Only serializable values (primitives, plain objects/arrays, Dates, Server Function references) can cross the server→client boundary — arbitrary class instances or closures can't.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q12"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q13",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "How does `<Suspense>` fallback content interact with SEO/crawlers during streaming SSR — is there a risk of a crawler indexing the loading skeleton instead of the real content?",
+    "tldr": "Waiting for onAllReady instead of onShellReady sends crawlers one complete document instead of a streaming shell + fallbacks, avoiding indexing loading skeletons.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q13"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q14",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What's \"selective hydration,\" and how does it let a page become interactive faster than hydrating top-to-bottom?",
+    "tldr": "Selective hydration lets React hydrate whichever Suspense boundary the user actually interacts with first, rather than a fixed top-to-bottom order.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q14"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q15",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What role does `suppressHydrationWarning` play, and why is it explicitly documented as \"not a fix\"?",
+    "tldr": "suppressHydrationWarning only silences the warning on one element one level deep — it doesn't guarantee correct patching and can mask real bugs if overused.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q15"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q16",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "How would you use the browser's Performance/Network panel (or React DevTools) to confirm whether a slow-feeling SSR page is bottlenecked on server render time vs. client hydration time?",
+    "tldr": "Isolate the bottleneck by phase — TTFB for server/render time, streaming duration for Suspense resolution, and post-paint main-thread activity for hydration cost — each has a different fix.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q16"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q17",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What's the theoretical requirement React's render function has always had, and why does that requirement become load-bearing (not just good practice) once SSR/hydration enters the picture?",
+    "tldr": "Purity is cosmetic in pure CSR but load-bearing under SSR, because hydration's correctness depends on two independent renders (server and client) producing identical output.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q17"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q18",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What's the real-world business/product problem that motivated Server Components' existence, beyond \"it's a nice performance optimization\"?",
+    "tldr": "RSC exists to stop shipping server-only-usable code to the client just to avoid building a separate API layer — collapsing both the bundle-bloat and waterfall problems at once.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q18"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q19",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "What common anti-pattern happens when teams migrate an existing CSR app to SSR/RSC without rethinking their data-fetching code, and why does it happen?",
+    "tldr": "Migrating to SSR/RSC without moving initial-load fetches out of client useEffects leaves a server-rendered shell that still waits on client-side fetches, losing most of the benefit.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q19"
+  },
+  {
+    "id": "react-server-components-and-ssr-hydration-q20",
+    "topic": "react",
+    "subtopic": "server-components-and-ssr-hydration",
+    "file": "04-react-interview-server-components-and-ssr-hydration",
+    "title": "Compare React Server Components to a traditional SSR-only framework approach (server renders HTML, full client bundle still ships) — what do you gain, and what new complexity do you take on?",
+    "tldr": "RSC shrinks bundles and hydration cost but adds a new server/client boundary mental model and infra requirement — worth it mainly for content-heavy, SEO-relevant, server-dependency-heavy apps.",
+    "tags": [
+      "server-components-and-ssr-hydration"
+    ],
+    "url": "/src/react/04-react-interview-server-components-and-ssr-hydration.html#q20"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q1",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "React's docs explicitly recommend composition over inheritance for reusing component logic. Why, and what's the idiomatic way to compose components?",
+    "tldr": "React favors composition/containment (`props.children`, JSX slots) over class inheritance for reuse and flexibility.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q1"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q2",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What's the difference between a controlled and an uncontrolled component in React, and when would you pick one over the other?",
+    "tldr": "Controlled components lift state to a parent as the single source of truth; uncontrolled keeps it local — pick controlled when coordination across components is needed.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q2"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q3",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What is \"prop drilling,\" and what are React's built-in ways to avoid it?",
+    "tldr": "Prop drilling is passing props through components that don't need them; fix with Context for genuinely cross-cutting values, or containment (children/JSX props) when intermediates are purely structural.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q3"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q4",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "When a Context value changes, which components re-render? Walk through the internals.",
+    "tldr": "Every consumer of a changed Context re-renders regardless of which field it reads; non-consuming intermediates don't, and an unstable value object triggers re-renders even with no logical change.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q4"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q5",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "`React.memo` is often used to stop a component from re-rendering. What comparison does it actually perform, and when does a memoized component re-render anyway?",
+    "tldr": "`memo` does a per-prop `Object.is` reference check, not deep equality — it still re-renders on the component's own state/context changes or any prop given a fresh reference each render.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q5"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q6",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What does `createPortal` do, and how does event propagation work for content rendered through a portal?",
+    "tldr": "`createPortal` renders into a different DOM location while staying in the same spot in the React tree, so events bubble through the React tree, not the DOM tree.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q6"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q7",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "How would you diagnose which component is causing a sluggish UI — what tools do you reach for and what's your process?",
+    "tldr": "Measure with the React DevTools Profiler flamegraph, distinguish \"too many re-renders\" (state/context issue) from \"one expensive render\" (memoization/virtualization fix), then re-profile to confirm.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q7"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q8",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What is list virtualization, and when is it worth the added complexity?",
+    "tldr": "List virtualization renders only visible rows plus a buffer to keep DOM node count constant — worth it once lists reach hundreds-to-thousands of rows, not for short ones.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q8"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q9",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "How does `React.lazy` + `Suspense` enable code-splitting, and what are its hard requirements?",
+    "tldr": "`React.lazy` code-splits a component into a chunk loaded on first render; it requires a default export, a wrapping `Suspense` boundary, and module-scope declaration.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q9"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q10",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "How does the Single Responsibility Principle apply to React component design in practice?",
+    "tldr": "Split \"what renders\" from \"how data is fetched\" from \"business logic\" via custom hooks and smaller presentational components to shrink re-render blast radius and improve testability.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q10"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q11",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What is the compound components pattern, and what problem does it solve that plain prop-based configuration doesn't?",
+    "tldr": "Compound components share implicit state via Context while exposing a JSX-composable API, avoiding a monolithic, ever-growing prop schema.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q11"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q12",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What is the \"render props\" pattern, and why has it largely been superseded by hooks?",
+    "tldr": "Render props delegate rendering via a function prop; mostly replaced by custom hooks, which share stateful logic without an extra wrapper component in the tree.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q12"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q13",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "Compare higher-order components (HOCs) to custom hooks for sharing logic. What are the concrete downsides of HOCs that hooks fix?",
+    "tldr": "HOCs suffer prop collisions, wrapper hell, and indirect prop origins; hooks fix all three by returning explicitly named values with no extra tree layer.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q13"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q14",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What are error boundaries, what's their hard technical constraint, and what do they explicitly not catch?",
+    "tldr": "Error boundaries are class components (no hook equivalent) that catch render-phase errors via `getDerivedStateFromError`/`componentDidCatch`; they don't catch event-handler or async errors.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q14"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q15",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What's the difference between using array index as a `key` vs. a stable ID, and when does index-as-key actually cause a visible bug?",
+    "tldr": "Using array index as `key` makes React misattribute state to the wrong item after a reorder/insert/delete — use a stable per-item id instead.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q15"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q16",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "`useMemo`/`useCallback` are frequently overused. What's the actual cost of memoizing something that didn't need it, and how do you decide when it's worth it?",
+    "tldr": "Memoization has real cost (dependency comparisons, retained closures) and only pays off paired with `memo` or as another hook's dependency — verify with profiling, don't apply it reflexively.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q16"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q17",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "Compare a monolithic single-SPA component architecture to a micro-frontend architecture. What real problem does splitting into micro-frontends solve, and what does it cost you?",
+    "tldr": "Micro-frontends solve an organizational/team-scaling problem (independent ownership/deploys), not a technical one, at the cost of duplicated dependencies and harder cross-app state/UX consistency.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q17"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q18",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What does \"state colocation\" mean, and what's a concrete example of moving state in the *wrong* direction (too high) that hurts performance?",
+    "tldr": "State colocation keeps state in the component that actually uses it; lifting it too high forces unrelated siblings to re-render on every change.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q18"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q19",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "How do you decide between building a bespoke internal component pattern (e.g. your own compound-components form library) vs. adopting an established library?",
+    "tldr": "Adopt an established form library (e.g. React Hook Form) unless requirements are genuinely unusual — libraries have already solved hard re-render performance and accessibility edge cases.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q19"
+  },
+  {
+    "id": "react-component-architecture-and-patterns-q20",
+    "topic": "react",
+    "subtopic": "component-architecture-and-patterns",
+    "file": "05-react-interview-component-architecture-and-patterns",
+    "title": "What's the difference between a \"presentational\" and a \"container\" component, and is that split still considered good practice today?",
+    "tldr": "Separating rendering from data-fetching logic is still good practice, but the dedicated \"container component\" mechanism is largely superseded by custom hooks.",
+    "tags": [
+      "component-architecture-and-patterns"
+    ],
+    "url": "/src/react/05-react-interview-component-architecture-and-patterns.html#q20"
+  }
+]

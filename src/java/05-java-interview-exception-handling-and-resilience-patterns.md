@@ -10,7 +10,7 @@ bytecode level, the real cost of exceptions, common design pitfalls, and how
 production systems go beyond try/catch with resilience patterns like retry,
 circuit breaker, bulkhead, and timeout (as implemented by Resilience4j).
 
-### Q1. What's the difference between checked and unchecked exceptions in Java, and what's the design rule for choosing between them?
+### Q1. What's the difference between checked and unchecked exceptions in Java, and what's the design rule for choosing between them? {#q1}
 
 **Question:**
 What's the difference between checked and unchecked exceptions in Java, and what's the design rule for choosing between them?
@@ -52,7 +52,7 @@ Checked = caller can recover and it's part of the API contract; unchecked = prog
 
 ---
 
-### Q2. What does try-with-resources guarantee, and what happens if both the try block and the resource's `close()` throw?
+### Q2. What does try-with-resources guarantee, and what happens if both the try block and the resource's `close()` throw? {#q2}
 
 **Question:**
 What does try-with-resources guarantee, and what happens if both the try block and the resource's `close()` throw?
@@ -91,7 +91,7 @@ try-with-resources auto-closes any `AutoCloseable`; if both the try block and `c
 
 ---
 
-### Q3. How does the JVM actually implement exception handling at the bytecode level — is it more like a branch or a lookup table?
+### Q3. How does the JVM actually implement exception handling at the bytecode level — is it more like a branch or a lookup table? {#q3}
 
 **Question:**
 How does the JVM actually implement exception handling at the bytecode level — is it more like a branch or a lookup table?
@@ -130,7 +130,7 @@ Try blocks are free on the non-throwing path — a per-method `exception_table` 
 
 ---
 
-### Q4. What's the surprising behavior when a `finally` block contains a `return` statement, and why should you avoid it?
+### Q4. What's the surprising behavior when a `finally` block contains a `return` statement, and why should you avoid it? {#q4}
 
 **Question:**
 What's the surprising behavior when a `finally` block contains a `return` statement, and why should you avoid it?
@@ -169,7 +169,7 @@ A `return`/`throw`/`break`/`continue` in `finally` unconditionally overrides the
 
 ---
 
-### Q5. In a profiler or production incident, how do you tell whether exceptions are actually a performance problem?
+### Q5. In a profiler or production incident, how do you tell whether exceptions are actually a performance problem? {#q5}
 
 **Question:**
 In a profiler or production incident, how do you tell whether exceptions are actually a performance problem?
@@ -206,7 +206,7 @@ Capture a JFR recording under load and look for `jdk.ExceptionThrown` event coun
 
 ---
 
-### Q6. What's the "fail-fast" principle, and how does it relate to how you should design exception handling?
+### Q6. What's the "fail-fast" principle, and how does it relate to how you should design exception handling? {#q6}
 
 **Question:**
 What's the "fail-fast" principle, and how does it relate to how you should design exception handling?
@@ -236,7 +236,7 @@ Fail-fast means detecting and throwing at the point invalid state occurs rather 
 
 ---
 
-### Q7. Why isn't plain try/catch enough to make a distributed system resilient, and what class of problems do patterns like retry/circuit-breaker/bulkhead/timeout solve that try/catch alone doesn't?
+### Q7. Why isn't plain try/catch enough to make a distributed system resilient, and what class of problems do patterns like retry/circuit-breaker/bulkhead/timeout solve that try/catch alone doesn't? {#q7}
 
 **Question:**
 Why isn't plain try/catch enough to make a distributed system resilient, and what class of problems do patterns like retry/circuit-breaker/bulkhead/timeout solve that try/catch alone doesn't?
@@ -268,7 +268,7 @@ try/catch only handles a single failed call — retry, circuit breaker, bulkhead
 
 ---
 
-### Q8. Walk through the Retry pattern: when is it appropriate, and what's the single biggest precondition for using it safely?
+### Q8. Walk through the Retry pattern: when is it appropriate, and what's the single biggest precondition for using it safely? {#q8}
 
 **Question:**
 Walk through the Retry pattern: when is it appropriate, and what's the single biggest precondition for using it safely?
@@ -309,7 +309,7 @@ Retry only for transient faults, and only safely when the operation is idempoten
 
 ---
 
-### Q9. Explain the circuit breaker's three core states and what triggers each transition.
+### Q9. Explain the circuit breaker's three core states and what triggers each transition. {#q9}
 
 **Question:**
 Explain the circuit breaker's three core states and what triggers each transition.
@@ -349,7 +349,7 @@ Closed tracks failure rate and lets calls through; open rejects calls immediatel
 
 ---
 
-### Q10. What problem does the Bulkhead pattern solve that a circuit breaker alone doesn't?
+### Q10. What problem does the Bulkhead pattern solve that a circuit breaker alone doesn't? {#q10}
 
 **Question:**
 What problem does the Bulkhead pattern solve that a circuit breaker alone doesn't?
@@ -387,7 +387,7 @@ Bulkhead caps concurrent calls per dependency so a slow-but-technically-succeedi
 
 ---
 
-### Q11. Why is catching `Exception` (or worse, `Throwable`) broadly considered an anti-pattern?
+### Q11. Why is catching `Exception` (or worse, `Throwable`) broadly considered an anti-pattern? {#q11}
 
 **Question:**
 Why is catching `Exception` (or worse, `Throwable`) broadly considered an anti-pattern?
@@ -415,7 +415,7 @@ Catching `Exception`/`Throwable` broadly hides real bugs and, for `Throwable`, r
 
 ---
 
-### Q12. What's wrong with an empty catch block, and how would you diagnose a production issue caused by one?
+### Q12. What's wrong with an empty catch block, and how would you diagnose a production issue caused by one? {#q12}
 
 **Question:**
 What's wrong with an empty catch block, and how would you diagnose a production issue caused by one?
@@ -443,7 +443,7 @@ An empty catch block silently discards the only evidence something went wrong, m
 
 ---
 
-### Q13. What's the risk of catching an exception and throwing a new one without preserving the original as the cause?
+### Q13. What's the risk of catching an exception and throwing a new one without preserving the original as the cause? {#q13}
 
 **Question:**
 What's the risk of catching an exception and throwing a new one without preserving the original as the cause?
@@ -482,7 +482,7 @@ Throwing a new exception without passing the original as `cause` destroys the ro
 
 ---
 
-### Q14. Why can't you pass a lambda that throws a checked exception directly into a standard `Stream` operation like `.map()`?
+### Q14. Why can't you pass a lambda that throws a checked exception directly into a standard `Stream` operation like `.map()`? {#q14}
 
 **Question:**
 Why can't you pass a lambda that throws a checked exception directly into a standard `Stream` operation like `.map()`?
@@ -524,7 +524,7 @@ Tests hands-on familiarity with Streams/lambdas in practice — nearly every Jav
 
 ---
 
-### Q15. What's the TimeLimiter pattern, and why is bounding call duration considered a resilience concern distinct from retry or circuit breaker?
+### Q15. What's the TimeLimiter pattern, and why is bounding call duration considered a resilience concern distinct from retry or circuit breaker? {#q15}
 
 **Question:**
 What's the TimeLimiter pattern, and why is bounding call duration considered a resilience concern distinct from retry or circuit breaker?
@@ -560,7 +560,7 @@ Tests whether the candidate understands timeout as bounding *waiting*, not as gu
 
 ---
 
-### Q16. How would you design a custom exception hierarchy for a service layer — what's the trade-off between a flat hierarchy and a deep one?
+### Q16. How would you design a custom exception hierarchy for a service layer — what's the trade-off between a flat hierarchy and a deep one? {#q16}
 
 **Question:**
 How would you design a custom exception hierarchy for a service layer — what's the trade-off between a flat hierarchy and a deep one?
@@ -589,7 +589,7 @@ Build a small hierarchy with subtypes only for outcomes callers will actually br
 
 ---
 
-### Q17. In a microservice calling three downstream services with resilience patterns applied, how would you observe and diagnose *which* resilience pattern is actually degrading user-facing latency or availability?
+### Q17. In a microservice calling three downstream services with resilience patterns applied, how would you observe and diagnose *which* resilience pattern is actually degrading user-facing latency or availability? {#q17}
 
 **Question:**
 In a microservice calling three downstream services with resilience patterns applied, how would you observe and diagnose *which* resilience pattern is actually degrading user-facing latency or availability?
@@ -619,7 +619,7 @@ Instrument each resilience component's own metrics (breaker state/failure rate, 
 
 ---
 
-### Q18. What's the difference between a checked exception used for "expected" domain outcomes (like `InsufficientFundsException`) and one used for genuinely exceptional infrastructure failures (like `IOException`) — should they be modeled the same way?
+### Q18. What's the difference between a checked exception used for "expected" domain outcomes (like `InsufficientFundsException`) and one used for genuinely exceptional infrastructure failures (like `IOException`) — should they be modeled the same way? {#q18}
 
 **Question:**
 What's the difference between a checked exception used for "expected" domain outcomes (like `InsufficientFundsException`) and one used for genuinely exceptional infrastructure failures (like `IOException`) — should they be modeled the same way?
@@ -649,7 +649,7 @@ Genuinely exceptional infrastructure failures and expected business outcomes sho
 
 ---
 
-### Q19. When composing Resilience4j decorators around a call, what happens if the `Retry` is configured to retry on an exception type, but the `CircuitBreaker` is already open?
+### Q19. When composing Resilience4j decorators around a call, what happens if the `Retry` is configured to retry on an exception type, but the `CircuitBreaker` is already open? {#q19}
 
 **Question:**
 When composing Resilience4j decorators around a call, what happens if the `Retry` is configured to retry on an exception type, but the `CircuitBreaker` is already open?
@@ -678,7 +678,7 @@ With Retry as the outer decorator, each retry attempt still passes through an op
 
 ---
 
-### Q20. Compare exceptions and a sealed-result-type approach as two different strategies for representing failure in a Java API. What are the trade-offs a library author should weigh?
+### Q20. Compare exceptions and a sealed-result-type approach as two different strategies for representing failure in a Java API. What are the trade-offs a library author should weigh? {#q20}
 
 **Question:**
 Compare exceptions and a sealed-result-type approach as two different strategies for representing failure in a Java API. What are the trade-offs a library author should weigh?

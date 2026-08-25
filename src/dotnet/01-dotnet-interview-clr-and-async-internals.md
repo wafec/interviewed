@@ -7,7 +7,7 @@ title: ".NET Interview — CLR & Async Internals"
 
 This set covers the CLR's execution and memory model — value vs. reference types, boxing, the garbage collector's generational design, JIT/tiered compilation and Native AOT — and the mechanics of `async`/`await`: the compiler-generated state machine, `SynchronizationContext`, `ThreadPool` starvation, and the deadlocks and leaks that trip up even experienced .NET developers. It also covers the diagnostic tools (`dotnet-trace`, `dotnet-counters`, `dotnet-gcdump`, BenchmarkDotNet) senior engineers reach for when something is slow.
 
-### Q1. What's the difference between a value type and a reference type in C#, and where does each actually live in memory?
+### Q1. What's the difference between a value type and a reference type in C#, and where does each actually live in memory? {#q1}
 
 **Question:**
 What's the difference between a value type and a reference type in C#, and where does each actually live in memory?
@@ -55,7 +55,7 @@ Value types copy their data; reference types copy a pointer to heap data — sto
 
 ---
 
-### Q2. What happens during boxing, and why is it expensive?
+### Q2. What happens during boxing, and why is it expensive? {#q2}
 
 **Question:**
 What happens during boxing, and why is it expensive?
@@ -91,7 +91,7 @@ Boxing heap-allocates a copy of a value type behind an object reference, adding 
 
 ---
 
-### Q3. What does the compiler actually generate for an `async` method?
+### Q3. What does the compiler actually generate for an `async` method? {#q3}
 
 **Question:**
 What does the compiler actually generate for an `async` method?
@@ -122,7 +122,7 @@ An async method compiles to a state machine that runs synchronously until it hit
 
 ---
 
-### Q4. What is `SynchronizationContext`, and what does `ConfigureAwait(false)` actually do?
+### Q4. What is `SynchronizationContext`, and what does `ConfigureAwait(false)` actually do? {#q4}
 
 **Question:**
 What is `SynchronizationContext`, and what does `ConfigureAwait(false)` actually do?
@@ -162,7 +162,7 @@ SynchronizationContext decides where a continuation resumes; ConfigureAwait(fals
 
 ---
 
-### Q5. Why should you almost never use `async void`?
+### Q5. Why should you almost never use `async void`? {#q5}
 
 **Question:**
 Why should you almost never use `async void`?
@@ -200,7 +200,7 @@ async void has no Task to observe, so callers can't await it and its exceptions 
 
 ---
 
-### Q6. How does blocking on an async call (`.Result` / `.Wait()`) cause a deadlock?
+### Q6. How does blocking on an async call (`.Result` / `.Wait()`) cause a deadlock? {#q6}
 
 **Question:**
 How does blocking on an async call (`.Result` / `.Wait()`) cause a deadlock?
@@ -228,7 +228,7 @@ The deadlock needs a captured single-threaded context plus a synchronous block o
 
 ---
 
-### Q7. What are the GC generations, and why does the CLR use them?
+### Q7. What are the GC generations, and why does the CLR use them? {#q7}
 
 **Question:**
 What are the GC generations, and why does the CLR use them?
@@ -265,7 +265,7 @@ Gen0/1/2 age-based collection lets the GC do frequent, cheap Gen0 sweeps and rar
 
 ---
 
-### Q8. Workstation GC vs. Server GC — what's the difference, and when would you pick each?
+### Q8. Workstation GC vs. Server GC — what's the difference, and when would you pick each? {#q8}
 
 **Question:**
 Workstation GC vs. Server GC — what's the difference, and when would you pick each?
@@ -302,7 +302,7 @@ Workstation GC favors low footprint/latency on shared or constrained hardware; S
 
 ---
 
-### Q9. A .NET service is running slow in production and you suspect GC pressure — what's your diagnostic methodology?
+### Q9. A .NET service is running slow in production and you suspect GC pressure — what's your diagnostic methodology? {#q9}
 
 **Question:**
 A .NET service is running slow in production and you suspect GC pressure — what's your diagnostic methodology?
@@ -333,7 +333,7 @@ Diagnose GC pressure with dotnet-counters for a first read, then dotnet-trace/do
 
 ---
 
-### Q10. What is tiered compilation, and how do ReadyToRun and Native AOT relate to it?
+### Q10. What is tiered compilation, and how do ReadyToRun and Native AOT relate to it? {#q10}
 
 **Question:**
 What is tiered compilation, and how do ReadyToRun and Native AOT relate to it?
@@ -364,7 +364,7 @@ Tiered compilation JITs fast-then-optimized; ReadyToRun ships precompiled code f
 
 ---
 
-### Q11. What problem do `Span<T>` and `Memory<T>` solve?
+### Q11. What problem do `Span<T>` and `Memory<T>` solve? {#q11}
 
 **Question:**
 What problem do `Span<T>` and `Memory<T>` solve?
@@ -402,7 +402,7 @@ Span<T>/Memory<T> let you slice contiguous memory without copying or allocating;
 
 ---
 
-### Q12. What is thread pool starvation, and how does it happen in a .NET service?
+### Q12. What is thread pool starvation, and how does it happen in a .NET service? {#q12}
 
 **Question:**
 What is thread pool starvation, and how does it happen in a .NET service?
@@ -431,7 +431,7 @@ Thread pool starvation happens when blocking calls tie up worker threads faster 
 
 ---
 
-### Q13. `Task` vs `ValueTask` — what's the difference, and when should you actually use `ValueTask`?
+### Q13. `Task` vs `ValueTask` — what's the difference, and when should you actually use `ValueTask`? {#q13}
 
 **Question:**
 `Task` vs `ValueTask` — what's the difference, and when should you actually use `ValueTask`?
@@ -459,7 +459,7 @@ Task always allocates; ValueTask avoids allocation for synchronously-available r
 
 ---
 
-### Q14. Why does .NET have both `Dispose()` and finalizers, and how do they interact?
+### Q14. Why does .NET have both `Dispose()` and finalizers, and how do they interact? {#q14}
 
 **Question:**
 Why does .NET have both `Dispose()` and finalizers, and how do they interact?
@@ -513,7 +513,7 @@ Dispose() is deterministic cleanup for unmanaged resources; a finalizer is the G
 
 ---
 
-### Q15. How can a .NET application "leak" memory even though it has a garbage collector?
+### Q15. How can a .NET application "leak" memory even though it has a garbage collector? {#q15}
 
 **Question:**
 How can a .NET application "leak" memory even though it has a garbage collector?
@@ -543,7 +543,7 @@ Managed leaks happen when something unintended keeps a reference alive (static e
 
 ---
 
-### Q16. What's your methodology for benchmarking a micro-optimization in .NET, and why not just wrap it in a `Stopwatch`?
+### Q16. What's your methodology for benchmarking a micro-optimization in .NET, and why not just wrap it in a `Stopwatch`? {#q16}
 
 **Question:**
 What's your methodology for benchmarking a micro-optimization in .NET, and why not just wrap it in a `Stopwatch`?
@@ -587,7 +587,7 @@ A single Stopwatch run is dominated by JIT warm-up and GC noise; BenchmarkDotNet
 
 ---
 
-### Q17. What's the N+1 query problem in EF Core, and how do you avoid it?
+### Q17. What's the N+1 query problem in EF Core, and how do you avoid it? {#q17}
 
 **Question:**
 What's the N+1 query problem in EF Core, and how do you avoid it?
@@ -630,7 +630,7 @@ Lazy-loaded navigation properties accessed in a loop trigger one query per entit
 
 ---
 
-### Q18. What are the three DI service lifetimes in ASP.NET Core, and what's the most common lifetime-related bug?
+### Q18. What are the three DI service lifetimes in ASP.NET Core, and what's the most common lifetime-related bug? {#q18}
 
 **Question:**
 What are the three DI service lifetimes in ASP.NET Core, and what's the most common lifetime-related bug?
@@ -667,7 +667,7 @@ Transient/Scoped/Singleton control instance lifetime; injecting a Scoped service
 
 ---
 
-### Q19. How does the ASP.NET Core middleware pipeline work, and why does order matter?
+### Q19. How does the ASP.NET Core middleware pipeline work, and why does order matter? {#q19}
 
 **Question:**
 How does the ASP.NET Core middleware pipeline work, and why does order matter?
@@ -706,7 +706,7 @@ Middleware is a chain of nested request delegates run in registration order, so 
 
 ---
 
-### Q20. What does Native AOT trade away, and when is it the wrong choice?
+### Q20. What does Native AOT trade away, and when is it the wrong choice? {#q20}
 
 **Question:**
 What does Native AOT trade away, and when is it the wrong choice?
