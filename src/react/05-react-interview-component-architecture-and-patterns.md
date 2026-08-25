@@ -53,6 +53,9 @@ You express specialization by rendering the general component and configuring it
 **Mental model:**
 This question checks whether a candidate defaults to OOP instincts (inheritance, base classes) or actually understands React's data-flow model, where UI reuse happens through composing function calls (components) and passing data/JSX down, not through a class hierarchy.
 
+**TL;DR:**
+React favors composition/containment (`props.children`, JSX slots) over class inheritance for reuse and flexibility.
+
 **References:**
 - [Composition vs Inheritance — React docs](https://legacy.reactjs.org/docs/composition-vs-inheritance.html)
 
@@ -93,6 +96,9 @@ Follow React's "lifting state up" recipe: (1) remove the `isActive` state from e
 **Mental model:**
 This tests whether the candidate can recognize *when* local component state is actually a design smell — i.e. whether they reach for "lift state up" only when there's a real coordination requirement, rather than either never lifting state (leading to bugs) or reflexively lifting everything (leading to prop-drilling and unnecessary re-renders).
 
+**TL;DR:**
+Controlled components lift state to a parent as the single source of truth; uncontrolled keeps it local — pick controlled when coordination across components is needed.
+
 **References:**
 - [Sharing State Between Components — React docs](https://react.dev/learn/sharing-state-between-components)
 
@@ -118,6 +124,9 @@ Context solves the *plumbing* problem but introduces a *coupling and re-render* 
 
 **Mental model:**
 This probes whether the candidate treats Context as a reflexive cure-all or understands its real cost (re-render fan-out, implicit coupling), and can reach for the simpler containment pattern when that's actually the right fix.
+
+**TL;DR:**
+Prop drilling is passing props through components that don't need them; fix with Context for genuinely cross-cutting values, or containment (children/JSX props) when intermediates are purely structural.
 
 **References:**
 - [Passing Data Deeply with Context — React docs](https://react.dev/learn/passing-data-deeply-with-context)
@@ -166,6 +175,9 @@ Split the state into multiple, independently-scoped contexts by how often each s
 **Mental model:**
 This targets whether the candidate actually understands Context's re-render semantics (all-consumers-or-nothing, no field-level granularity) rather than treating it as a magic global-state solution, and whether they know the standard mitigations (splitting contexts, memoizing the value, or moving to a selector-based store).
 
+**TL;DR:**
+Every consumer of a changed Context re-renders regardless of which field it reads; non-consuming intermediates don't, and an unstable value object triggers re-renders even with no logical change.
+
 **References:**
 - [Passing Data Deeply with Context — React docs](https://react.dev/learn/passing-data-deeply-with-context)
 - [useMemo — React docs](https://react.dev/reference/react/useMemo)
@@ -209,6 +221,9 @@ No — an inline arrow function (`onClick={() => doThing(id)}`) is a brand-new f
 **Mental model:**
 This is a classic trap question: many candidates "know" `memo` prevents re-renders but haven't internalized that it's a reference check, so they can't explain why `memo` "isn't working" in the extremely common inline-callback case — this question checks for that depth.
 
+**TL;DR:**
+`memo` does a per-prop `Object.is` reference check, not deep equality — it still re-renders on the component's own state/context changes or any prop given a fresh reference each render.
+
 **References:**
 - [memo — React docs](https://react.dev/reference/react/memo)
 - [useCallback — React docs](https://react.dev/reference/react/useCallback)
@@ -250,6 +265,9 @@ Yes. Since portal events bubble through the React tree rather than the DOM tree,
 **Mental model:**
 This checks whether the candidate understands that React's component tree and the browser's DOM tree are two separate structures with independent semantics — event bubbling is a React-tree concept here, which is easy to get backwards if you've only reasoned about DOM APIs.
 
+**TL;DR:**
+`createPortal` renders into a different DOM location while staying in the same spot in the React tree, so events bubble through the React tree, not the DOM tree.
+
 **References:**
 - [createPortal — React docs](https://react.dev/reference/react-dom/createPortal)
 
@@ -276,6 +294,9 @@ The Profiler shows a component re-rendering with `actualDuration` roughly equal 
 **Mental model:**
 This tests whether the candidate has an actual measurement-driven workflow (profile → hypothesize → fix → re-profile) versus guessing and applying `useMemo`/`memo` everywhere reflexively — a trending interview theme across all frontend/backend topics.
 
+**TL;DR:**
+Measure with the React DevTools Profiler flamegraph, distinguish "too many re-renders" (state/context issue) from "one expensive render" (memoization/virtualization fix), then re-profile to confirm.
+
 **References:**
 - [Profiler API — React docs](https://legacy.reactjs.org/docs/profiler.html)
 
@@ -301,6 +322,9 @@ There's no free fix — you're trading DOM size for content availability, so the
 
 **Mental model:**
 This checks whether the candidate reaches for virtualization only when the data justifies it (measured, not assumed) and is aware of its real trade-offs, rather than treating it as a free performance win to slap on every list.
+
+**TL;DR:**
+List virtualization renders only visible rows plus a buffer to keep DOM node count constant — worth it once lists reach hundreds-to-thousands of rows, not for short ones.
 
 **References:**
 - [react-window — GitHub](https://github.com/bvaughn/react-window)
@@ -343,6 +367,9 @@ A failed `import()` promise rejection propagates as a thrown error during render
 **Mental model:**
 This tests whether the candidate understands `lazy`/`Suspense` as a mechanical contract with real constraints (not just "wrap it and it works"), and specifically whether they know Suspense handles loading but not errors — a very common gap.
 
+**TL;DR:**
+`React.lazy` code-splits a component into a chunk loaded on first render; it requires a default export, a wrapping `Suspense` boundary, and module-scope declaration.
+
 **References:**
 - [lazy — React docs](https://react.dev/reference/react/lazy)
 - [Catching Rendering Errors with an Error Boundary — React docs](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
@@ -369,6 +396,9 @@ It can, if the parent ends up owning and threading through every child's state a
 
 **Mental model:**
 This checks whether SOLID is something the candidate can only recite for OOP classes, or whether they can actually translate "single responsibility" into a concrete React refactor and reason about its real payoff (re-render scope, testability) rather than treating it as dogma.
+
+**TL;DR:**
+Split "what renders" from "how data is fetched" from "business logic" via custom hooks and smaller presentational components to shrink re-render blast radius and improve testability.
 
 **References:**
 - [Thinking in React — React docs](https://react.dev/learn/thinking-in-react)
@@ -413,6 +443,9 @@ The API is more implicit and more fragile to misuse: `Tabs.Tab` only works corre
 **Mental model:**
 This checks whether the candidate can identify when a growing prop list (a "prop explosion" smell) signals that a compound-components refactor would actually help, versus reaching for it reflexively on components that don't need that level of composition flexibility.
 
+**TL;DR:**
+Compound components share implicit state via Context while exposing a JSX-composable API, avoiding a monolithic, ever-growing prop schema.
+
 **References:**
 - [Passing Data Deeply with Context — React docs](https://react.dev/learn/passing-data-deeply-with-context)
 
@@ -451,6 +484,9 @@ Yes — when the logic genuinely needs to control *what gets rendered and where 
 **Mental model:**
 This tests historical/architectural awareness — whether the candidate understands *why* the ecosystem moved to hooks (not just "hooks are newer"), and can still recognize the narrow cases where the older pattern remains genuinely useful.
 
+**TL;DR:**
+Render props delegate rendering via a function prop; mostly replaced by custom hooks, which share stateful logic without an extra wrapper component in the tree.
+
 **References:**
 - [Reusing Logic with Custom Hooks — React docs](https://react.dev/learn/reusing-logic-with-custom-hooks)
 
@@ -476,6 +512,9 @@ They're rare in new application code, but still show up for a specific case hook
 
 **Mental model:**
 This checks whether the candidate can articulate the *specific, technical* reasons HOCs were superseded (not just "hooks are the new hotness"), which is a good signal for how deeply they actually understand the trade-offs rather than following trends.
+
+**TL;DR:**
+HOCs suffer prop collisions, wrapper hell, and indirect prop origins; hooks fix all three by returning explicitly named values with no extra tree layer.
 
 **References:**
 - [Higher-Order Components — React docs (legacy)](https://legacy.reactjs.org/docs/higher-order-components.html)
@@ -519,6 +558,9 @@ Because that rejection happens in asynchronous code outside the render phase, wh
 **Mental model:**
 This is a very common practical gotcha — many engineers assume error boundaries are a general try/catch for React apps, and this question checks whether the candidate knows the actual (narrower) scope and the standard workaround for the async case.
 
+**TL;DR:**
+Error boundaries are class components (no hook equivalent) that catch render-phase errors via `getDerivedStateFromError`/`componentDidCatch`; they don't catch event-handler or async errors.
+
 **References:**
 - [Catching Rendering Errors with an Error Boundary — React docs](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
 - [react-error-boundary — GitHub](https://github.com/bvaughn/react-error-boundary)
@@ -559,6 +601,9 @@ Generate a stable identifier once, at the time the item is created, and store it
 **Mental model:**
 This checks whether the candidate can go beyond "index-as-key is bad practice" (a memorized rule) to actually construct and explain the specific correctness bug it causes — showing they understand the reconciliation mechanism, not just the linting rule.
 
+**TL;DR:**
+Using array index as `key` makes React misattribute state to the wrong item after a reorder/insert/delete — use a stable per-item id instead.
+
 **References:**
 - [Rendering Lists — React docs](https://react.dev/learn/rendering-lists)
 
@@ -584,6 +629,9 @@ Not entirely, but it substantially reduces the need for it in ordinary applicati
 
 **Mental model:**
 This checks whether the candidate treats memoization hooks as a cost/benefit engineering decision (backed by profiling) rather than a habitual "best practice" applied everywhere, which is one of the most common sources of over-engineered, harder-to-maintain React code in real codebases.
+
+**TL;DR:**
+Memoization has real cost (dependency comparisons, retained closures) and only pays off paired with `memo` or as another hook's dependency — verify with profiling, don't apply it reflexively.
 
 **References:**
 - [useCallback — React docs](https://react.dev/reference/react/useCallback)
@@ -612,6 +660,9 @@ Usually not — that specific goal (loading only what's needed) is what **code-s
 **Mental model:**
 This tests architectural judgment — whether the candidate can correctly attribute a given problem (org-scaling vs. bundle-size) to the tool that actually solves it, rather than reaching for a trendy, heavyweight architecture for a problem a much simpler technique already covers.
 
+**TL;DR:**
+Micro-frontends solve an organizational/team-scaling problem (independent ownership/deploys), not a technical one, at the cost of duplicated dependencies and harder cross-app state/UX consistency.
+
 **References:**
 - [Code-Splitting — React docs](https://react.dev/reference/react/lazy)
 
@@ -637,6 +688,9 @@ You still colocate the *per-row* boolean in each row component — that doesn't 
 
 **Mental model:**
 This tests whether the candidate can reason about re-render cost purely from "where does this state live in the tree," which is a more fundamental performance lever than any memoization API, and whether they can handle the nuanced follow-up (partial lifting for aggregates) rather than treating colocation as all-or-nothing.
+
+**TL;DR:**
+State colocation keeps state in the component that actually uses it; lifting it too high forces unrelated siblings to re-render on every change.
 
 **References:**
 - [You Might Not Need an Effect / Sharing State Between Components — React docs](https://react.dev/learn/sharing-state-between-components)
@@ -664,6 +718,9 @@ Yes, and it's a common, reasonable pattern — you get the library's underlying 
 **Mental model:**
 This tests engineering judgment beyond pure React mechanics — whether the candidate can reason about total cost of ownership and correctly identify which parts of a "simple-looking" library are actually solving hard, easy-to-underestimate problems (like form re-render performance).
 
+**TL;DR:**
+Adopt an established form library (e.g. React Hook Form) unless requirements are genuinely unusual — libraries have already solved hard re-render performance and accessibility edge cases.
+
 **References:**
 - [React Hook Form — Advanced Usage (performance)](https://react-hook-form.com/advanced-usage)
 
@@ -689,6 +746,9 @@ Not necessarily wrong, but usually more ceremony than needed for the same outcom
 
 **Mental model:**
 This checks whether the candidate can place an older, once-canonical pattern in context — recognizing which part of its intent is timeless (separation of concerns) versus which part was a workaround for a limitation (no hooks) that no longer exists.
+
+**TL;DR:**
+Separating rendering from data-fetching logic is still good practice, but the dedicated "container component" mechanism is largely superseded by custom hooks.
 
 **References:**
 - [Reusing Logic with Custom Hooks — React docs](https://react.dev/learn/reusing-logic-with-custom-hooks)

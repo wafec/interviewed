@@ -86,6 +86,9 @@ of trade-offs (freshness vs. speed vs. server cost vs. interactivity gap)
 rather than a single "best" answer — and whether they connect the strategy
 to actual user-perceived metrics, not just architecture buzzwords.
 
+**TL;DR:**
+CSR trades slow first paint for fast builds, SSR trades server cost for fast content + an interactivity gap, SSG trades freshness for the fastest possible delivery.
+
 **References:**
 - [Building Your Own React – Rendering strategies (react.dev conceptual overview via renderToPipeableStream)](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
@@ -150,6 +153,9 @@ Checks whether the candidate understands hydration is not "just re-render
 and diff" — it's a distinct, more fragile operation with a strict
 server/client output contract, and that violating it has a real
 performance cost, not just a console warning.
+
+**TL;DR:**
+hydrateRoot reuses existing server-rendered DOM nodes instead of re-rendering, so server and client output must match exactly or React falls back to a full, costly client re-render.
 
 **References:**
 - [hydrateRoot – react.dev](https://react.dev/reference/react-dom/client/hydrateRoot)
@@ -223,6 +229,9 @@ who understand the actual execution/bundling model — this is one of the
 most commonly confused React concepts right now precisely because the
 naming is close to SSR.
 
+**TL;DR:**
+A Server Component's code never ships to the client at all — only its rendered output does — unlike a normal SSR'd component whose JS still gets bundled for hydration.
+
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
 - [use client – react.dev](https://react.dev/reference/rsc/use-client)
@@ -290,6 +299,9 @@ otherwise index the fallback content instead of the real content.
 Probes whether the candidate understands Suspense-driven SSR as a real
 scheduling/streaming mechanism (with concrete callback semantics) rather
 than a vague "it shows a spinner" description.
+
+**TL;DR:**
+Streaming SSR sends a ready shell immediately and streams each Suspense boundary's real content in as it resolves, instead of blocking the whole response on the slowest piece.
 
 **References:**
 - [renderToPipeableStream – react.dev](https://react.dev/reference/react-dom/server/renderToPipeableStream)
@@ -365,6 +377,9 @@ Tests real production debugging instinct, not just "know the rule" —
 knowing *why* a mismatch happens is different from knowing how to track
 one down when the helpful dev warning isn't available.
 
+**TL;DR:**
+Reproduce with a dev build to see the exact diff, then correlate a post-load content flash with a full client re-render of the mismatched subtree.
+
 **References:**
 - [hydrateRoot – react.dev](https://react.dev/reference/react-dom/client/hydrateRoot)
 
@@ -424,6 +439,9 @@ dragging its whole subtree along with it.
 Checks that the candidate connects an architectural feature to concrete
 Core Web Vitals impact, and understands the constraint isn't arbitrary —
 it's a direct consequence of Server Components never running on the client.
+
+**TL;DR:**
+Zero bundle size means less JS to download, parse, and hydrate, which directly cuts Time to Interactive and improves INP — not just a smaller download.
 
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
@@ -503,6 +521,9 @@ Checks whether the candidate understands *why* Server Components help with
 data fetching specifically (removing mount-order serialization and
 network hops) rather than treating it as a vague "it's faster" claim.
 
+**TL;DR:**
+Server Components can fetch data concurrently during render (no mount-order dependency), collapsing the client-side useEffect waterfall into parallel server-side awaits.
+
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
 
@@ -570,6 +591,9 @@ A very common "gotcha" question — checks whether the candidate actually
 read why `useId` exists (hydration-safe determinism) versus just knowing
 "it makes unique ids," which leads directly to the classic mistake of
 reaching for it as a key generator.
+
+**TL;DR:**
+useId derives ids from stable tree position so they match between server and client renders, unlike a counter or Math.random() which can diverge and break hydration.
 
 **References:**
 - [useId – react.dev](https://react.dev/reference/react/useId)
@@ -653,6 +677,9 @@ Tests whether the candidate can explain a fairly new API (React 19 Server
 Functions) in terms of the actual problem it solves (form usability during
 the hydration gap), not just "it's how you do mutations now."
 
+**TL;DR:**
+Server Functions ('use server') let a form submit as a real HTML POST before JS loads, then get replayed once hydration completes — graceful degradation, not an all-or-nothing feature.
+
 **References:**
 - [Server Functions – react.dev](https://react.dev/reference/rsc/server-functions)
 
@@ -717,6 +744,9 @@ the candidate can argue against the technology they just explained
 enthusiastically, which is a strong signal of real production experience
 versus rehearsed advocacy.
 
+**TL;DR:**
+RSC/SSR complexity only pays off when SEO/first-paint or heavy server-only dependencies matter; behind-auth, highly interactive, or infra-constrained apps can stay plain CSR.
+
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
 
@@ -773,6 +803,9 @@ A deeper internals question — checks whether the candidate has looked
 past the "Server Components send output instead of code" one-liner and
 understands *why* a new wire format was necessary rather than reusing
 HTML or JSON.
+
+**TL;DR:**
+The RSC payload is a streaming format encoding both server-rendered content and references to Client Components to mount, which plain HTML or JSON can't express.
 
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
@@ -837,6 +870,9 @@ Tests understanding of *why* the RSC model has this constraint (it's not
 an arbitrary framework limitation, it follows directly from "Server
 Component code never ships to the client") rather than just memorizing
 "you can't pass functions."
+
+**TL;DR:**
+Only serializable values (primitives, plain objects/arrays, Dates, Server Function references) can cross the server→client boundary — arbitrary class instances or closures can't.
 
 **References:**
 - [use client – react.dev](https://react.dev/reference/rsc/use-client)
@@ -914,6 +950,9 @@ A practical, production-shaped question connecting a specific API
 whether the candidate can reason about when to trade the "fast" path for
 the "complete" path.
 
+**TL;DR:**
+Waiting for onAllReady instead of onShellReady sends crawlers one complete document instead of a streaming shell + fallbacks, avoiding indexing loading skeletons.
+
 **References:**
 - [renderToPipeableStream – react.dev](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
@@ -968,6 +1007,9 @@ Checks understanding of Suspense-driven hydration as demand-aware, not
 just "it splits work into chunks" — and whether the candidate can reason
 about the granularity trade-off rather than treating "more Suspense
 boundaries" as an unconditional win.
+
+**TL;DR:**
+Selective hydration lets React hydrate whichever Suspense boundary the user actually interacts with first, rather than a fixed top-to-bottom order.
 
 **References:**
 - [renderToPipeableStream – react.dev](https://react.dev/reference/react-dom/server/renderToPipeableStream)
@@ -1031,6 +1073,9 @@ correctness.
 Checks whether the candidate treats a "make the warning go away" API as a
 targeted escape hatch versus a blanket fix — a distinction that matters a
 lot in code review.
+
+**TL;DR:**
+suppressHydrationWarning only silences the warning on one element one level deep — it doesn't guarantee correct patching and can mask real bugs if overused.
 
 **References:**
 - [hydrateRoot – react.dev](https://react.dev/reference/react-dom/client/hydrateRoot)
@@ -1110,6 +1155,9 @@ A pure performance-diagnosis-methodology question — this is exactly the
 trending, and it rewards a structured, tool-by-tool answer over a vague
 "I'd profile it."
 
+**TL;DR:**
+Isolate the bottleneck by phase — TTFB for server/render time, streaming duration for Suspense resolution, and post-paint main-thread activity for hydration cost — each has a different fix.
+
 **References:**
 - [renderToPipeableStream – react.dev](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
@@ -1177,6 +1225,9 @@ functions) to a concrete, practical technology-specific consequence
 (hydration correctness) — exactly the "theory mixed with practice" angle
 the interview-prep contract asks for.
 
+**TL;DR:**
+Purity is cosmetic in pure CSR but load-bearing under SSR, because hydration's correctness depends on two independent renders (server and client) producing identical output.
+
 **References:**
 - [hydrateRoot – react.dev](https://react.dev/reference/react-dom/client/hydrateRoot)
 
@@ -1238,6 +1289,9 @@ Real-world-motivation question — checks whether the candidate can explain
 it does, which is a strong signal of genuine understanding versus rote
 API knowledge.
 
+**TL;DR:**
+RSC exists to stop shipping server-only-usable code to the client just to avoid building a separate API layer — collapsing both the bundle-bloat and waterfall problems at once.
+
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
 
@@ -1294,6 +1348,9 @@ little of the intended benefit.
 A pitfalls/real-world-experience question — separates candidates who've
 actually shipped an SSR/RSC migration (and hit this specific trap) from
 those who only know the individual APIs in isolation.
+
+**TL;DR:**
+Migrating to SSR/RSC without moving initial-load fetches out of client useEffects leaves a server-rendered shell that still waits on client-side fetches, losing most of the benefit.
 
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
@@ -1376,6 +1433,9 @@ A closing trade-off/comparison question that requires synthesizing most of
 the set — tests whether the candidate can give a genuinely balanced
 recommendation (including talking a team out of a migration) rather than
 one-sided technology advocacy.
+
+**TL;DR:**
+RSC shrinks bundles and hydration cost but adds a new server/client boundary mental model and infra requirement — worth it mainly for content-heavy, SEO-relevant, server-dependency-heavy apps.
 
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)

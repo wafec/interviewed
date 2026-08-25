@@ -51,6 +51,9 @@ Because a perfect hash function (no collisions for any pair of unequal objects) 
 **Mental model:**
 Tests whether the candidate understands hashing as a *contract between cooperating methods*, not two independent overrides — a classic "looks fine, compiles fine, corrupts data silently" bug class that's hard to catch without knowing the rule.
 
+**TL;DR:**
+Equal objects must have equal hash codes — override `equals()` without `hashCode()` and a `HashMap` silently "loses" logically-present keys.
+
 **References:**
 - [Object#hashCode() — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html#hashCode())
 
@@ -83,6 +86,9 @@ Iteration over a `HashMap`'s views walks the entire internal bucket array, not j
 **Mental model:**
 Checks whether the candidate can reason about amortized cost and knows that a "cheap O(1) map lookup" has a real, sometimes-surprising cost model underneath — a common performance-diagnosis blind spot.
 
+**TL;DR:**
+Resize triggers at `capacity × 0.75` and rehashes every entry — O(n), so pre-size a `HashMap` when the final size is known.
+
 **References:**
 - [HashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html)
 
@@ -108,6 +114,9 @@ In a small table, a bucket hitting 8 entries is more likely to be caused by too 
 
 **Mental model:**
 Distinguishes candidates who've only used `HashMap` from those who understand it as an evolving, self-defending data structure — a strong signal of "read the source, not just the tutorial."
+
+**TL;DR:**
+A bucket with 8+ colliding entries (and table capacity ≥ 64) becomes a red-black tree instead of a linked list, capping worst-case lookup at O(log n).
 
 **References:**
 - [HashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html)
@@ -143,6 +152,9 @@ Pre-size the list with `new ArrayList<>(100_000)`, which sets the initial backin
 **Mental model:**
 Tests whether "O(1)" is understood as a precise claim with conditions, not a magic label — and whether the candidate can connect that to a concrete performance-tuning action (pre-sizing).
 
+**TL;DR:**
+`ArrayList.add()` is O(1) amortized over a full growth sequence, but any single call can spike to O(n) when the backing array reallocates and copies.
+
 **References:**
 - [ArrayList — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html)
 - [ArrayList.java — OpenJDK source](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/ArrayList.java)
@@ -169,6 +181,9 @@ Given that, why does `ArrayDeque`'s Javadoc recommend it over `LinkedList` for s
 
 **Mental model:**
 Separates candidates who know Big-O from those who also understand constant factors and hardware-level cost (cache misses, allocation pressure) — the gap between "textbook correct" and "actually fast."
+
+**TL;DR:**
+`ArrayList` wins almost always (cache locality, no node overhead); `LinkedList` only earns its keep for frequent both-ends insert/remove — and even then `ArrayDeque` usually beats it.
 
 **References:**
 - [LinkedList — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedList.html)
@@ -212,6 +227,9 @@ class LRUCache<K, V> extends LinkedHashMap<K, V> {
 **Mental model:**
 Tests whether the candidate picks data structures by their actual guarantees (ordering, complexity) rather than habit, and whether they know the standard library already solves common problems like LRU caching.
 
+**TL;DR:**
+`HashMap` = no order, O(1); `LinkedHashMap` = insertion/access order, O(1); `TreeMap` = sorted + range queries, O(log n) — pick by the guarantee you actually need.
+
 **References:**
 - [TreeMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/TreeMap.html)
 - [LinkedHashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/LinkedHashMap.html)
@@ -238,6 +256,9 @@ An unbalanced BST's height depends entirely on insertion order. If keys are inse
 
 **Mental model:**
 Connects a library-level API guarantee back to the CS fundamentals (BST balancing) that make it true — checks whether "log(n)" is understood, not memorized.
+
+**TL;DR:**
+`TreeMap` is a self-balancing red-black tree, so its O(log n) is a worst-case guarantee, unlike a naive BST that can degrade to O(n) on sorted input.
 
 **References:**
 - [TreeMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/TreeMap.html)
@@ -275,6 +296,9 @@ For maps, `java.util.concurrent.ConcurrentHashMap` supports safe concurrent read
 **Mental model:**
 Checks that the candidate distinguishes "throws an exception sometimes" from "is safe for concurrent use" — a common false sense of security around fail-fast collections.
 
+**TL;DR:**
+Fail-fast `ConcurrentModificationException` is best-effort bug detection via `modCount`, not a concurrency safety guarantee — it can miss races entirely.
+
 **References:**
 - [HashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html)
 - [ConcurrentHashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html)
@@ -300,6 +324,9 @@ Use immutable objects as keys — final fields set once in the constructor, with
 
 **Mental model:**
 Tests whether the candidate connects "why prefer immutability" to a concrete, hard-to-debug failure mode rather than reciting it as a vague best practice.
+
+**TL;DR:**
+Mutating a key after insertion changes its `hashCode()`, so the entry sits in the wrong bucket and becomes silently unreachable — always use immutable map keys.
 
 **References:**
 - [HashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html)
@@ -335,6 +362,9 @@ Nothing — literally nothing executes. Because intermediate operations are lazy
 
 **Mental model:**
 Verifies the candidate understands laziness as a mechanism with real consequences (both a performance benefit and a common gotcha), not just a buzzword from the Streams docs.
+
+**TL;DR:**
+Nothing runs until a terminal operation is called — laziness enables single-pass fusion and short-circuiting, but also means a dangling `.map()` with no terminal op is a silent no-op.
 
 **References:**
 - [java.util.stream package summary — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html)
@@ -372,6 +402,9 @@ Why is `forEach` specifically called out as an exception to the "no side effects
 **Mental model:**
 Probes whether the candidate treats streams as "fancy for-loops" (and writes unsafe, stateful lambdas out of habit) or actually understands the functional contract streams are built on.
 
+**TL;DR:**
+Stream lambdas must not mutate the source (non-interference) or depend on shared mutable state (statelessness) — violating either risks exceptions or data races, especially under `.parallel()`.
+
 **References:**
 - [java.util.stream package summary — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html)
 
@@ -397,6 +430,9 @@ Benchmark it — with a proper microbenchmarking tool like JMH (a naive `System.
 
 **Mental model:**
 Distinguishes candidates who reach for `.parallelStream()` as a reflex from those who understand its real cost model and would measure before shipping it — directly maps to the "performance diagnosis methodology" interviewers are increasingly probing for.
+
+**TL;DR:**
+Parallel streams share the common `ForkJoinPool` and only help with large, cheaply-splittable sources and substantial per-element work — otherwise coordination overhead makes them slower; always benchmark, don't assume.
 
 **References:**
 - [java.util.stream package summary — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html)
@@ -433,6 +469,9 @@ Use `groupingBy` with a downstream collector: `employees.stream().collect(Collec
 **Mental model:**
 Checks familiarity with the `Collectors` toolkit beyond `toList()`, and whether the candidate has hit (and can explain) the "missing key" gotcha that trips up people expecting SQL-like `GROUP BY` semantics.
 
+**TL;DR:**
+`groupingBy` builds a `Map<K, List<T>>` (or a downstream-reduced value) but omits keys with zero matches entirely — unlike SQL, so `.get()` on an empty group returns `null`, not an empty list.
+
 **References:**
 - [Collectors — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/Collectors.html)
 
@@ -458,6 +497,9 @@ Why is treating `Optional` as a field or constructor parameter generally conside
 **Mental model:**
 Tests whether the candidate can cite the *actual* documented intent of a heavily-used API rather than repeating folklore, and can reason about the concrete cost (non-serializability, indirection) behind the "don't use Optional as a field" convention.
 
+**TL;DR:**
+`Optional` is documented as primarily a return type for "might be absent" results, not a field/parameter type — it isn't even `Serializable`.
+
 **References:**
 - [Optional — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Optional.html)
 
@@ -482,6 +524,9 @@ Debuggability and readability at the margins: a stepped-through `for` loop is tr
 
 **Mental model:**
 Checks whether the candidate can articulate the actual engineering motivation behind a language feature (not just "it's more modern"), and shows balanced judgment rather than dogmatic "always use streams" or "streams are slow, never use them" positions.
+
+**TL;DR:**
+Streams decouple *what* from *how*, unlocking transparent parallelism and operator fusion — but plain loops still win for simple, debuggable, single-pass cases.
 
 **References:**
 - [java.util.stream package summary — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html)
@@ -509,6 +554,9 @@ That's the signature of autoboxing overhead — using a boxed `Stream<Integer>` 
 
 **Mental model:**
 This is the core "performance diagnosis" question for this file — checks for a concrete, tool-driven methodology (benchmark → profile → targeted fix → re-verify) rather than guessing-and-tweaking, which is exactly what's trending in current interview loops.
+
+**TL;DR:**
+Diagnose stream performance with JMH + JFR/async-profiler flame graphs, not guesswork — common culprits are autoboxing, redundant materialization, and misapplied `.parallelStream()`.
 
 **References:**
 - [Java Flight Recorder documentation — Oracle](https://docs.oracle.com/en/java/javase/21/docs/specs/man/jfr.html)
@@ -545,6 +593,9 @@ Yes — `Stream.iterate` has an overload, `iterate(seed, hasNext, next)`, that t
 **Mental model:**
 A concrete pitfall check — does the candidate recognize this specific hang/OOM failure mode on sight, or only understand laziness/short-circuiting in the abstract?
 
+**TL;DR:**
+An infinite stream with no short-circuiting operation (`.limit()`, `.findFirst()`, etc.) hangs forever and eventually OOMs.
+
 **References:**
 - [Stream — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/Stream.html)
 
@@ -569,6 +620,9 @@ When the pipeline has grown long/nested enough to hurt readability more than a s
 
 **Mental model:**
 Tests for engineering judgment and the ability to push back on "always use streams" dogma with a specific, defensible rationale — exactly the kind of trade-off reasoning senior interviews probe for.
+
+**TL;DR:**
+For simple single-pass filter-map, streams vs. loops is mostly style; streams' real edge is multi-step pipelines avoiding intermediate materialization via operator fusion.
 
 **References:**
 - [java.util.stream package summary — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html)
@@ -596,6 +650,9 @@ It doesn't throw — it silently falls back to the ordered path (still using the
 **Mental model:**
 A deeper-cut question testing whether the candidate has gone past "parallel streams use ForkJoinPool" into the specific conditions that actually unlock true concurrent (not just parallel) collection — separates strong from very strong candidates.
 
+**TL;DR:**
+`groupingByConcurrent` only writes concurrently when the stream is unordered (or the collector is `UNORDERED`) — otherwise it silently falls back to a sequential merge, losing the concurrency benefit without any error.
+
 **References:**
 - [java.util.stream package summary — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html)
 - [Collectors#groupingByConcurrent — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/Collectors.html)
@@ -621,6 +678,9 @@ Because `HashMap` derives the bucket index from only the low-order bits of the h
 
 **Mental model:**
 A synthesis question — pulls together resize/load-factor (Q2), treeification (Q3), and the hashCode contract (Q1) into one coherent story, checking whether the candidate has an integrated mental model of `HashMap` rather than a set of disconnected facts.
+
+**TL;DR:**
+`get()` is O(1) average-case under good hash distribution, with treeification (Java 8+) capping the worst case at O(log n) instead of the pre-8 O(n) collision-storm blowup.
 
 **References:**
 - [HashMap — Java SE 21 API](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/HashMap.html)

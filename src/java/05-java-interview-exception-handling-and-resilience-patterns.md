@@ -43,6 +43,9 @@ The core complaint is that checked exceptions don't compose well with modern fun
 **Mental model:**
 This tests whether the candidate understands exceptions as part of an API contract, not just a control-flow mechanism — and whether they can articulate the real trade-off instead of reciting "checked = compile-time, unchecked = runtime."
 
+**TL;DR:**
+Checked = caller can recover and it's part of the API contract; unchecked = programming bug, no declaration needed — most modern codebases lean unchecked because checked exceptions don't compose with lambdas/streams.
+
 **References:**
 - [Unchecked Exceptions — The Controversy (Oracle Java Tutorials)](https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html)
 - [java.util.function.Function javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html)
@@ -79,6 +82,9 @@ Call `getSuppressed()` on the caught `Throwable` to get an array of the suppress
 **Mental model:**
 Tests whether the candidate has actually hit the "which exception wins" scenario in practice, not just memorized the syntax — this is a classic hidden-behavior question.
 
+**TL;DR:**
+try-with-resources auto-closes any `AutoCloseable`; if both the try block and `close()` throw, the try block's exception wins and `close()`'s is attached to it as a suppressed exception.
+
 **References:**
 - [The try-with-resources Statement (Oracle Java Tutorials)](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
 - [Throwable javadoc — addSuppressed/getSuppressed (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Throwable.html)
@@ -114,6 +120,9 @@ Almost entirely from `fillInStackTrace()`, which is called automatically when a 
 
 **Mental model:**
 Probes whether the candidate has any mental model of the JVM below the language level — a common gap even among experienced Java developers who've never needed to look past the language spec.
+
+**TL;DR:**
+Try blocks are free on the non-throwing path — a per-method `exception_table` maps bytecode ranges to handlers, and `athrow` triggers a table lookup plus stack unwinding only when an exception is actually thrown.
 
 **References:**
 - [The Java Virtual Machine Specification, SE 21 — §4.7.3 The Code Attribute](https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html#jvms-4.7.3)
@@ -152,6 +161,9 @@ The Java Language Specification's rules on the `try` statement define that if th
 **Mental model:**
 A classic "gotcha" question that tests attention to precise language semantics rather than intuition — good candidates will recall having been bitten by this or having caught it in review.
 
+**TL;DR:**
+A `return`/`throw`/`break`/`continue` in `finally` unconditionally overrides the try/catch block's outcome, silently discarding any pending exception — deterministic per the JLS, but a well-known silent-failure footgun.
+
 **References:**
 - [The Java Language Specification, SE 21 — §14.20.2 Execution of try-finally and try-catch-finally](https://docs.oracle.com/javase/specs/jls/se21/html/jls-14.html#jls-14.20.2)
 
@@ -185,6 +197,9 @@ Two common fixes: (1) stop using exceptions for expected outcomes — return an 
 **Mental model:**
 Directly tests the performance-diagnosis methodology this repo's contract requires: which tool, what signal, how you validate the fix — not just "exceptions are slow."
 
+**TL;DR:**
+Capture a JFR recording under load and look for `jdk.ExceptionThrown` event counts plus `fillInStackTrace` dominating a CPU flame graph — that's the signal exceptions are being used as control flow, not genuine errors.
+
 **References:**
 - [JDK Flight Recorder events reference — jdk.ExceptionThrown](https://docs.oracle.com/en/java/javase/21/docs/specs/man/jfr.html)
 - [Throwable javadoc — writableStackTrace constructor (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Throwable.html)
@@ -211,6 +226,9 @@ Fail-fast optimizes for correctness and debuggability at the cost of availabilit
 
 **Mental model:**
 Tests whether the candidate connects a named SE principle to concrete Java behavior they've actually encountered, and can reason about the availability/correctness trade-off rather than treating fail-fast as an unconditional good.
+
+**TL;DR:**
+Fail-fast means detecting and throwing at the point invalid state occurs rather than letting it silently propagate — Java's fail-fast iterators (`ConcurrentModificationException`) are the canonical example; fail-safe trades that correctness for availability instead.
 
 **References:**
 - [ArrayList javadoc — fail-fast iterator (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/ArrayList.html)
@@ -239,6 +257,9 @@ Yes, order matters. A typical Resilience4j composition wraps, from innermost to 
 
 **Mental model:**
 Tests systems-level thinking about failure modes in distributed systems, not just knowledge of a specific library's API — the "why" behind each pattern is what separates a senior answer from a name-drop.
+
+**TL;DR:**
+try/catch only handles a single failed call — retry, circuit breaker, bulkhead, and timeout each address a distinct failure dimension (how often, when to stop, how many resources, how long to wait) that try/catch alone leaves unhandled, preventing cascading failure.
 
 **References:**
 - [Resilience4j — CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker)
@@ -279,6 +300,9 @@ Exponential backoff, ideally with jitter (randomizing the delay slightly) — Re
 **Mental model:**
 Tests whether the candidate treats retry as a default safe action or understands it as conditionally safe — idempotency is the detail junior engineers most often miss.
 
+**TL;DR:**
+Retry only for transient faults, and only safely when the operation is idempotent — retrying a non-idempotent call after an ambiguous failure risks duplicate side effects like double-charging.
+
 **References:**
 - [Resilience4j — Retry](https://resilience4j.readme.io/docs/retry)
 - [Azure Architecture Center — Retry pattern (Idempotency section)](https://learn.microsoft.com/en-us/azure/architecture/patterns/retry)
@@ -316,6 +340,9 @@ A failure rate computed from a tiny sample is statistically unreliable — one f
 **Mental model:**
 A finite-state-machine question — tests precision (can they name all three states and the exact trigger conditions) rather than a vague "it stops calling a failing service" answer.
 
+**TL;DR:**
+Closed tracks failure rate and lets calls through; open rejects calls immediately once a failure-rate threshold with a minimum sample size is hit; half-open lets a few trial calls decide whether to return to closed or back to open.
+
 **References:**
 - [Resilience4j — CircuitBreaker](https://resilience4j.readme.io/docs/circuitbreaker)
 - [Azure Architecture Center — Circuit Breaker pattern](https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker)
@@ -352,6 +379,9 @@ When would you choose `FixedThreadPoolBulkhead` over `SemaphoreBulkhead`, given 
 **Mental model:**
 Tests understanding of resource isolation as distinct from failure detection — many candidates conflate "circuit breaker" with "all resilience," missing that slow-not-failed calls need a different defense.
 
+**TL;DR:**
+Bulkhead caps concurrent calls per dependency so a slow-but-technically-succeeding dependency can't exhaust shared thread/resource capacity — a failure mode a circuit breaker alone doesn't catch.
+
 **References:**
 - [Resilience4j — Bulkhead](https://resilience4j.readme.io/docs/bulkhead)
 
@@ -377,6 +407,9 @@ Yes — at true top-level boundaries whose entire job is to prevent a single uni
 **Mental model:**
 A very common real-world code-review finding — tests whether the candidate can articulate *why* it's wrong, not just that "it's bad practice."
 
+**TL;DR:**
+Catching `Exception`/`Throwable` broadly hides real bugs and, for `Throwable`, risks swallowing unrecoverable `Error`s like `OutOfMemoryError` — catch only the specific types you can actually handle.
+
 **References:**
 - [Throwable javadoc — class hierarchy and Error description (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Throwable.html)
 
@@ -401,6 +434,9 @@ At minimum, log the exception with its stack trace and enough context (what oper
 
 **Mental model:**
 Tests real production-debugging experience — has the candidate actually had to hunt down a bug caused by a swallowed exception, and do they know it's as much a logging/observability problem as a coding-style one.
+
+**TL;DR:**
+An empty catch block silently discards the only evidence something went wrong, making the failure nearly undiagnosable later — always log with context, or explicitly document why ignoring it is safe.
 
 **References:**
 - [Logging javadoc — java.util.logging overview (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.logging/java/util/logging/package-summary.html)
@@ -437,6 +473,9 @@ try {
 
 **Mental model:**
 A common real code-review finding, especially in layered architectures that wrap lower-level exceptions — tests whether the candidate has internalized *why* chaining matters for debugging, not just the API name.
+
+**TL;DR:**
+Throwing a new exception without passing the original as `cause` destroys the root-cause stack trace — always chain via the cause-accepting constructor (or `initCause()` for legacy types).
 
 **References:**
 - [Throwable javadoc — initCause, getCause (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Throwable.html)
@@ -476,6 +515,9 @@ Wrapping in `UncheckedIOException` (or a similar unchecked wrapper) is the pragm
 **Mental model:**
 Tests hands-on familiarity with Streams/lambdas in practice — nearly every Java developer working with modern code hits this exact compile error and needs to know why, and what the accepted idiomatic fix is.
 
+**TL;DR:**
+`Function<T,R>` (and other standard functional interfaces) declares no `throws` clause, so a lambda that throws a checked exception won't compile against it — the common fix is wrapping the checked exception as unchecked inside the lambda.
+
 **References:**
 - [java.util.function.Function javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/function/Function.html)
 - [UncheckedIOException javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/UncheckedIOException.html)
@@ -510,6 +552,9 @@ Not necessarily — a timeout on the client side typically means the client stop
 **Mental model:**
 Tests whether the candidate understands timeout as bounding *waiting*, not as guaranteeing cancellation — a subtle but important distinction for reasoning correctly about retries after a timeout.
 
+**TL;DR:**
+`TimeLimiter` bounds how long a single call may run, independent of retry/circuit-breaker logic — a call that just hangs wouldn't trigger either of those on its own since nothing has "failed" yet.
+
 **References:**
 - [Resilience4j — TimeLimiter](https://resilience4j.readme.io/docs/timeout)
 
@@ -536,6 +581,9 @@ Sealed classes/interfaces (finalized in JEP 409) let you declare exactly which c
 **Mental model:**
 Tests architectural judgment, not just API knowledge — good candidates will push back on "more subtypes = better" and reason about caller behavior instead.
 
+**TL;DR:**
+Build a small hierarchy with subtypes only for outcomes callers will actually branch on — not one giant flat exception, not a deep tree mirroring every failure mode; sealed classes now let you check that hierarchy exhaustively.
+
 **References:**
 - [JEP 409: Sealed Classes](https://openjdk.org/jeps/409)
 
@@ -561,6 +609,9 @@ Flapping usually means the failure-rate threshold and the sliding window are mis
 
 **Mental model:**
 This is the performance/observability-diagnosis question specifically for resilience patterns themselves — tests whether the candidate treats resilience components as observable systems requiring their own tuning, not "set it and forget it" configuration.
+
+**TL;DR:**
+Instrument each resilience component's own metrics (breaker state/failure rate, retry attempts, bulkhead saturation) and correlate spikes with user-facing latency/errors to find which pattern is actually degrading the experience.
 
 **References:**
 - [Resilience4j — Metrics](https://resilience4j.readme.io/docs/micrometer)
@@ -589,6 +640,9 @@ Model it as part of the return type — either a sealed result type (`sealed int
 **Mental model:**
 Tests the candidate's ability to distinguish "expected business outcome" from "genuine error" — a design maturity question that separates senior engineers from those who reach for exceptions reflexively for every non-success path.
 
+**TL;DR:**
+Genuinely exceptional infrastructure failures and expected business outcomes shouldn't be modeled the same way — expected outcomes like insufficient funds are often better represented explicitly in the return type than thrown.
+
 **References:**
 - [Unchecked Exceptions — The Controversy (Oracle Java Tutorials)](https://docs.oracle.com/javase/tutorial/essential/exceptions/runtime.html)
 - [JEP 409: Sealed Classes](https://openjdk.org/jeps/409)
@@ -614,6 +668,9 @@ If `CircuitBreaker` were the outer decorator, the breaker would only ever see on
 
 **Mental model:**
 Tests whether the candidate actually understands the mechanics of composing these patterns together (a common real interview scenario) rather than just knowing each pattern in isolation.
+
+**TL;DR:**
+With Retry as the outer decorator, each retry attempt still passes through an open CircuitBreaker and is rejected immediately via `CallNotPermittedException`, so retries don't burn attempts against a known-bad dependency.
 
 **References:**
 - [Resilience4j — Retry](https://resilience4j.readme.io/docs/retry)
@@ -641,6 +698,9 @@ When the API needs to integrate with existing Java idioms and libraries that are
 
 **Mental model:**
 A synthesis question that closes out the set — tests whether the candidate can weigh two legitimate design philosophies against each other and reason about real-world ecosystem constraints, rather than declaring one universally "correct."
+
+**TL;DR:**
+Exceptions give automatic propagation and rich diagnostics; sealed result types make failure explicit and compiler-exhaustive at the cost of manual propagation through every layer — the choice is as much about ecosystem fit as theory.
 
 **References:**
 - [JEP 409: Sealed Classes](https://openjdk.org/jeps/409)

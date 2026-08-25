@@ -54,6 +54,9 @@ How would `putIfAbsent` or `computeIfAbsent` fix the race condition example abov
 **Mental model:**
 This question tests whether the candidate conflates "thread-safe data structure" with "thread-safe algorithm using that data structure" — a very common source of real production bugs even among engineers who know the JMM basics.
 
+**TL;DR:**
+A data race is undefined memory-visibility behavior (no happens-before edge); a race condition is a broader logic bug from bad timing, and can exist even with zero data races.
+
 **References:**
 - [JLS §17.4 Memory Model](https://docs.oracle.com/javase/specs/jls/se24/html/jls-17.html)
 - [ConcurrentHashMap javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html)
@@ -109,6 +112,9 @@ It's safe because of **transitivity** of happens-before, not because `data` is v
 **Mental model:**
 Tests whether the candidate understands that `synchronized`/`volatile` are not just about "locking"/"not caching" but define a formal ordering contract — this is the theoretical foundation every other concurrency question in this set builds on.
 
+**TL;DR:**
+Happens-before is the JMM's visibility+ordering guarantee, established by monitor lock/unlock, volatile write/read, Thread.start()/join(), and java.util.concurrent handoffs — and it's transitive.
+
 **References:**
 - [JLS §17.4.5 Happens-before Order](https://docs.oracle.com/javase/specs/jls/se24/html/jls-17.html)
 - [JSR 133 (Java Memory Model) FAQ](https://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html)
@@ -149,6 +155,9 @@ How does `AtomicInteger.incrementAndGet()` achieve atomicity without taking a lo
 
 **Mental model:**
 A classic trap question — separates candidates who've memorized "volatile = thread-safe" from those who understand the visibility vs. atomicity distinction, which is one of the most common real bugs in production Java code.
+
+**TL;DR:**
+volatile guarantees visibility and ordering, but not atomicity of compound operations like count++ — use AtomicInteger or a lock for that.
 
 **References:**
 - [JLS §17.4 Memory Model / volatile semantics](https://docs.oracle.com/javase/specs/jls/se24/html/jls-17.html)
@@ -199,6 +208,9 @@ Without a `finally`, an exception thrown inside the critical section propagates 
 **Mental model:**
 Tests whether the candidate can reason about trade-offs rather than reflexively reaching for "the more powerful API" — using `ReentrantLock` by default is itself often a code smell interviewers watch for.
 
+**TL;DR:**
+synchronized is simpler and free of leak risk; reach for ReentrantLock only when you need tryLock/timeouts, interruptible waits, fairness, or multiple Conditions.
+
 **References:**
 - [ReentrantLock javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/ReentrantLock.html)
 - [Lock Objects — Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/concurrency/newlocks.html)
@@ -244,6 +256,9 @@ What is "lock inflation" and why does the JVM avoid starting every lock as a hea
 **Mental model:**
 This is the canonical "what happens internally" question for Java — probes whether the candidate has any model of the JVM below the language keyword, not just "synchronized makes it thread-safe."
 
+**TL;DR:**
+synchronized compiles to monitorenter/monitorexit; the JVM starts cheap (CAS-based lightweight locking) and only inflates to a heavyweight OS-backed monitor under real contention.
+
 **References:**
 - [JVM Specification §8.2.5 (monitorenter/monitorexit) via JLS Chapter 17](https://docs.oracle.com/javase/specs/jls/se24/html/jls-17.html)
 - [Intrinsic Locks and Synchronization — Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/concurrency/locksync.html)
@@ -288,6 +303,9 @@ Because any thread can `release()` regardless of whether it ever `acquire()`d, y
 
 **Mental model:**
 Checks whether the candidate understands synchronization primitives by their actual counting/ownership semantics rather than treating "lock," "mutex," and "semaphore" as interchangeable buzzwords.
+
+**TL;DR:**
+A mutex enforces single-owner exclusive access; a Semaphore is a counting construct with no ownership, letting up to N threads in and any thread release.
 
 **References:**
 - [Semaphore javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/Semaphore.html)
@@ -340,6 +358,9 @@ Take a thread dump with `jcmd <pid> Thread.print` (or `jstack <pid>`) — HotSpo
 **Mental model:**
 Tests both theoretical grounding (the four Coffman conditions) and whether the candidate has an actual practical fix, not just "avoid nested locks" hand-waving.
 
+**TL;DR:**
+Deadlock needs mutual exclusion + hold-and-wait + no preemption + circular wait; prevent it with a fixed global lock order or tryLock timeouts.
+
 **References:**
 - [Deadlock — Java Tutorials (Liveness)](https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html)
 
@@ -383,6 +404,9 @@ A thread dump prints the thread's `Thread.State` explicitly: `BLOCKED (on object
 
 **Mental model:**
 This is the "performance methodology" question every interview is now asking in some form — tests whether the candidate has a real, tool-backed investigative process versus guessing-and-changing-code.
+
+**TL;DR:**
+Diagnose contention with thread dumps (jcmd Thread.print) and JFR lock-contention events, not guesswork — then narrow the critical section and re-measure to confirm the fix worked.
 
 **References:**
 - [Troubleshooting Guide — Diagnostic Tools (Java SE 21)](https://docs.oracle.com/en/java/javase/21/troubleshoot/diagnostic-tools.html)
@@ -430,6 +454,9 @@ Internally, each `Thread` object holds a package-private field, `threadLocals`, 
 **Mental model:**
 This tests real production experience — `ThreadLocal` leaks in pooled environments are one of the most common "worked in dev, OOM'd in prod after N hours" bugs, and this question separates textbook knowledge from operational scars.
 
+**TL;DR:**
+ThreadLocal leaks in pooled threads because the thread (and its ThreadLocalMap) outlives the task — always remove() in a finally block.
+
 **References:**
 - [ThreadLocal javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/ThreadLocal.html)
 
@@ -468,6 +495,9 @@ Why does `ConcurrentHashMap.size()` being an approximate/eventually-consistent v
 **Mental model:**
 Probes genuine internals knowledge of a class nearly every Java engineer uses but few can explain — a strong signal for "has read source / understands trade-offs" vs. "knows the API surface only."
 
+**TL;DR:**
+ConcurrentHashMap moved from Java 7's fixed 16-way segment locking to Java 8's per-bin CAS/synchronized strategy, giving get() lock-free reads and atomic compound ops throughout.
+
 **References:**
 - [ConcurrentHashMap javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/ConcurrentHashMap.html)
 
@@ -496,6 +526,9 @@ A single `int`, updated exclusively via `Unsafe`/`VarHandle` CAS, is deliberatel
 
 **Mental model:**
 An "advanced feature" question that tests whether the candidate has looked one layer below the `java.util.concurrent` API surface — a strong senior signal, since most mid-level candidates use these classes without knowing they share an implementation.
+
+**TL;DR:**
+AQS is the shared CAS-based wait-queue framework underneath ReentrantLock, Semaphore, and CountDownLatch — each just interprets one int state field differently.
 
 **References:**
 - [AbstractQueuedSynchronizer javadoc (Java SE 8)](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/locks/AbstractQueuedSynchronizer.html)
@@ -538,6 +571,9 @@ What's the difference between `thenApply` and `thenCompose`, and when would usin
 **Mental model:**
 Tests whether the candidate can reason about async composition, not just "I used `CompletableFuture.supplyAsync` once" — this is core to modern service-to-service code.
 
+**TL;DR:**
+CompletableFuture adds non-blocking, composable chaining (thenApply/thenCompose/thenCombine) on top of plain Future's blocking-only get().
+
 **References:**
 - [CompletableFuture javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/concurrent/CompletableFuture.html)
 
@@ -578,6 +614,9 @@ An unbounded queue means the pool can never observe overload as overload — it 
 **Mental model:**
 A very common real "system design meets Java" question — checks whether the candidate has actually tuned a thread pool under real load versus just calling `Executors.newFixedThreadPool(n)` and hoping.
 
+**TL;DR:**
+Size CPU-bound pools near N_cpu and I/O-bound pools much larger; a full bounded queue plus a full pool triggers the configured RejectedExecutionHandler — an unbounded queue defeats that backpressure entirely.
+
 **References:**
 - [ThreadPoolExecutor javadoc (Java SE 17)](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/concurrent/ThreadPoolExecutor.html)
 
@@ -606,6 +645,9 @@ Virtual threads solve **concurrency**, not **parallelism** — they let many log
 
 **Mental model:**
 A trending, current-events-style question (JDK 21 is now mainstream) that tests whether the candidate keeps up with the platform's evolution and can articulate the actual mechanism, not just "virtual threads = faster."
+
+**TL;DR:**
+Virtual threads (JEP 444) make blocking I/O code scale like async code by unmounting from the carrier thread while blocked — they don't add CPU parallelism for compute-bound work.
 
 **References:**
 - [JEP 444: Virtual Threads](https://openjdk.org/jeps/444)
@@ -652,6 +694,9 @@ If a participating thread never reaches `await()` at all (e.g. it dies from an u
 
 **Mental model:**
 A fundamentals question that also tests API-choice judgment — picking the wrong one (e.g. `CountDownLatch` for a repeated phase barrier) is a real design mistake interviewers watch for.
+
+**TL;DR:**
+CountDownLatch is a one-shot, non-resettable gate; CyclicBarrier is a reusable rendezvous point that resets automatically once all parties arrive.
 
 **References:**
 - [High Level Concurrency Objects — Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/concurrency/highlevel.html)
@@ -703,6 +748,9 @@ Why does `StampedLock` not support reentrancy the way `ReentrantReadWriteLock` d
 **Mental model:**
 An "advanced feature" question distinguishing candidates who know the standard `java.util.concurrent` toolkit from those who've reached for the less common but high-value primitives under real read-heavy performance pressure.
 
+**TL;DR:**
+StampedLock's optimistic read skips locking entirely and validates afterward, beating ReentrantReadWriteLock under heavy read concurrency by avoiding any shared-state update on the fast path.
+
 **References:**
 - [StampedLock javadoc (Java SE 21)](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/concurrent/locks/StampedLock.html)
 
@@ -750,6 +798,9 @@ Manual padding assumes a specific cache-line size (commonly 64 bytes, but not un
 **Mental model:**
 A genuinely "advanced/trending" performance question — most candidates know lock contention, few can explain a slowdown with zero visible locking, which is exactly the kind of scenario current interviews probe for.
 
+**TL;DR:**
+False sharing is cache-line-level contention between unrelated variables written by different threads — invisible to lock-contention tools, fixed by padding or @Contended.
+
 **References:**
 - [JEP draft / OpenJDK discussion referencing @Contended (jdk.internal.vm.annotation.Contended)](https://bugs.openjdk.org/browse/JDK-8153057)
 - [Troubleshooting Guide — Diagnostic Tools (Java SE 21)](https://docs.oracle.com/en/java/javase/21/troubleshoot/diagnostic-tools.html)
@@ -787,6 +838,9 @@ G1 is designed around **incremental, region-based** collection — it's meant to
 
 **Mental model:**
 Tests whether the candidate treats GC as an opaque black box ("just tune the heap") or as a diagnosable subsystem with its own tools and failure signatures — a very common real production performance investigation.
+
+**TL;DR:**
+Stop-the-world GC pauses look like app freezes with no CPU/throughput spike; for G1, a Full GC (not routine mixed collections) is the real red flag to investigate.
 
 **References:**
 - [Garbage-First Garbage Collector — HotSpot GC Tuning Guide (Java SE 17)](https://docs.oracle.com/en/java/javase/17/gctuning/hotspot-virtual-machine-garbage-collection-tuning-guide.pdf)
@@ -834,6 +888,9 @@ No — `final` on the field only guarantees the **reference** `items` can't be r
 **Mental model:**
 This connects a Java-specific idiom to a general software-engineering theory principle (state-minimization = concurrency-safety-by-construction) — the exact "theory mixed with practice" angle this file's contract requires.
 
+**TL;DR:**
+Immutable objects need no locking because nothing can change after construction — but final only protects the reference, so mutable fields still need defensive copying.
+
 **References:**
 - [JLS §17.5 final Field Semantics](https://docs.oracle.com/javase/specs/jls/se24/html/jls-17.html)
 - [Immutable Objects — Java Tutorials](https://docs.oracle.com/javase/tutorial/essential/concurrency/immutable.html)
@@ -878,6 +935,9 @@ A fair `ReentrantLock` must grant access strictly in FIFO arrival order, which f
 
 **Mental model:**
 Tests precise vocabulary and conceptual boundaries between related failure modes — interviewers use this to check whether "deadlock" is being used as a catch-all buzzword or the candidate actually distinguishes the failure mechanisms.
+
+**TL;DR:**
+Deadlock is permanent blocking, livelock is active-but-unproductive interaction, and starvation is a thread perpetually denied resources by unfair scheduling — each needs a different fix.
 
 **References:**
 - [Liveness — Java Tutorials (Deadlock, Starvation and Livelock)](https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html)

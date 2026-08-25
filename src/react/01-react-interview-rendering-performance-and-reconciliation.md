@@ -77,6 +77,10 @@ independent, immediate re-render — a misconception that leads to writing
 code that "over-renders" or relies on synchronous DOM timing that isn't
 guaranteed.
 
+**TL;DR:**
+React's update cycle is trigger → render → commit; commit applies only the
+minimal DOM diff, leaving unrelated nodes (and their state) untouched.
+
 **References:**
 - [Render and Commit – react.dev](https://react.dev/learn/render-and-commit)
 - [React v18.0 – automatic batching](https://react.dev/blog/2022/03/29/react-v18)
@@ -138,6 +142,10 @@ foundational reconciliation concept that explains a large fraction of "my
 component's state got weird after a list update" bug reports in real
 codebases.
 
+**TL;DR:**
+State is tied to a component's position in the render tree, not the
+component itself — `key` overrides that identity to force a reset.
+
 **References:**
 - [Preserving and Resetting State – react.dev](https://react.dev/learn/preserving-and-resetting-state)
 - [Rendering Lists – react.dev](https://react.dev/learn/rendering-lists)
@@ -194,6 +202,9 @@ those who understand *why* it exists — the interruptibility/prioritization
 story is the actual engineering answer, and it's the prerequisite for
 understanding every concurrent-rendering feature asked about later in this
 set.
+
+**TL;DR:**
+Fiber is React's incremental, interruptible reconciliation engine, replacing the old synchronous stack reconciler and enabling prioritized/concurrent rendering.
 
 **References:**
 - [React Fiber Architecture (Andrew Clark, React core team) – GitHub](https://github.com/acdlite/react-fiber-architecture)
@@ -260,6 +271,9 @@ or understands it as a narrow, reference-equality-dependent optimization
 that has to be paired with stable prop references to work at all —
 otherwise it's dead weight.
 
+**TL;DR:**
+`memo` skips a re-render only when props are shallowly equal — a new object/array/function reference on every parent render defeats it.
+
 **References:**
 - [memo – react.dev](https://react.dev/reference/react/memo)
 
@@ -323,6 +337,9 @@ This is the classic "performance question" trap: candidates who reach for
 optimizing by superstition rather than measurement — exactly the habit
 interviewers are probing for when they ask performance-diagnosis questions.
 
+**TL;DR:**
+Use `useMemo` only after profiling shows a calculation is genuinely expensive or its reference stability matters downstream, not by default.
+
 **References:**
 - [useMemo – react.dev](https://react.dev/reference/react/useMemo)
 
@@ -378,6 +395,9 @@ Checks whether the candidate can articulate the mechanical relationship
 between the two hooks precisely (rather than "useCallback is for functions,
 useMemo is for values" as a memorized rule with no underlying model) and
 reason about the downstream consequence of skipping one.
+
+**TL;DR:**
+`useMemo` caches a value, `useCallback` caches a function reference — `useCallback(fn, deps)` is just `useMemo(() => fn, deps)`.
 
 **References:**
 - [useCallback – react.dev](https://react.dev/reference/react/useCallback)
@@ -443,6 +463,9 @@ teams, and this question tests whether the candidate has an accurate mental
 model of "a new function per render" rather than a vague "just add
 everything the linter complains about" heuristic.
 
+**TL;DR:**
+A stale closure happens when an Effect keeps using values from the render it was created in; the dependency array exists to re-run it with fresh values.
+
 **References:**
 - [useEffect – react.dev](https://react.dev/reference/react/useEffect)
 
@@ -505,6 +528,9 @@ Probes for accurate, version-aware knowledge (a common trap: candidates who
 learned React on 17 assume `setTimeout` updates are never batched) and for
 judgment about when an escape hatch is appropriate versus a performance
 foot-gun.
+
+**TL;DR:**
+React 18 batches all state updates everywhere by default; `flushSync` opts a specific update out for a synchronous DOM commit.
 
 **References:**
 - [React v18.0 – automatic batching](https://react.dev/blog/2022/03/29/react-v18)
@@ -571,6 +597,9 @@ mechanism (priority, interruptibility) rather than a vague "makes things
 faster" black box, and knows the boundary between the three related APIs
 instead of treating them as interchangeable.
 
+**TL;DR:**
+`startTransition` marks a state update as low-priority/interruptible so it doesn't block urgent updates like typing.
+
 **References:**
 - [startTransition – react.dev](https://react.dev/reference/react/startTransition)
 
@@ -635,6 +664,9 @@ surface (a specific set of recognized suspension triggers) rather than
 treating it as generic "loading state" magic that works with any async
 code, which is the single most common misconception.
 
+**TL;DR:**
+Suspense only reacts to a recognized set of suspension mechanisms (like `use()`) — data fetched in `useEffect` is invisible to it.
+
 **References:**
 - [Suspense – react.dev](https://react.dev/reference/react/Suspense)
 
@@ -696,6 +728,9 @@ Tests whether the candidate can articulate the actual mechanism behind
 "smaller bundles" (code never shipping vs. code shipped-then-tree-shaken)
 and is aware this is genuinely new architecture with real trade-offs, not
 just SSR rebranded.
+
+**TL;DR:**
+Server Components run only on the server and never ship code to the client; interactivity has to live in a `"use client"` component.
 
 **References:**
 - [Server Components – react.dev](https://react.dev/reference/rsc/server-components)
@@ -761,6 +796,9 @@ Real-world question: teams routinely ship an error boundary and assume
 "we're covered" without realizing entire categories of runtime errors
 (handlers, async) silently bypass it — this checks whether the candidate has
 actually hit that gap in production, not just read the docs once.
+
+**TL;DR:**
+Error boundaries only catch render/lifecycle/constructor errors in their subtree — not errors from event handlers or async callbacks.
 
 **References:**
 - [Catching rendering errors with an error boundary – react.dev](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary)
@@ -829,6 +867,9 @@ an understood consequence of how hook state storage actually works — the
 latter lets a candidate reason correctly about edge cases the rule doesn't
 explicitly spell out.
 
+**TL;DR:**
+React tracks hook state by call order per fiber, not by name, so hooks must be called unconditionally in the same order every render.
+
 **References:**
 - [Invalid Hook Call Warning – react.dev](https://react.dev/warnings/invalid-hook-call-warning)
 
@@ -892,6 +933,9 @@ graders are listening for reproduce → measure → hypothesize by likelihood �
 fix → re-measure, using named tools at each step, versus a candidate who
 jumps straight to "I'd add `useMemo`" without ever profiling first.
 
+**TL;DR:**
+Diagnose React perf by profiling first (DevTools Profiler/`<Profiler>`), then check unstable references, unmemoized Context, and unnecessary work — never guess-and-memoize.
+
 **References:**
 - [React Developer Tools – react.dev](https://react.dev/learn/react-developer-tools)
 - [Profiler – react.dev](https://react.dev/reference/react/Profiler)
@@ -952,6 +996,9 @@ can actually read its output to form a diagnosis — the
 and is exactly the kind of "which tool, which number, what conclusion"
 detail a strong senior candidate should have internalized from real
 profiling work.
+
+**TL;DR:**
+`<Profiler>`'s `actualDuration` vs `baseDuration` tells you whether memoization is actually skipping work or the render genuinely has to redo it all.
 
 **References:**
 - [Profiler – react.dev](https://react.dev/reference/react/Profiler)
@@ -1018,6 +1065,9 @@ junior/mid-level assumption) or understands its actual re-render contract
 well enough to reach for it appropriately versus recognizing when it's the
 wrong tool.
 
+**TL;DR:**
+Every Context consumer re-renders on any value change, regardless of which field it reads or whether it's memoized — fast-changing state has a wide blast radius there.
+
 **References:**
 - [Scaling Up with Reducer and Context – react.dev](https://react.dev/learn/scaling-up-with-reducer-and-context)
 
@@ -1074,6 +1124,9 @@ candidate actually understands the trade-off React makes (developer
 ergonomics/correctness vs. raw per-op speed) instead of repeating "virtual
 DOM = fast" as an unexamined slogan, and whether they can identify the
 narrow band of cases where the trade-off genuinely reverses.
+
+**TL;DR:**
+The virtual DOM isn't inherently faster than raw DOM calls — its value is enabling correct, declarative UI, not per-op speed.
 
 **References:**
 - [Render and Commit – react.dev](https://react.dev/learn/render-and-commit)
@@ -1140,6 +1193,9 @@ is treating `useDeferredValue` as "just React's built-in debounce," which
 misses the adaptive, interruptible nature that's the actual point of the
 API.
 
+**TL;DR:**
+`useDeferredValue` adaptively lags a value only as long as the actual expensive render takes, unlike a fixed-timer `setTimeout` debounce.
+
 **References:**
 - [useDeferredValue – react.dev](https://react.dev/reference/react/useDeferredValue)
 - [startTransition – react.dev](https://react.dev/reference/react/startTransition)
@@ -1204,6 +1260,9 @@ prioritization judgment under ambiguity, not just hook trivia, and the
 follow-up specifically checks whether the candidate closes the loop with
 validation instead of treating a plausible-sounding fix as done.
 
+**TL;DR:**
+Fix re-renders by profiling first, then targeting high-fan-out/frequently-firing components and unstable Context references before reaching for `useMemo`/`useCallback`.
+
 **References:**
 - [React Developer Tools – react.dev](https://react.dev/learn/react-developer-tools)
 - [Interaction to Next Paint (INP) – web.dev](https://web.dev/articles/inp)
@@ -1261,6 +1320,9 @@ Trade-off questions like this test whether a candidate defaults to tool
 tribalism ("always use Context," "always use a store library") or can
 articulate the actual mechanical difference (coarse vs. fine-grained
 re-render subscription) that should drive the decision case by case.
+
+**TL;DR:**
+Context + `useReducer` is free but re-renders all consumers on any change; selector-based external stores trade a dependency for fine-grained, slice-level re-render control.
 
 **References:**
 - [Scaling Up with Reducer and Context – react.dev](https://react.dev/learn/scaling-up-with-reducer-and-context)

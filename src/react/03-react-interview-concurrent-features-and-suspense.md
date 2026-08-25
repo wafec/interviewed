@@ -43,6 +43,9 @@ It renders synchronously, the same as before — React 18 doesn't change compone
 **Mental model:**
 Tests whether the candidate understands that "concurrent" describes *how* React schedules work, not a new rendering output — and that it's additive/opt-in, which is a deliberate migration-safety design decision, not an accident.
 
+**TL;DR:**
+Concurrent rendering makes React's render work interruptible/pausable so urgent updates (like typing) aren't blocked, but it's opt-in per update via APIs like `startTransition`, not a global behavior change.
+
 **References:**
 - [React v18.0 blog post](https://react.dev/blog/2022/03/29/react-v18)
 - [The Plan for React 18](https://react.dev/blog/2021/06/08/the-plan-for-react-18)
@@ -70,6 +73,9 @@ JavaScript in the browser's main thread is single-threaded and run-to-completion
 **Mental model:**
 Probes whether the candidate has looked past the public hooks API into how React achieves "pausable rendering" in a single-threaded, run-to-completion language — a common follow-up trap for people who only know the marketing description of concurrent React.
 
+**TL;DR:**
+A Fiber is a resumable unit-of-work node replacing the old recursive call stack, letting React pause, resume, or abort rendering between units instead of being locked into one uninterruptible pass.
+
 **References:**
 - [facebook/react — react-reconciler source (ReactFiberWorkLoop.js and related)](https://github.com/facebook/react/tree/main/packages/react-reconciler/src)
 - [React Fiber Architecture (community explainer, reviewed by React team members)](https://github.com/acdlite/react-fiber-architecture)
@@ -96,6 +102,9 @@ A single priority number can only represent "what is the priority of this one up
 
 **Mental model:**
 This is a "have you read the source" question — it separates candidates who've internalized the public urgent/transition mental model from those who understand the actual data structure making it efficient at scale.
+
+**TL;DR:**
+Lanes are a bitmask React uses to track multiple simultaneous pending updates per fiber at different priorities, enabling cheap bitwise prioritization instead of comparing scalar priority numbers.
 
 **References:**
 - [facebook/react — ReactFiberLane.js source](https://github.com/facebook/react/blob/main/packages/react-reconciler/src/ReactFiberLane.js)
@@ -137,6 +146,9 @@ Suspense only detects suspensions that happen **during render** — that's the p
 **Mental model:**
 Checks whether the candidate understands Suspense as a render-time mechanism, not a general "loading state" feature — a very common source of "why doesn't my spinner show" bugs when people fetch in effects and expect Suspense to catch it.
 
+**TL;DR:**
+A component suspends by throwing an unresolved Promise during render (e.g. via `use()`); React catches it, shows the nearest boundary's fallback, and retries once the Promise resolves — effects run too late to trigger this.
+
 **References:**
 - [Suspense reference — react.dev](https://react.dev/reference/react/Suspense)
 - [use() reference — react.dev](https://react.dev/reference/react/use)
@@ -173,6 +185,9 @@ A controlled input must reflect the DOM's actual current value synchronously —
 
 **Mental model:**
 Tests precise API knowledge and whether the candidate has hit the "why did my input feel laggy" pitfall of misapplying transitions to input state.
+
+**TL;DR:**
+Use `startTransition` when you own the `setState` call; use `useDeferredValue` when you only have a value/prop you don't control the setter for — never wrap a controlled input's own value in either.
 
 **References:**
 - [useTransition reference — react.dev](https://react.dev/reference/react/useTransition)
@@ -217,6 +232,9 @@ Compare the live value to the deferred value — if they differ, a background re
 **Mental model:**
 This is the "performance diagnosis methodology" question — it checks whether the candidate has an actual workflow (profiler → identify the long render → apply the right primitive → re-verify) rather than just knowing the API exists in the abstract.
 
+**TL;DR:**
+Diagnose with the DevTools Profiler + browser Performance panel to find the long blocking render, then fix by marking the expensive update as a transition (`startTransition`/`useDeferredValue`) so input stays responsive.
+
 **References:**
 - [useDeferredValue reference — react.dev (staleness pattern)](https://react.dev/reference/react/useDeferredValue)
 - [React Developer Tools — Profiler documentation](https://react.dev/learn/react-developer-tools)
@@ -243,6 +261,9 @@ It's about how React reveals *content becoming ready* in general during a render
 
 **Mental model:**
 Tests whether the candidate has internalized Suspense as having deliberate UX-driven timing behavior, not just an on/off fallback switch — a detail most people miss unless they've read the reference docs closely.
+
+**TL;DR:**
+React throttles Suspense content reveals to roughly once per 300ms so multiple boundaries resolving close together appear together, avoiding a jarring one-at-a-time popping-in effect.
 
 **References:**
 - [Suspense reference — react.dev](https://react.dev/reference/react/Suspense)
@@ -279,6 +300,9 @@ If you need to force a synchronous, unbatched update in React 18 (opting out of 
 **Mental model:**
 Probes whether the candidate understands *why* a change to internal scheduling behavior (batching) was significant enough to be a headline React 18 feature — connects a low-level implementation detail to a concrete, relatable bug class (inconsistent multi-setState UI).
 
+**TL;DR:**
+React 18 made batching automatic everywhere (timeouts, promises, native handlers), not just inside React event handlers, avoiding wasted extra re-renders; `flushSync` opts out when needed.
+
 **References:**
 - [React v18.0 blog post — Automatic Batching](https://react.dev/blog/2022/03/29/react-v18)
 
@@ -304,6 +328,9 @@ Just switching to `use()` doesn't fix it by itself — if you still only create 
 
 **Mental model:**
 This is a "do you actually understand the mechanism, not just the API" question — many candidates can define Suspense but don't realize it doesn't automatically parallelize fetches unless you also restructure *when* the fetches are kicked off.
+
+**TL;DR:**
+Suspense fixes fetch waterfalls only if fetches are also initiated early/in-parallel (render-as-you-fetch) — merely swapping `useEffect` for `use()` without restructuring when fetches start still serializes them.
 
 **References:**
 - [use() reference — react.dev (caching/Promise creation timing)](https://react.dev/reference/react/use)
@@ -348,6 +375,9 @@ Excessive granularity produces a UI that pops in piecemeal, one tiny fragment at
 **Mental model:**
 Tests real production judgment, not just API syntax — Suspense boundary placement is one of the most common "looks right, isn't" mistakes in real React codebases.
 
+**TL;DR:**
+One coarse Suspense boundary makes fast content wait behind the slowest sibling; nest boundaries around independently-loading pieces so fast content reveals immediately.
+
 **References:**
 - [Suspense reference — react.dev (nested boundaries example)](https://react.dev/reference/react/Suspense)
 
@@ -381,6 +411,9 @@ No — `useTransition` returns an `isPending` boolean specifically so you can sh
 
 **Mental model:**
 Tests understanding of the actual UX payoff of transitions — many candidates know the API exists but can't articulate the specific "no fallback flash on suspend" behavior that's the whole point of pairing transitions with Suspense.
+
+**TL;DR:**
+Without `startTransition`, a suspending update immediately flashes visible content back to the fallback; wrapping it in a transition keeps old content visible (with `isPending`) until the new content is ready.
 
 **References:**
 - [Suspense reference — react.dev (revealing content section)](https://react.dev/reference/react/Suspense)
@@ -423,6 +456,9 @@ React's `startTransition` marks updates as transitions by tracking scope synchro
 **Mental model:**
 A pitfall/edge-case question that filters for people who've actually hit this in a real codebase with async transitions (e.g. server actions) versus people who've only used transitions with purely synchronous `setState` calls.
 
+**TL;DR:**
+Only the synchronous part of a `startTransition` callback (before the first `await`) is tracked as the transition — `setState` calls after an `await` need their own nested `startTransition` or they run as urgent updates.
+
 **References:**
 - [useTransition reference — react.dev (async caveats section)](https://react.dev/reference/react/useTransition)
 
@@ -448,6 +484,9 @@ Without selective hydration, content can be visible (streamed in, painted) but n
 
 **Mental model:**
 Advanced-feature question that checks whether the candidate understands streaming SSR as more than "faster HTML delivery" — the hydration-ordering problem it also solves is the less obvious, more interesting half of the feature.
+
+**TL;DR:**
+Selective hydration hydrates each Suspense boundary independently and prioritizes whichever one the user is interacting with, instead of hydrating in a fixed order regardless of streaming arrival.
 
 **References:**
 - [renderToPipeableStream reference — react.dev](https://react.dev/reference/react-dom/server/renderToPipeableStream)
@@ -493,6 +532,9 @@ What's the difference between handling an error via `onShellError` versus `onErr
 **Mental model:**
 Tests hands-on familiarity with the actual streaming SSR API surface, not just the conceptual pitch — a candidate who's actually wired this up in a framework (or by hand) will know these callback distinctions.
 
+**TL;DR:**
+`renderToPipeableStream` sends the shell first (`onShellReady`), streams each Suspense boundary's content as it resolves (out of order), and fires `onAllReady` once everything is done, e.g. for crawlers.
+
 **References:**
 - [renderToPipeableStream reference — react.dev](https://react.dev/reference/react-dom/server/renderToPipeableStream)
 
@@ -519,6 +561,9 @@ Server Components' implementation (the bundler/streaming protocol, the serializa
 **Mental model:**
 A trending, advanced-features question — checks whether the candidate can articulate the actual architectural split (what runs where, why) rather than just repeating "Server Components are faster."
 
+**TL;DR:**
+Server Components render server-side only and never ship JS to the client; they can pass unawaited Promises down to Client Components, which `use()` them and suspend, tying RSC data-fetching into the same Suspense mechanism.
+
 **References:**
 - [Server Components reference — react.dev](https://react.dev/reference/rsc/server-components)
 
@@ -543,6 +588,9 @@ Anything where the user needs an immediate, guaranteed, and predictable reflecti
 
 **Mental model:**
 A trade-offs question that pushes past "transitions are good, always use them for slow updates" into knowing where the technique actually has costs and doesn't apply.
+
+**TL;DR:**
+Transitions can be interrupted/discarded and add no extra CPU throughput — they only reprioritize work, so they're wrong for updates needing guaranteed, immediate, predictable feedback.
 
 **References:**
 - [useTransition reference — react.dev (caveats section)](https://react.dev/reference/react/useTransition)
@@ -569,6 +617,9 @@ Yes — a component can have a fast individual render but still contribute to ja
 
 **Mental model:**
 The core performance-diagnosis-methodology question for this set — checks for an actual repeatable workflow, not just "I'd use the Profiler" without knowing what to look for once it's open.
+
+**TL;DR:**
+Record the interaction in the Profiler, read the flame/ranked chart for long/self-time-heavy renders and their re-render cause, cross-check with the browser Performance panel for actual blocked frames, then re-profile after the fix.
 
 **References:**
 - [React Developer Tools — react.dev](https://react.dev/learn/react-developer-tools)
@@ -604,6 +655,9 @@ State managed via `useState`/`useReducer` lives inside React's own fiber tree an
 **Mental model:**
 An advanced internals question that connects concurrent rendering's interruptibility back to a concrete correctness risk it introduces for state outside React's control — checks whether the candidate understands concurrency has real trade-offs, not just benefits.
 
+**TL;DR:**
+Tearing is inconsistent UI reads of a mutable external store during a paused/resumed concurrent render; `useSyncExternalStore` guarantees a consistent snapshot by re-checking and falling back to a synchronous render if the store changed mid-flight.
+
 **References:**
 - [useSyncExternalStore reference — react.dev](https://react.dev/reference/react/useSyncExternalStore)
 
@@ -630,6 +684,9 @@ Since React can't chop up work *inside* a single component's render, the fix has
 **Mental model:**
 The "software engineering theory mixed with technology-specific practice" question for this set — checks whether the candidate can connect React's scheduler to the general CS vocabulary around scheduling, and correctly identify the real limit of the abstraction rather than overselling "React makes everything interruptible."
 
+**TL;DR:**
+React's scheduling is cooperative (yields only between fibers), not preemptive — it can't interrupt one component's own expensive synchronous render, which must be fixed by restructuring the work, not the scheduler.
+
 **References:**
 - [React Fiber Architecture — unit of work / cooperative yielding (community explainer, reviewed by React team members)](https://github.com/acdlite/react-fiber-architecture)
 - [facebook/react — react-reconciler work loop source](https://github.com/facebook/react/tree/main/packages/react-reconciler/src)
@@ -655,6 +712,9 @@ They're closely related but expressed through different APIs for different situa
 
 **Mental model:**
 Wraps up the set by testing whether the candidate can connect several previously-discussed pieces (transitions, Suspense reveal behavior, `useDeferredValue`) into one coherent mental model of "how does React avoid jarring UI during background updates," rather than knowing each API in isolation.
+
+**TL;DR:**
+A transition-triggered re-suspension keeps already-revealed content visible instead of flashing back to the fallback — the same "don't discard useful old content" idea `useDeferredValue` applies at the value level.
 
 **References:**
 - [Suspense reference — react.dev (re-suspension / transition interaction)](https://react.dev/reference/react/Suspense)

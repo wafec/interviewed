@@ -59,6 +59,9 @@ built on immutable snapshots and reference comparison, not deep equality or
 imperative mutation — a foundational mismatch with how many developers
 instinctively work with JS data structures.
 
+**TL;DR:**
+Mutating state in place leaves its reference unchanged, so React can't detect the change — always pass a new object/array to the setter.
+
 **References:**
 - [Updating Objects in State – react.dev](https://react.dev/learn/updating-objects-in-state)
 - [You Might Not Need an Effect – react.dev](https://react.dev/learn/you-might-not-need-an-effect)
@@ -110,6 +113,9 @@ Wrap that specific update in `flushSync` from `react-dom`: `flushSync(() => setF
 Tests whether the candidate has kept up with a genuine React 18 behavioral
 change that silently alters re-render counts and can break code that
 (incorrectly) relied on synchronous re-renders after every `setState`.
+
+**TL;DR:**
+React 18's automatic batching extends batching (many setStates → one re-render) to timeouts/promises/native handlers, not just React event handlers; `flushSync` opts a specific update out.
 
 **References:**
 - [Queueing a Series of State Updates – react.dev](https://react.dev/learn/queueing-a-series-of-state-updates)
@@ -170,6 +176,9 @@ separates candidates who've memorized "don't call hooks conditionally" from
 those who understand *why*, which is what lets them debug subtle
 order-related state bugs instead of just avoiding the obvious cases.
 
+**TL;DR:**
+Hooks are tracked by call position in a per-fiber linked list, not by name — calling one conditionally shifts that order and corrupts state, hence the Rules of Hooks.
+
 **References:**
 - [Rules of Hooks – react.dev](https://react.dev/reference/rules/rules-of-hooks)
 - [Invalid Hook Call Warning – react.dev](https://react.dev/warnings/invalid-hook-call-warning)
@@ -228,6 +237,9 @@ render cycle, not just "the linter told me to add a dependency" — this is
 one of the most common real-world React bugs and a strong signal of
 conceptual depth.
 
+**TL;DR:**
+A stale closure happens when an effect's callback captured an old value and the effect never re-runs to refresh it, because that value was left out of the dependency array.
+
 **References:**
 - [Removing Effect Dependencies – react.dev](https://react.dev/learn/removing-effect-dependencies)
 - [`useEffectEvent` – react.dev](https://react.dev/reference/react/useEffectEvent)
@@ -282,6 +294,9 @@ whether the candidate treats memoization as a measured optimization or a
 cargo-culted default, which is exactly the distinction senior candidates are
 expected to draw.
 
+**TL;DR:**
+`useMemo`/`useCallback` only pay off when the computation is genuinely expensive or referential stability matters downstream (memoized children, hook deps) — otherwise they're pure overhead.
+
 **References:**
 - [`useMemo` – react.dev](https://react.dev/reference/react/useMemo)
 - [`useCallback` – react.dev](https://react.dev/reference/react/useCallback)
@@ -327,6 +342,9 @@ question interviewers are increasingly asking for React specifically —
 looking for a concrete tool + a structured measure→hypothesize→fix→re-measure
 loop, not "I just add `useMemo` everywhere."
 
+**TL;DR:**
+Diagnose excess re-renders with the React DevTools Profiler's "why did this render" data, fix the actual cause (unstable references, broad Context), then re-profile to confirm.
+
 **References:**
 - [React Developer Tools Profiler – react.dev](https://legacy.reactjs.org/blog/2018/09/10/introducing-the-react-profiler.html)
 - [`memo` – react.dev](https://react.dev/reference/react/memo)
@@ -366,6 +384,9 @@ Pass a `key` prop derived from that identity (e.g. `record.id`) to the component
 Probes whether the candidate understands `useState`'s exact semantics (not
 just "it holds state") and knows the idiomatic React alternative to reaching
 for `useEffect` as a state-syncing hammer.
+
+**TL;DR:**
+`useState`'s initializer only runs on mount, so state seeded from a prop silently stops tracking that prop once it changes later.
 
 **References:**
 - [`useState` – react.dev](https://react.dev/reference/react/useState)
@@ -407,6 +428,9 @@ Two reasons: (1) performance — every component that calls `useContext` on a gi
 Tests whether the candidate can articulate the actual problem each pattern
 solves (not just "how to use `useContext`"), which is what lets them choose
 the right tool instead of reaching for Context by default.
+
+**TL;DR:**
+Lifting state up gives sibling components one shared source of truth; Context avoids threading that value through every intermediate layer as props ("prop drilling").
 
 **References:**
 - [Sharing State Between Components – react.dev](https://react.dev/learn/sharing-state-between-components)
@@ -451,6 +475,9 @@ Rather than storing the whole state as a single Context value that all `useConte
 A classic trade-offs/comparison question — tests whether the candidate
 reaches for tools based on the actual problem shape (change frequency,
 subscription granularity needs) rather than habit or hype.
+
+**TL;DR:**
+Context suits infrequently-changing, broadly-read values; external stores (Redux/Zustand/Jotai) suit large, frequently-changing state that needs fine-grained subscriptions.
 
 **References:**
 - [Passing Data Deeply with Context – react.dev](https://react.dev/learn/passing-data-deeply-with-context)
@@ -504,6 +531,9 @@ Tests whether the candidate actually understands Context's re-render
 semantics at the mechanism level rather than treating it as "just global
 state that works like magic" — a very common source of real performance
 bugs in production apps.
+
+**TL;DR:**
+`useContext` subscribes to the whole context value, so any field changing re-renders every consumer regardless of which field it actually destructures.
 
 **References:**
 - [Passing Data Deeply with Context – react.dev](https://react.dev/learn/passing-data-deeply-with-context)
@@ -566,6 +596,9 @@ general state-machine/reducer theory (not a React-specific trick), and can
 judge when centralizing transition logic is worth the extra structure over
 several independent `useState` calls.
 
+**TL;DR:**
+`useReducer` centralizes related state transitions into one pure function, which scattered `useState` setters across handlers can't do as cleanly.
+
 **References:**
 - [`useReducer` – react.dev](https://react.dev/reference/react/useReducer)
 - [Extracting State Logic into a Reducer – react.dev](https://react.dev/learn/extracting-state-logic-into-a-reducer)
@@ -622,6 +655,9 @@ Memoize the object itself with `useMemo` so its reference only changes when its 
 Tests understanding of *how* the dependency comparison actually works
 (reference equality), which is the root cause behind a large fraction of
 real-world "my effect runs too often" bug reports.
+
+**TL;DR:**
+Inline object/array/function literals get a new reference every render, so as dependencies they make an effect re-run on every render regardless of content.
 
 **References:**
 - [`useEffect` – react.dev](https://react.dev/reference/react/useEffect)
@@ -686,6 +722,9 @@ and the API React added specifically for it — separates candidates with
 surface-level hooks knowledge from those who understand what concurrent
 rendering changes about correctness guarantees.
 
+**TL;DR:**
+Tearing is inconsistent data shown across a UI mid concurrent-render; `useSyncExternalStore` prevents it by forcing a synchronous consistency check before commit.
+
 **References:**
 - [`useSyncExternalStore` – react.dev](https://react.dev/reference/react/useSyncExternalStore)
 
@@ -742,6 +781,9 @@ Tests whether the candidate understands the state-vs-ref distinction at the
 "does it schedule a render" mechanism level, and knows the purity
 constraints on where refs can safely be mutated.
 
+**TL;DR:**
+`useRef` persists a value across renders without triggering a re-render — using it for anything that should visibly update the UI is a bug.
+
 **References:**
 - [`useRef` – react.dev](https://react.dev/reference/react/useRef)
 - [Referencing Values with Refs – react.dev](https://react.dev/learn/referencing-values-with-refs)
@@ -796,6 +838,9 @@ Tests whether the candidate can reason precisely about *why* a specific
 memoization didn't work, rather than just knowing the APIs exist — a very
 common real interview scenario since this exact "I added memo but it's
 still re-rendering" confusion is extremely common in practice.
+
+**TL;DR:**
+`React.memo`'s shallow-equality check fails on a fresh inline function reference each render; `useCallback` stabilizes that reference so the check can pass.
 
 **References:**
 - [`memo` – react.dev](https://react.dev/reference/react/memo)
@@ -853,6 +898,9 @@ actually is (a function tied to a specific fiber's hook list on each call
 site) versus a common but wrong assumption that hooks behave like shared
 singleton services.
 
+**TL;DR:**
+A custom hook shares reusable logic, not state — each caller gets its own independent `useState`/`useRef` instance tied to its own fiber.
+
 **References:**
 - [Reusing Logic with Custom Hooks – react.dev](https://react.dev/learn/reusing-logic-with-custom-hooks)
 
@@ -907,6 +955,9 @@ purity/referential transparency, and tests whether the candidate can
 recognize impurity that "accidentally works" rather than only reciting the
 rule.
 
+**TL;DR:**
+A pure component's output depends only on its inputs with no side effects, since React may call it more than once per render (e.g. `StrictMode`); mutating outside state during render breaks that.
+
 **References:**
 - [Keeping Components Pure – react.dev](https://react.dev/learn/keeping-components-pure)
 - [`StrictMode` – react.dev](https://react.dev/reference/react/StrictMode)
@@ -947,6 +998,9 @@ Tests whether the candidate understands `StrictMode` as a designed
 diagnostic tool tied directly to React's purity/cleanup contracts, rather
 than dismissing the "double render/effect" behavior as a quirky annoyance
 to work around.
+
+**TL;DR:**
+`StrictMode` double-invokes functions that are supposed to be pure so any observable difference between the two calls immediately exposes an impurity bug.
 
 **References:**
 - [`StrictMode` – react.dev](https://react.dev/reference/react/StrictMode)
@@ -1007,6 +1061,9 @@ Tests whether the candidate follows React's evolving APIs and understands
 the underlying reactive-vs-non-reactive distinction well enough to explain
 *why* a new API was needed, not just that it exists.
 
+**TL;DR:**
+`useEffectEvent` lets an effect read the latest props/state for non-reactive logic without listing them as dependencies or triggering unwanted re-runs.
+
 **References:**
 - [`useEffectEvent` – react.dev](https://react.dev/reference/react/useEffectEvent)
 - [Separating Events from Effects – react.dev](https://react.dev/learn/separating-events-from-effects)
@@ -1054,6 +1111,9 @@ The other core "performance/correctness diagnosis" question for React —
 tests a structured measure → isolate cause → targeted fix process for a
 very common real production bug class (duplicate/stale network requests
 from Effects), not just abstract hooks trivia.
+
+**TL;DR:**
+Duplicate production requests from an effect usually trace to an unstable dependency, an unmounted-but-uncancelled fetch, or duplicate sibling fetches — diagnose via the Network tab + Profiler, fix with stable deps and an `AbortController` cleanup.
 
 **References:**
 - [`useEffect` – react.dev](https://react.dev/reference/react/useEffect)
