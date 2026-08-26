@@ -1,0 +1,242 @@
+[
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q1",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "What is Spring's IoC container, and what problem does it actually solve?",
+    "tldr": "The IoC container (`ApplicationContext`) constructs and wires your objects from configuration metadata instead of your code doing it with `new`, decoupling components from their dependencies' construction logic.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q1"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q2",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "What is a Spring bean, precisely?",
+    "tldr": "A bean is an object whose creation, wiring, and lifecycle are owned by the Spring container, described internally by a `BeanDefinition` — not just any object you instantiate yourself.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q2"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q3",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "Why does the Spring team recommend constructor injection over field or setter injection?",
+    "tldr": "Constructor injection guarantees immutable, fully-initialized, null-safe dependencies and is easiest to unit-test without a container; setter injection suits optional dependencies; field injection has none of these benefits and is mostly a test-code convenience today.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q3"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q4",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "Walk through the full lifecycle of a singleton bean, from definition to destruction.",
+    "tldr": "Instantiation → dependency injection → Aware callbacks → `BeanPostProcessor` before-init → `@PostConstruct`/`InitializingBean`/init-method → `BeanPostProcessor` after-init (where AOP proxies get created) → ready → `@PreDestroy`/`DisposableBean`/destroy-method on shutdown.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q4"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q5",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "How does Spring decide which bean to inject when multiple candidates of the same type exist?",
+    "tldr": "Spring narrows by type, then `@Primary`, then `@Qualifier`, then bean-name-matching as a last resort, throwing `NoUniqueBeanDefinitionException` if still ambiguous.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q5"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q6",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "How does Spring Boot's autoconfiguration actually decide which beans to create?",
+    "tldr": "`@EnableAutoConfiguration` loads a list of conditional `@Configuration` classes gated by `@ConditionalOnClass`/`@ConditionalOnMissingBean`, so autoconfiguration only fires when the relevant classpath dependency is present and you haven't already defined the bean yourself.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q6"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q7",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "How does Spring AOP create proxies, and what's the difference between JDK dynamic proxies and CGLIB?",
+    "tldr": "Spring AOP proxies the target bean (JDK dynamic proxy if it implements an interface, CGLIB subclass otherwise); because the proxy wraps the object from the outside, calling an advised method via `this` from inside the same class bypasses the proxy and the advice never runs.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q7"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q8",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "What are Spring's bean scopes, and what problem do scoped proxies solve?",
+    "tldr": "Singleton/prototype/request/session/application/websocket are Spring's bean scopes; a scoped proxy lets a singleton hold a reference to a narrower-scoped (e.g. prototype) bean that transparently fetches a fresh instance on every call instead of freezing on the one instance resolved at construction time.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q8"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q9",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "Your Spring Boot app's startup time doubled after adding a new module. How do you diagnose why?",
+    "tldr": "Diagnose slow Boot startup with `--debug`'s autoconfiguration report (unexpected autoconfig pulled in), Actuator's `ApplicationStartup`/startup endpoint for timed steps, and `spring.main.lazy-initialization=true` as a quick way to isolate eager-bean-creation cost — but don't leave lazy-init on in production.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q9"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q10",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "You get \"circular reference\" errors on startup. What's happening and how do you fix it?",
+    "tldr": "Circular bean dependencies fail outright with constructor injection (no early reference possible) and, since Boot 2.6, are disallowed by default even for setter/field injection — fix by breaking the cycle (extract shared logic, use `@Lazy`) rather than re-enabling `allow-circular-references`.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q10"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q11",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "You get \"no qualifying bean of type X\" at startup. What causes this and how do you debug it?",
+    "tldr": "`NoSuchBeanDefinitionException` means zero beans matched the requested type — check for a missing stereotype annotation, a class outside the component-scan package tree (a frequent multi-module gotcha), or a `@ConditionalOnClass` autoconfiguration that silently didn't fire.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q11"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q12",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "How does Dependency Injection relate to the Dependency Inversion Principle?",
+    "tldr": "DIP is the design principle (depend on abstractions); DI is one implementation technique for it — using `@Autowired` doesn't automatically satisfy DIP if the injected type is a concrete class rather than an abstraction.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q12"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q13",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "What real-world testing problem does dependency injection actually solve?",
+    "tldr": "DI lets test code substitute a mock/stub for a real dependency at construction time, turning what would otherwise be a slow, flaky integration test (hitting a real payment gateway, database, etc.) into a fast, deterministic unit test — a benefit that plain-Java construction with mocks captures better than booting a full `@SpringBootTest` context.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q13"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q14",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "Two beans depend on each other via constructor injection. What happens, and how do you resolve it?",
+    "tldr": "Mutual constructor injection between two beans always fails with `BeanCurrentlyInCreationException` since neither can be built first; fix by removing the cycle via a shared abstraction, or as a stopgap mark one side `@Lazy` — switching to field injection can \"work\" but just hides the design problem.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q14"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q15",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "Why is field injection considered bad for testability even though it's the shortest to write?",
+    "tldr": "Field injection removes the constructor parameter a test would use to pass in a mock, forcing reflection tricks or a full Spring test context, and it hides the dependency list and forfeits `final`-field immutability — `@InjectMocks` papers over the mechanical testing problem but not the underlying design weaknesses.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q15"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q16",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "You inject a prototype-scoped bean into a singleton via constructor. What actually happens at runtime?",
+    "tldr": "Injecting a prototype bean directly into a singleton's constructor resolves it exactly once at singleton-construction time, so the singleton is stuck reusing that single prototype instance forever — fix with a scoped proxy or an `ObjectProvider`/`ObjectFactory` to get a genuinely fresh instance per use.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q16"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q17",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "What's the difference between `BeanFactoryPostProcessor` and `BeanPostProcessor`?",
+    "tldr": "`BeanFactoryPostProcessor` modifies bean *definitions* before any beans are created; `BeanPostProcessor` intercepts each bean *instance* right after it's created (this is how Spring's own AOP proxying is implemented) — calling `getBean()` inside a `BeanFactoryPostProcessor` is dangerous because it forces premature, out-of-order instantiation.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q17"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q18",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "What's the difference between `@Value` and `@ConfigurationProperties`, and why does Spring Boot support both?",
+    "tldr": "`@Value` binds one simple property with no relaxed binding or structure support; `@ConfigurationProperties` binds a whole prefixed, potentially nested configuration block with relaxed binding and validation support — profile-specific files just layer into the same underlying `Environment` both read from.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q18"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q19",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "When would you write a custom `@Conditional` annotation instead of using Spring Boot's built-in ones?",
+    "tldr": "Write a custom `@Conditional` when activation logic can't be expressed by Boot's built-in conditions (class/bean/property presence) — most needed by library/autoconfiguration authors, and often a sign to look for a simpler mechanism when reached for in ordinary application code.",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q19"
+  },
+  {
+    "id": "spring-ioc-container-beans-and-dependency-injection-q20",
+    "topic": "spring",
+    "subtopic": "ioc-container-beans-and-dependency-injection",
+    "file": "01-spring-interview-ioc-container-beans-and-dependency-injection",
+    "title": "Constructor injection vs. field injection: is this purely a style preference, or are there real correctness trade-offs?",
+    "tldr": "It's a real correctness trade-off, not just style: constructor injection makes partial initialization structurally impossible and enables compiler-enforced `final` immutability, failing loudly at startup instead of allowing a silently half-wired object to fail later at an unrelated call site — though it can still produce non-obvious startup failures of its own (e.g. circular dependencies).",
+    "tags": [
+      "ioc-container-beans-and-dependency-injection"
+    ],
+    "url": "/src/spring/01-spring-interview-ioc-container-beans-and-dependency-injection.html#q20"
+  }
+]

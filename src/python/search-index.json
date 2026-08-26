@@ -1438,5 +1438,245 @@
       "packaging-testing-and-tooling"
     ],
     "url": "/src/python/06-python-interview-packaging-testing-and-tooling.html#q20"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q1",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What is WSGI, and what problem does it solve?",
+    "tldr": "WSGI is the standard callable contract (PEP 3333) that lets any Python web",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q1"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q2",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What is ASGI, and how does it differ from WSGI?",
+    "tldr": "ASGI is an async, event-based interface (`scope`/`receive`/`send`) that",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q2"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q3",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "Walk through exactly what a WSGI server passes into the application, and what the application must return.",
+    "tldr": "A WSGI app is called as `application(environ, start_response)`; it must",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q3"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q4",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "Walk through the ASGI `scope`/`receive`/`send` contract for an HTTP request.",
+    "tldr": "An ASGI app calls `await receive()` to pull incoming events and",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q4"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q5",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "How does FastAPI's `Depends()` dependency injection actually resolve a dependency?",
+    "tldr": "FastAPI resolves `Depends()` by introspecting each function's signature",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q5"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q6",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What is Flask's application/request context, and why does it exist?",
+    "tldr": "Flask's `request`/`g`/`current_app`/`session` are `contextvars`-backed",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q6"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q7",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What happens if you access `flask.request` or `flask.g` outside of an active context?",
+    "tldr": "Accessing `request`/`g`/`current_app` outside an active context raises a",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q7"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q8",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "Why doesn't a Flask app deployed with gunicorn's default sync workers scale under high concurrent load?",
+    "tldr": "Sync workers handle one request at a time per process, so slow I/O in a",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q8"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q9",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "How would you diagnose why a specific FastAPI endpoint is slow in production?",
+    "tldr": "Diagnose FastAPI latency by timing each phase (dependencies, handler,",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q9"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q10",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "A teammate wraps a route in `async def` expecting a speedup, but the app gets *slower* under load. What's the likely cause?",
+    "tldr": "Blocking code inside `async def` stalls FastAPI's whole event loop for",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q10"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q11",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "How should you decide gunicorn's worker count and worker class for a given workload?",
+    "tldr": "Scale CPU-bound work with more gunicorn worker processes (sync/gthread, up",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q11"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q12",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "In what sense is WSGI/ASGI an example of good interface design, from a software-engineering theory standpoint?",
+    "tldr": "WSGI/ASGI apply dependency inversion at the ecosystem level — a minimal",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q12"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q13",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What real-world problem forced the creation of ASGI, specifically — why wasn't extending WSGI enough?",
+    "tldr": "WSGI's one-call-in/one-iterable-out contract has no way to represent a",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q13"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q14",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What's wrong with calling a blocking, synchronous database driver from inside an `async def` FastAPI route, even if it \"works\" in testing?",
+    "tldr": "A blocking DB call inside `async def` stalls the whole event loop for every",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q14"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q15",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What's the risk of running `flask run` or `uvicorn --reload` as your production server?",
+    "tldr": "Dev servers (`flask run`, `uvicorn --reload`) lack production process",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q15"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q16",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "How does FastAPI generate interactive API documentation (Swagger UI) automatically?",
+    "tldr": "FastAPI derives its OpenAPI schema (and therefore Swagger UI/ReDoc) directly",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q16"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q17",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "You add Middleware A then Middleware B to a Starlette/FastAPI app. Which one sees the incoming request first?",
+    "tldr": "The last middleware added is the outermost on the way out but the",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q17"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q18",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "What are FastAPI `BackgroundTasks` for, and when should you *not* use them?",
+    "tldr": "`BackgroundTasks` run after the response but in the same process — fine",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q18"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q19",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "How would you decide between Flask, FastAPI, and Django REST Framework for a new API?",
+    "tldr": "Flask is a minimal WSGI microframework for full control, FastAPI is",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q19"
+  },
+  {
+    "id": "python-web-apis-wsgi-and-asgi-q20",
+    "topic": "python",
+    "subtopic": "web-apis-wsgi-and-asgi",
+    "file": "07-python-interview-web-apis-wsgi-and-asgi",
+    "title": "Design the deployment topology (server + workers) for a FastAPI service that mixes fast async I/O endpoints with a few CPU-heavy synchronous endpoints.",
+    "tldr": "Serve async I/O endpoints via gunicorn+Uvicorn workers sized to CPU cores,",
+    "tags": [
+      "web-apis-wsgi-and-asgi"
+    ],
+    "url": "/src/python/07-python-interview-web-apis-wsgi-and-asgi.html#q20"
   }
 ]
