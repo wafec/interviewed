@@ -325,6 +325,818 @@
       ],
       "explanation": "RDS Proxy sits between the application and the database, pooling and sharing a smaller set of actual database connections across many application-side connections — this is essential for Lambda-style workloads that can spin up many concurrent execution environments, each of which would otherwise open its own DB connection and risk exhausting `max_connections`.",
       "reference": "https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/rds-proxy.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-001",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A security group allows inbound traffic on port 443 but has no outbound rules configured beyond the default. Will responses to that inbound traffic reach the client?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Yes, because security groups are stateful and allow return traffic automatically"
+        },
+        {
+          "id": "b",
+          "text": "No, because outbound rules must separately permit the response traffic"
+        },
+        {
+          "id": "c",
+          "text": "Only if the client is in the same subnet as the server"
+        },
+        {
+          "id": "d",
+          "text": "Only if the NACL also has a matching outbound allow rule"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Security groups are stateful: once inbound traffic is allowed in, the response is automatically permitted out regardless of outbound rules (the default outbound rule also allows all traffic anyway). (b) describes NACL behavior, not security groups. (c) is irrelevant — statefulness doesn't depend on subnet locality. (d) is true in the sense that NACLs are a separate, stateless layer that could still block it, but the question is specifically about whether the security group blocks it, which it doesn't.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-security-groups.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-002",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A network ACL has an inbound rule allowing port 443 traffic in, but the app still can't get a response back to the client. What's the most likely cause?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The security group is misconfigured and blocking the response"
+        },
+        {
+          "id": "b",
+          "text": "The route table lacks a route back to the client's CIDR"
+        },
+        {
+          "id": "c",
+          "text": "The NACL lacks an outbound rule for the ephemeral port range used by the response"
+        },
+        {
+          "id": "d",
+          "text": "IMDSv2 is not enforced on the instance"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "NACLs are stateless, so an inbound allow does not implicitly permit the outbound response — a separate outbound rule covering the client's ephemeral port range (1024-65535) is required. (a) is possible but security groups are stateful by default so this is less likely given the scenario framing. (b) would break the connection entirely, not just the response leg, and routing is usually symmetric. (d) is unrelated to NACL/return-traffic behavior.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-network-acls.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-003",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "internals"
+      ],
+      "type": "single",
+      "question": "When an identity-based policy and an SCP both apply to the same action, how is the effective permission determined?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "As the union — either one allowing the action is sufficient"
+        },
+        {
+          "id": "b",
+          "text": "The identity-based policy always takes precedence over the SCP"
+        },
+        {
+          "id": "c",
+          "text": "The SCP is ignored unless it contains an explicit deny"
+        },
+        {
+          "id": "d",
+          "text": "As the intersection — both must allow the action"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Identity-based policies combined with SCPs are evaluated as an intersection: the action must be allowed by both for it to succeed. (a) describes how identity-based and resource-based policies combine within the same account, not identity+SCP. (c) is false — SCPs restrict via their allow list too, not only via explicit deny. (b) is backwards; SCPs can restrict even a fully-permissive identity policy like AdministratorAccess.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-004",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "For a workload needing millisecond retrieval of data accessed roughly once a month, where losing the data if a single Availability Zone fails is acceptable, which S3 storage class fits best?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "S3 Standard"
+        },
+        {
+          "id": "b",
+          "text": "S3 One Zone-IA"
+        },
+        {
+          "id": "c",
+          "text": "S3 Glacier Instant Retrieval"
+        },
+        {
+          "id": "d",
+          "text": "S3 Intelligent-Tiering"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "S3 One Zone-IA matches monthly access with millisecond retrieval, at a lower cost than Standard-IA by accepting single-AZ storage (no resilience to AZ loss) — appropriate when the data is reproducible or replicated elsewhere. (a) Standard is priced for frequent access, overkill and costlier for monthly access. (c) Glacier Instant Retrieval targets quarterly-or-rarer access, not monthly. (d) Intelligent-Tiering suits unpredictable access patterns, not a known monthly cadence, and adds a monitoring fee unnecessarily here.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/storage-class-intro.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-005",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What consistency model does Amazon S3 provide for object reads following a completed write, as of the current model?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Eventual consistency, typically converging within seconds"
+        },
+        {
+          "id": "b",
+          "text": "Strong consistency only for newly created objects, eventual for overwrites"
+        },
+        {
+          "id": "c",
+          "text": "Strong read-after-write consistency for all operations"
+        },
+        {
+          "id": "d",
+          "text": "Consistency configurable per-bucket via a setting"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "S3 provides strong read-after-write consistency across all operations (PUTs, overwrites, deletes) — a read immediately following a completed write reflects that write. (a) describes S3's old, pre-Dec-2020 model, no longer accurate. (b) incorrectly splits behavior by operation type, which doesn't apply since the strong-consistency change covers all operations uniformly. (d) is fabricated — there's no per-bucket consistency setting.",
+      "reference": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/DataDurability.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-006",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "An EC2 instance is configured with 'IMDSv1 or IMDSv2 (token optional)'. Does this configuration protect against SSRF-based credential theft via the metadata service?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "No, an attacker can just use the unauthenticated IMDSv1-style request"
+        },
+        {
+          "id": "b",
+          "text": "Yes, since IMDSv2's token requirement is always enforced by the service"
+        },
+        {
+          "id": "c",
+          "text": "Yes, but only for requests originating from outside the VPC"
+        },
+        {
+          "id": "d",
+          "text": "No, because IMDSv2 tokens are only valid for containerized workloads"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "In 'optional' mode, both IMDSv1's plain unauthenticated GET and IMDSv2's token-based flow are accepted, so an SSRF payload can simply issue the old-style GET and bypass the token requirement entirely. (b) is false — the token requirement is only enforced when configured as required (token-required/IMDSv2-only). (c) misattributes the protection to a network-origin distinction that doesn't apply here. (d) is fabricated; IMDSv2 tokens apply to any workload, container or not.",
+      "reference": "https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-options.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-007",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "From within a private subnet, can an external host on the internet initiate a new connection to an instance behind a NAT gateway?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "No, but only because NACLs block all unsolicited inbound traffic by default"
+        },
+        {
+          "id": "b",
+          "text": "Yes, as long as the instance has a security group allowing it"
+        },
+        {
+          "id": "c",
+          "text": "Yes, if the NAT gateway's Elastic IP is used as the destination"
+        },
+        {
+          "id": "d",
+          "text": "No — the NAT gateway only forwards return traffic for connections the VPC initiated"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "A NAT gateway has no mechanism to map an unsolicited inbound connection to a specific private instance; it only translates and forwards responses for connections the private instance itself started. (b) is wrong because no security group setting can create an inbound path the NAT gateway architecture doesn't support. (c) is wrong for the same reason — hitting the NAT gateway's EIP directly doesn't route to any specific private instance. (a) misattributes the block to NACL defaults rather than the NAT gateway's fundamental one-directional design.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-008",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "You need to connect 15 VPCs so that every VPC can reach every other VPC. Which approach avoids needing a near-full-mesh set of connections?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "VPC peering, since peering connections are transitive by default"
+        },
+        {
+          "id": "b",
+          "text": "AWS Transit Gateway, since it routes transitively through a central hub"
+        },
+        {
+          "id": "c",
+          "text": "A single shared subnet across all 15 VPCs"
+        },
+        {
+          "id": "d",
+          "text": "VPC peering combined with a NAT gateway in each VPC"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Transit Gateway attaches each VPC once and routes transitively between all attachments, scaling roughly linearly instead of requiring near-N-squared peering connections. (a) is false — VPC peering is explicitly not transitive, which is exactly the problem at this scale. (c) is not how VPC networking works; subnets can't span independent VPCs this way. (d) doesn't solve the transitivity problem — NAT gateways handle internet egress, not inter-VPC routing.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/tgw/what-is-transit-gateway.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-009",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "A Lambda function assumes Role B in another account, then uses those credentials to assume Role C in a third account. What session duration limit applies to the Role C session?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It's capped at 15 minutes since it's a chained assumption"
+        },
+        {
+          "id": "b",
+          "text": "It inherits whatever maximum session duration Role C is configured with"
+        },
+        {
+          "id": "c",
+          "text": "It's capped at 1 hour regardless of Role C's configured maximum"
+        },
+        {
+          "id": "d",
+          "text": "There's no limit as long as Role B's trust policy allows it"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Using temporary credentials from one assumed role to assume a further role is role chaining, and AWS caps the resulting session at a maximum of 1 hour regardless of the target role's own configured maximum session duration setting. (b) describes the behavior for a direct (non-chained) assumption, not a chained one. (a) uses the wrong number — 15 minutes is the minimum session duration, not the chaining cap. (d) is false; the 1-hour cap applies specifically because of chaining, independent of trust policy configuration.",
+      "reference": "https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use.html"
+    },
+    {
+      "id": "cloud-aws-core-services-networking-and-iam-010",
+      "tags": [
+        "aws-core-services-networking-and-iam",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What's the key architectural difference between an S3 gateway VPC endpoint and an interface VPC endpoint for DynamoDB?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Interface endpoints route via a route-table entry, while gateway endpoints use an ENI"
+        },
+        {
+          "id": "b",
+          "text": "Both use PrivateLink, but only the interface endpoint charges hourly"
+        },
+        {
+          "id": "c",
+          "text": "The gateway endpoint supports DynamoDB but not S3"
+        },
+        {
+          "id": "d",
+          "text": "The gateway endpoint is a route-table target; the interface endpoint provisions an ENI via PrivateLink"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Gateway endpoints work by adding a route-table entry and are limited to S3/DynamoDB, using no PrivateLink or ENI; interface endpoints provision an ENI with a private IP via AWS PrivateLink and support a much broader set of services. (b) is false — gateway endpoints don't use PrivateLink at all, so the comparison is malformed. (c) inverts reality; gateway endpoints support both S3 and DynamoDB. (a) swaps the mechanisms between the two endpoint types entirely.",
+      "reference": "https://docs.aws.amazon.com/vpc/latest/privatelink/concepts.html"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-001",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "In Azure Resource Manager's scope hierarchy, which is the widest level, containing everything else?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Subscriptions"
+        },
+        {
+          "id": "b",
+          "text": "Management groups"
+        },
+        {
+          "id": "c",
+          "text": "Individual resources"
+        },
+        {
+          "id": "d",
+          "text": "Resource groups"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Management groups sit above subscriptions, which sit above resource groups, which sit above individual resources. A policy or RBAC assignment at the management-group level cascades down through all subscriptions, resource groups, and resources beneath it. Subscriptions, resource groups, and resources are each narrower scopes nested within that hierarchy.",
+      "reference": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-002",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What happens to a system-assigned managed identity when the Azure resource it's attached to is deleted?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Azure prompts an admin to choose whether to keep it"
+        },
+        {
+          "id": "b",
+          "text": "It's reassigned automatically to a replacement resource"
+        },
+        {
+          "id": "c",
+          "text": "It's automatically deleted along with the resource"
+        },
+        {
+          "id": "d",
+          "text": "It stays active and must be manually deleted later"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "A system-assigned identity shares its lifecycle with the one resource it was created for, so deleting that resource automatically deletes its identity too. This is the key contrast with a user-assigned identity, which is its own standalone resource with an independent lifecycle and must be explicitly deleted, since it can also be attached to other resources.",
+      "reference": "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-003",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "internals",
+        "security"
+      ],
+      "type": "single",
+      "question": "In the OAuth 2.0 client credentials grant used for service-to-service auth in Entra ID, what does the request's scope parameter get set to?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A wildcard value covering every registered API"
+        },
+        {
+          "id": "b",
+          "text": "The calling application's own client ID"
+        },
+        {
+          "id": "c",
+          "text": "The target resource's identifier suffixed with .default"
+        },
+        {
+          "id": "d",
+          "text": "The signed-in user's requested permission scopes"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "The scope parameter is set to the resource identifier (application ID URI) followed by /.default, telling Entra ID to issue a token for whichever application permissions were already granted to the calling app for that resource. There's no user involved in this flow, so there are no user-consented scopes to request; the app can't scope to itself, and a wildcard-across-all-APIs concept doesn't exist in this request.",
+      "reference": "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-004",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "You redeploy an ARM template in Incremental mode, omitting a property that was previously set on an existing resource. What happens to that property?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It's left completely untouched, since the mode is Incremental"
+        },
+        {
+          "id": "b",
+          "text": "The deployment fails until the property is included"
+        },
+        {
+          "id": "c",
+          "text": "It's reset to its default value, since properties aren't merged"
+        },
+        {
+          "id": "d",
+          "text": "It's merged with whatever value it already had"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Even in Incremental mode, redeploying an existing resource reapplies its full set of properties from the template — properties aren't incrementally merged in. If a property is omitted, Resource Manager treats that as resetting it to default, which is a common source of surprise (e.g. a subnet or site-config value silently disappearing). Incremental mode's actual behavior is about leaving other resources not in the template alone, not about partially updating the ones that are.",
+      "reference": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/deployment-modes"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-005",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "Under Azure's shared responsibility model, which of the following is always the customer's responsibility, regardless of IaaS, PaaS, or SaaS?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Securing the physical datacenter"
+        },
+        {
+          "id": "b",
+          "text": "Managing identities and access controls"
+        },
+        {
+          "id": "c",
+          "text": "Maintaining the physical network hardware"
+        },
+        {
+          "id": "d",
+          "text": "Patching the operating system"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Data, identities/accounts, endpoints, and access management (RBAC, MFA, conditional access) never transfer to Microsoft no matter the deployment model. OS patching shifts to Microsoft in PaaS/SaaS; the physical datacenter and physical network are always Microsoft's responsibility once you're in the cloud, in every model including IaaS.",
+      "reference": "https://learn.microsoft.com/en-us/azure/security/fundamentals/shared-responsibility"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-006",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "internals",
+        "networking"
+      ],
+      "type": "single",
+      "question": "Two NSG rules could both match a given packet: one at priority 200 denying it, one at priority 500 allowing it. What's the outcome?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The traffic is allowed, since Allow rules take precedence"
+        },
+        {
+          "id": "b",
+          "text": "The deployment fails due to a conflicting-rule error"
+        },
+        {
+          "id": "c",
+          "text": "Both rules apply, and the deny is logged but not enforced"
+        },
+        {
+          "id": "d",
+          "text": "The traffic is denied, since 200 is evaluated first"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Lower priority numbers are evaluated first, and processing stops at the first match — so the priority-200 deny rule wins and the priority-500 allow rule is never even reached. NSGs don't merge or union matching rules, and there's no precedence given to Allow over Deny; only rule priority number decides the outcome, and NSGs don't reject a deployment just because two rules could both match the same traffic.",
+      "reference": "https://learn.microsoft.com/en-us/azure/virtual-network/network-security-groups-overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-007",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "performance",
+        "monitoring"
+      ],
+      "type": "single",
+      "question": "In Application Insights' Application Map, what property does it use to identify and label each component in the diagram?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The public IP address the component is exposed on"
+        },
+        {
+          "id": "b",
+          "text": "The Azure resource group each component runs in"
+        },
+        {
+          "id": "c",
+          "text": "The cloud role name reported in telemetry"
+        },
+        {
+          "id": "d",
+          "text": "The name of its App Service plan or hosting tier"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Application Map discovers components by their cloud role name property recorded in telemetry, which is what lets it stitch a coherent map together even across components reporting to separate Application Insights resources. Resource group, public IP, and hosting-plan name aren't what the map keys its node identity on.",
+      "reference": "https://learn.microsoft.com/en-us/azure/azure-monitor/app/app-map"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-008",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Which Azure Functions hosting plan is Microsoft's current recommendation for new serverless (pay-per-execution) function apps?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The Flex Consumption plan"
+        },
+        {
+          "id": "b",
+          "text": "Azure Container Apps hosting only"
+        },
+        {
+          "id": "c",
+          "text": "The legacy Consumption plan"
+        },
+        {
+          "id": "d",
+          "text": "The Dedicated (App Service) plan"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Microsoft now positions the (legacy) Consumption plan as the older option and recommends the Flex Consumption plan for new serverless function apps, which offers faster scaling and optional always-ready instances to reduce cold starts. The Dedicated plan removes cold starts by running continuously, but it isn't the serverless/pay-per-execution model being asked about, and Container Apps hosting is a separate, non-default option for Functions.",
+      "reference": "https://learn.microsoft.com/en-us/azure/azure-functions/functions-scale"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-009",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "networking",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What's the key network-level difference between a Private Endpoint and a Service Endpoint?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A Private Endpoint gives the service a private IP inside your VNet; a Service Endpoint keeps it on a public IP"
+        },
+        {
+          "id": "b",
+          "text": "They're functionally identical, differing only in which Azure regions support them"
+        },
+        {
+          "id": "c",
+          "text": "A Service Endpoint gives the service a private IP; a Private Endpoint keeps the public IP but restricts it"
+        },
+        {
+          "id": "d",
+          "text": "A Private Endpoint only works for storage accounts, while Service Endpoints work for any PaaS service"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "A Private Endpoint creates a network interface with a private IP from your own VNet, bringing the service fully into your address space over Private Link. A Service Endpoint instead keeps the service's public IP in place and just restricts which VNets/subnets can reach it over the Azure backbone. They're distinct mechanisms with different isolation guarantees, and Private Endpoint is supported by a wide range of PaaS services, not just storage.",
+      "reference": "https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-010",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "security",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why is an over-permissioned managed identity a meaningful security risk, given that it has no password an attacker could steal?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It only matters for compliance audits, not real-world attacks"
+        },
+        {
+          "id": "b",
+          "text": "It slows down token issuance for every request the app makes"
+        },
+        {
+          "id": "c",
+          "text": "It widens the blast radius if the application itself is ever compromised"
+        },
+        {
+          "id": "d",
+          "text": "It isn't actually a risk, since there's no credential to leak"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "The risk isn't credential theft, it's blast radius: if an attacker achieves code execution inside the app, they inherit every permission the identity carries automatically, with no separate credential step needed. A narrowly-scoped identity limits what that compromise can reach; over-permissioning turns one application vulnerability into a much larger incident. It's a real operational risk, not just a compliance checkbox, and it has no bearing on token issuance speed.",
+      "reference": "https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-011",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "advanced",
+        "resilience"
+      ],
+      "type": "single",
+      "question": "What's the main functional difference between an Availability Zone and an Availability Set?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Zones and sets are two names for the exact same underlying mechanism"
+        },
+        {
+          "id": "b",
+          "text": "Sets span separate datacenters; zones only separate racks within one datacenter"
+        },
+        {
+          "id": "c",
+          "text": "Sets are newer and have fully replaced zones for all VM workloads"
+        },
+        {
+          "id": "d",
+          "text": "Zones span separate datacenters in a region; sets only separate racks within one datacenter"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Availability Zones are physically separate datacenters within a region with independent power/cooling/networking, protecting against datacenter-scale failure. Availability Sets are an older, single-datacenter construct that only separates VMs across fault and update domains (racks/power groups) within that one datacenter, so they protect against rack-level failure but not a whole-datacenter outage. Zones are the newer, broader-scope mechanism, and the two aren't equivalent.",
+      "reference": "https://learn.microsoft.com/en-us/azure/reliability/availability-zones-overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-012",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "governance",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "A user has RBAC permission to create storage accounts, but an Azure Policy denies storage accounts outside a specific SKU list. What happens when they try to create a disallowed SKU?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The account is created but automatically deleted a day later"
+        },
+        {
+          "id": "b",
+          "text": "Azure prompts the user to request a Policy exemption before proceeding"
+        },
+        {
+          "id": "c",
+          "text": "The creation succeeds, since RBAC always takes precedence over Policy"
+        },
+        {
+          "id": "d",
+          "text": "The creation is denied by Policy despite the user having RBAC permission"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "RBAC and Policy answer different questions: RBAC decides whether you're authorized to attempt an action at all, while Policy independently evaluates whether the resulting resource configuration is compliant, regardless of who was authorized to create it. A Deny-effect policy blocks the disallowed SKU even for a fully-permitted user — RBAC permission doesn't override Policy enforcement, there's no automatic exemption prompt, and there's no deferred deletion mechanism for this case.",
+      "reference": "https://learn.microsoft.com/en-us/azure/governance/policy/overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-013",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "trade-offs",
+        "tooling"
+      ],
+      "type": "single",
+      "question": "What's a genuine, ongoing cost of choosing Terraform over Bicep for an Azure-only organization?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Terraform requires a paid Microsoft license to use with Azure"
+        },
+        {
+          "id": "b",
+          "text": "Terraform cannot create most common Azure resource types"
+        },
+        {
+          "id": "c",
+          "text": "Managing and securing a separate state file yourself"
+        },
+        {
+          "id": "d",
+          "text": "Terraform configurations can't be stored in version control"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Terraform's state file, tracking what infrastructure it believes exists, is something you're responsible for storing and locking securely yourself, unlike Bicep/ARM which rely on Azure's own deployment history and don't require a separate state artifact. Terraform's azurerm provider supports the overwhelming majority of Azure resource types (support for brand-new ones can simply lag Bicep/ARM), configurations are plain text and version-control-friendly like any IaC tool, and there's no Microsoft licensing fee tied to using Terraform against Azure.",
+      "reference": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/overview"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-014",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "internals",
+        "iac"
+      ],
+      "type": "single",
+      "question": "In an ARM template, does a database resource nested under a SQL server automatically deploy after its parent server?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only if the database uses the reference() function"
+        },
+        {
+          "id": "b",
+          "text": "Only when deploying in Complete mode"
+        },
+        {
+          "id": "c",
+          "text": "Yes — nesting always creates an implicit dependency"
+        },
+        {
+          "id": "d",
+          "text": "No — an explicit dependsOn is still required"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "Nesting a resource under a parent in a template doesn't by itself create a deployment-order dependency — if the child genuinely needs the parent deployed first, that still has to be declared explicitly via dependsOn, which is a commonly missed detail. Using reference() creates an implicit dependency on whatever resource it references, but that's a separate mechanism from parent/child nesting, and deployment mode (Incremental vs. Complete) has no bearing on this.",
+      "reference": "https://learn.microsoft.com/en-us/azure/azure-resource-manager/templates/resource-dependency"
+    },
+    {
+      "id": "cloud-azure-core-services-and-architecture-015",
+      "tags": [
+        "azure-core-services-and-architecture",
+        "performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "An App Service app has Always On disabled and receives no traffic for 45 minutes. What happens?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The app is unloaded after 20 minutes idle and must warm up on the next request"
+        },
+        {
+          "id": "b",
+          "text": "Nothing — apps stay loaded indefinitely regardless of the Always On setting"
+        },
+        {
+          "id": "c",
+          "text": "The app is unloaded, but the next request is served with zero added latency"
+        },
+        {
+          "id": "d",
+          "text": "The App Service plan itself is automatically deleted"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "With Always On off (the default), App Service unloads an idle app after 20 minutes of no incoming requests, and the next request has to wait for it to warm back up — a real, user-facing latency hit. Always On exists specifically to prevent this by pinging the app every 5 minutes so it never idles long enough to unload; leaving it off does not mean the app stays loaded forever, and unloading definitely isn't latency-free on the next request.",
+      "reference": "https://learn.microsoft.com/en-us/azure/app-service/configure-common"
     }
   ]
 }

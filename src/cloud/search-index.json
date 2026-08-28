@@ -238,5 +238,485 @@
       "scalability-and-resilience-patterns"
     ],
     "url": "/src/cloud/01-cloud-interview-scalability-and-resilience-patterns.html#q20"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q1",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What's the difference between a public and a private subnet in a VPC, and what actually makes a subnet \"public\"?",
+    "tldr": "A subnet is \"public\" only because its route table points internet-bound traffic at an IGW — reachability still requires a public IP and permissive security group rules on top of that.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q1"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q2",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "Security groups and network ACLs both filter traffic in a VPC — what's the actual mechanical difference between them?",
+    "tldr": "Security groups are stateful and instance-level (allow-only); NACLs are stateless and subnet-level (allow+deny, ordered, and you must explicitly permit return traffic).",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q2"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q3",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "Walk through exactly how AWS decides to allow or deny a request when multiple IAM policies apply.",
+    "tldr": "Combine same-account identity+resource policies as a union, intersect identity policies with boundaries/SCPs, and an explicit deny anywhere always overrides any allow; absent any allow, the default is deny.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q3"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q4",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What are the different types of IAM policies (identity-based, resource-based, SCPs, permissions boundaries), and when would you reach for each?",
+    "tldr": "Identity-based policies are the default per-principal grant; resource-based policies are the only way to grant cross-account access directly; SCPs and permissions boundaries only restrict, at the org and per-principal level respectively.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q4"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q5",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "How do you choose between S3 storage classes for a given workload?",
+    "tldr": "Pick by access frequency and predictability: Standard for hot data, IA classes for predictable-infrequent, Intelligent-Tiering for unpredictable, and the Glacier ladder for archival by expected retrieval urgency.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q5"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q6",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "How does S3 achieve its durability, and what's its consistency model?",
+    "tldr": "S3 is designed for eleven-nines durability via multi-AZ redundancy and provides strong read-after-write consistency for all operations, not eventual consistency.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q6"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q7",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What is IMDSv2, and why does it matter for security compared to IMDSv1?",
+    "tldr": "IMDSv2's PUT-then-token-GET flow closes the classic SSRF-to-credential-theft path that IMDSv1's plain GET allowed, but only when configured as token-required, not merely token-optional.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q7"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q8",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "How does a NAT gateway let private-subnet instances reach the internet without being reachable from it?",
+    "tldr": "A NAT gateway translates private instances' outbound source IPs to its own Elastic IP and only forwards return traffic for connections the VPC itself initiated, so external hosts have no path to initiate inbound connections.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q8"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q9",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "An EC2 instance in a private subnet can't reach an external API. Walk through your diagnostic methodology.",
+    "tldr": "Diagnose VPC connectivity outward from the instance: security group, then NACL (both directions, stateless), then route table/NAT health, then DNS, using VPC Flow Logs to definitively distinguish a security block from a routing gap.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q9"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q10",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "How would you find out exactly why a specific IAM principal got an access-denied error?",
+    "tldr": "Read the error message for the policy type/ARN first, then correlate with CloudTrail for the exact denied call, and use the Policy Simulator to test hypotheses — remembering SCPs live at the Organizations level, invisible from inside a member account's own IAM console.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q10"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q11",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "S3 used to recommend randomizing key prefixes for high-throughput workloads. Is that still necessary?",
+    "tldr": "S3 auto-scales request rate per prefix (3,500 write / 5,500 read req/s each, unlimited prefixes) since 2018 — manual key randomization for performance is obsolete guidance.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q11"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q12",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What does \"least privilege\" mean in concrete IAM terms, and how do you actually apply it rather than just stating it as a principle?",
+    "tldr": "Least privilege means scoping actions/resources/conditions to exactly what's needed, achieved practically via Access Analyzer/service-last-accessed data and temporary credentials rather than upfront guessing.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q12"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q13",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What is \"defense in depth\" and how do security groups, NACLs, and IAM concretely form layers of it in an AWS architecture?",
+    "tldr": "Defense in depth means NACLs, security groups, and IAM each independently narrow the attack surface, so a failure or misconfiguration in one layer doesn't automatically compromise the whole system.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q13"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q14",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "You need to connect 20 VPCs so they can all communicate. Would you use VPC peering or Transit Gateway, and why?",
+    "tldr": "VPC peering is non-transitive and scales quadratically with VPC count; Transit Gateway provides transitive hub-and-spoke routing that scales linearly, making it the right choice for connecting many VPCs.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q14"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q15",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What's wrong with an IAM policy that grants \"Action\": \"s3:*\" on \"Resource\": \"*\", and how did policies like this cause real S3 data breaches?",
+    "tldr": "Wildcard s3:*/* policies let a compromised credential alter bucket-level access controls, not just object data — real breaches followed this pattern; S3 Block Public Access is the specific guardrail against the resulting exposure.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q15"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q16",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "How do you grant a Lambda function in Account A temporary access to resources in Account B without sharing long-lived credentials?",
+    "tldr": "Cross-account access should go through STS AssumeRole against a trust-policy-scoped role, yielding short-lived credentials — chained role assumptions are additionally capped at a 1-hour session regardless of the target role's normal max.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q16"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q17",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What's the difference between a gateway VPC endpoint and an interface VPC endpoint?",
+    "tldr": "Gateway endpoints are free route-table targets limited to S3/DynamoDB; interface endpoints are ENI-based PrivateLink connections (with hourly/data charges) supporting a much broader set of services.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q17"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q18",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What exactly can and can't a Service Control Policy (SCP) do?",
+    "tldr": "SCPs only restrict (never grant), apply to all member-account principals including root, but never apply to the management account or service-linked roles.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q18"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q19",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "What's the practical difference between attaching a role's permissions via a permissions boundary versus just writing a tighter identity-based policy?",
+    "tldr": "Permissions boundaries matter specifically for delegation — capping what someone else's self-attached policies can grant — not as a substitute for simply writing a tight policy yourself when you already know the exact permissions needed.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q19"
+  },
+  {
+    "id": "cloud-aws-core-services-networking-and-iam-q20",
+    "topic": "cloud",
+    "subtopic": "aws-core-services-networking-and-iam",
+    "file": "02-cloud-interview-aws-core-services-networking-and-iam",
+    "title": "Your company is migrating from a flat, single-account AWS setup to AWS Organizations with multiple accounts. What's the security argument for doing this, given that you could apply the same IAM policies within one account?",
+    "tldr": "Multi-account isolation via AWS Organizations provides a stronger, un-bypassable-from-within blast-radius boundary than IAM alone can within one account, at the cost of real operational overhead best justified even minimally (e.g., prod/non-prod split) from early on rather than retrofitted later.",
+    "tags": [
+      "aws-core-services-networking-and-iam"
+    ],
+    "url": "/src/cloud/02-cloud-interview-aws-core-services-networking-and-iam.html#q20"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q1",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What are the four levels of management scope in Azure Resource Manager, and how does setting a policy at one level affect the others?",
+    "tldr": "Azure scope nests as management groups → subscriptions → resource groups → resources, with settings at a higher level inherited by everything below it.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q1"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q2",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "When would you choose Azure App Service, AKS, Azure Functions, or Container Apps for a new workload?",
+    "tldr": "Pick by how much infrastructure control you actually need: App Service for managed always-on web apps, AKS for full Kubernetes control, Functions for event-driven bursty workloads, Container Apps for containers without cluster management.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q2"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q3",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's the difference between a system-assigned and a user-assigned managed identity, and what problem do managed identities solve in general?",
+    "tldr": "System-assigned identities live and die with their one resource; user-assigned identities are standalone and shareable — both eliminate stored credentials entirely.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q3"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q4",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "How does a background service authenticate to another Azure API using Microsoft Entra ID, with no user involved?",
+    "tldr": "Service-to-service auth in Entra ID uses the OAuth2 client credentials grant — the app authenticates as itself with a secret, certificate, or federated credential, and gets a token scoped to its own pre-granted application permissions.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q4"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q5",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's the difference between Incremental and Complete ARM/Bicep deployment modes?",
+    "tldr": "Incremental mode only adds/updates what's in the template; Complete mode also deletes anything in the resource group that isn't — and both fully overwrite, not merge, each resource's properties.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q5"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q6",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "Explain Azure's shared responsibility model — what does the division of duties look like across IaaS, PaaS, and SaaS?",
+    "tldr": "Data, identities, endpoints, and access management are always the customer's job; Microsoft's share of the OS/network/physical stack grows from IaaS to PaaS to SaaS.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q6"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q7",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "How are Network Security Group rules evaluated, and what are the default rules every NSG starts with?",
+    "tldr": "NSG rules are evaluated in priority order (lowest number first, first match wins) against the 5-tuple, with built-in low-priority default-allow-VNet/allow-LB/deny-all rules underneath whatever custom rules you add.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q7"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q8",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "How would you use Application Insights to diagnose which service in a distributed call chain is causing a latency spike?",
+    "tldr": "Application Insights' Application Map shows per-connector latency/error rates across services by cloud role name, letting you find the slow hop and drill into its end-to-end transaction detail.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q8"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q9",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What causes an Azure Functions \"cold start,\" and which hosting plans avoid it?",
+    "tldr": "Cold starts come from provisioning a fresh instance on demand; Premium and Flex Consumption mitigate it with always-ready pre-warmed instances, Dedicated avoids it by never scaling to zero, and legacy Consumption is the plan most exposed to it.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q9"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q10",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's the difference between an Azure Private Endpoint and a Service Endpoint?",
+    "tldr": "Private Endpoint brings the service into your VNet with a private IP; Service Endpoint keeps the service's public IP but restricts access to it to your VNet over the Azure backbone.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q10"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q11",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's a common way managed identities or service principals end up over-permissioned, and why is that a real risk even though there's no password to steal?",
+    "tldr": "Over-permissioned identities are usually a setup shortcut that never gets revisited, and the real cost shows up as blast radius if the application itself is ever compromised, not credential theft.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q11"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q12",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "A custom NSG rule you just added to allow a new dependency doesn't seem to take effect. Besides a typo in the rule itself, what's a likely cause?",
+    "tldr": "A higher-priority-number (\"later evaluated\") allow rule never fires if a lower-priority-number rule already matched and denied the traffic first — check evaluation order, not just rule content.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q12"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q13",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's the difference between Availability Zones and Availability Sets, and what do they not protect you against?",
+    "tldr": "Availability zones span separate datacenters within a region (zone-scale resilience); availability sets only separate racks within one datacenter (rack-scale resilience); neither survives a full-region outage, which is what multi-region/paired regions are for.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q13"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q14",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's the difference between Azure Policy and Azure RBAC, and why do you need both?",
+    "tldr": "RBAC gates who can perform an action; Policy gates what a resulting resource configuration is allowed to look like, regardless of who was authorized to create it.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q14"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q15",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What's the practical trade-off between Bicep and Terraform for managing Azure infrastructure?",
+    "tldr": "Bicep is Azure-native with no state file to manage and faster access to new resource types; Terraform is cloud-agnostic at the cost of managing your own state and sometimes lagging on brand-new Azure features.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q15"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q16",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "How does Azure Resource Manager decide the order in which resources in a template get deployed?",
+    "tldr": "Resources with no declared dependency deploy in parallel; `dependsOn` and implicit `reference()`/`list*()` usage are the only things that force serial ordering, and child resources don't auto-depend on their parent.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q16"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q17",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "What does App Service's \"Always On\" setting actually do, and what breaks if it's left off?",
+    "tldr": "Always On keeps App Service pinging your app every 5 minutes so it's never unloaded after the default 20-minute idle timeout — required for scheduled/continuous WebJobs, and it also avoids idle-triggered cold-start-like latency spikes.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q17"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q18",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "Why do organizations move from manual portal changes to Infrastructure as Code (ARM/Bicep) for Azure, beyond \"it's more modern\"?",
+    "tldr": "IaC's real value is preventing configuration drift and making environments reproducible/auditable — problems that manual portal changes accumulate silently over time, especially painful during disaster recovery or compliance review.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q18"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q19",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "How does Azure Container Apps scale a revision based on queue length, and what happens as the queue empties?",
+    "tldr": "Container Apps' KEDA-based custom scale rules compute desired replicas from a target-metric formula, scale up quickly but only scale down after a 300-second stabilization window plus a 300-second cool-down once the trigger condition clears.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q19"
+  },
+  {
+    "id": "cloud-azure-core-services-and-architecture-q20",
+    "topic": "cloud",
+    "subtopic": "azure-core-services-and-architecture",
+    "file": "03-cloud-interview-azure-core-services-and-architecture",
+    "title": "When would you deploy a resource as \"zonal\" instead of \"zone-redundant,\" given that zone-redundant sounds strictly safer?",
+    "tldr": "Zonal deployment trades automatic zone-outage resilience for lower intra-cluster latency by keeping instances in one zone; you can get both by deploying separate zonal groups across multiple zones yourself, at the cost of managing that topology and failover.",
+    "tags": [
+      "azure-core-services-and-architecture"
+    ],
+    "url": "/src/cloud/03-cloud-interview-azure-core-services-and-architecture.html#q20"
   }
 ]

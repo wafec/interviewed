@@ -238,5 +238,965 @@
       "clr-and-async-internals"
     ],
     "url": "/src/dotnet/01-dotnet-interview-clr-and-async-internals.html#q20"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q1",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What is middleware in ASP.NET Core, and what classic design pattern does the request pipeline implement?",
+    "tldr": "ASP.NET Core middleware is Chain of Responsibility made concrete: each component decides whether to handle a request or hand it to the next one, and can short-circuit the chain entirely.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q1"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q2",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What are the three built-in DI service lifetimes in ASP.NET Core, and what does each one guarantee?",
+    "tldr": "Transient = new every time, Scoped = one per request, Singleton = one for the app's life — mixing them incorrectly (scoped inside singleton) is the classic DI bug.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q2"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q3",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "How do `Use`, `Run`, and `Map` differ when building the middleware pipeline?",
+    "tldr": "`Use` can continue or short-circuit, `Run` always terminates the pipeline, `Map` branches it by path — anything registered after the first `Run` is unreachable.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q3"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q4",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "Why must `UseRouting` come before authorization middleware, and what do `UseRouting`/`UseEndpoints` actually each do?",
+    "tldr": "`UseRouting` selects an endpoint without running it; `UseEndpoints`/endpoint execution runs it — authorization has to sit after routing because it needs to know which endpoint (and its `[Authorize]` metadata) was matched.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q4"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q5",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What's the difference between `IOptions<T>`, `IOptionsSnapshot<T>`, and `IOptionsMonitor<T>`?",
+    "tldr": "`IOptions<T>` is frozen at startup, `IOptionsSnapshot<T>` refreshes per-request but is scoped, `IOptionsMonitor<T>` is a singleton that's always current and supports change notifications.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q5"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q6",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "How does a scoped service injected into convention-based middleware behave differently depending on whether it's injected via the constructor or via `InvokeAsync`'s parameters?",
+    "tldr": "Convention-based middleware is built once at startup, so constructor-injected scoped services become accidentally singleton-scoped — inject scoped dependencies via `InvokeAsync` parameters instead, or use `IMiddleware` for real per-request constructor injection.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q6"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q7",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What is a \"captive dependency,\" and how does it happen in ASP.NET Core's DI container?",
+    "tldr": "A captive dependency is a scoped (or transient) service accidentally kept alive for the app's lifetime because a singleton captured it via constructor injection — fix it by resolving the scoped service through a fresh `IServiceScopeFactory`-created scope instead.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q7"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q8",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What happens if code resolves a scoped service directly from the root `IServiceProvider`, and does the behavior differ between environments?",
+    "tldr": "Resolving a scoped service from the root provider throws in Development (scope validation is on by default there) but silently promotes it to singleton behavior in Production — enable `ValidateScopes`/`ValidateOnBuild` everywhere to catch this before it ships.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q8"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q9",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What's the risk of misusing `IHttpContextAccessor`, and how does it actually track \"the current\" `HttpContext`?",
+    "tldr": "`IHttpContextAccessor` is a singleton, but its `HttpContext` property is backed by `AsyncLocal<T>` and reflects the currently executing request — the bug is capturing that value once instead of reading it fresh at each use.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q9"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q10",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What breaks if exception-handling middleware is registered at the end of the pipeline instead of the start, or `UseCors` is placed after `UseAuthentication`?",
+    "tldr": "Exception handling must wrap everything else (register it first) to catch downstream exceptions; CORS must run before auth so preflight/cross-origin requests get proper CORS headers even when the real request would fail authentication.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q10"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q11",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "How would you diagnose that a production bug is being caused by middleware ordering rather than application logic?",
+    "tldr": "Diagnose middleware-ordering bugs by timestamping/logging at pipeline boundaries and inspecting `GetEndpoint()` at each stage, then lock the fix in with a `WebApplicationFactory`-based integration test asserting on the exact previously-broken scenario.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q11"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q12",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What would you check first if an ASP.NET Core app's first request after startup is dramatically slower than subsequent ones?",
+    "tldr": "First-request slowness is usually JIT warmup, lazy DI container graph construction, or EF Core's first-query model-building cost — diagnose with `dotnet-trace`/PerfView, and fix by moving expensive first-time work into an explicit eager startup step.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q12"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q13",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "How does the Chain of Responsibility pattern specifically map onto ASP.NET Core's middleware pipeline, beyond just \"requests pass through handlers\"?",
+    "tldr": "Middleware *is* Chain of Responsibility: each link decides independently whether to handle, pass along, or short-circuit, decoupling the framework's dispatch from whichever middleware ultimately responds — at the cost of no compile-time guarantee that something in the chain actually will.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q13"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q14",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What is Inversion of Control, and how does Dependency Injection implement it, per Martin Fowler's original formulation?",
+    "tldr": "Inversion of Control is the framework controlling program flow instead of your code; Dependency Injection is Fowler's more precise name for supplying dependencies explicitly (usually via constructor) instead of a component fetching them itself via a Service Locator.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q14"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q15",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What real-world problem does a composable middleware pipeline solve that one big monolithic request handler wouldn't?",
+    "tldr": "Middleware exists so cross-cutting concerns (logging, auth, CORS, exception handling) live in one reusable place instead of being duplicated across every request handler; when a concern needs action-level context or per-endpoint scoping, filters fill that gap instead.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q15"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q16",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What problem does the Options pattern solve compared to reading `IConfiguration[\"Some:Key\"]` directly wherever a setting is needed?",
+    "tldr": "The Options pattern replaces scattered magic-string `IConfiguration` lookups with one strongly-typed, centrally-bound settings object; later-added configuration providers (env vars, then command-line args) override earlier ones (appsettings.json) for the same key.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q16"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q17",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "What are \"keyed services,\" and what problem do they solve that plain DI registration can't?",
+    "tldr": "Keyed services (.NET 8+) let you register and resolve multiple implementations of the same interface by an explicit key, replacing older workarounds like filtering an `IEnumerable<T>` of all implementations at each call site.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q17"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q18",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "How does factory-based middleware (`IMiddleware`/`IMiddlewareFactory`) differ from convention-based middleware, and what does it unlock?",
+    "tldr": "`IMiddleware` + `IMiddlewareFactory` creates a fresh middleware instance per request via DI, safely allowing constructor-injected scoped services — at the cost of needing explicit registration, which is why simpler convention-based middleware remains the default for dependency-light cases.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q18"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q19",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "Minimal APIs vs. MVC controllers — what factors should actually drive that choice?",
+    "tldr": "Both share the same fundamentals; choose controllers for large/long-lived APIs that benefit from built-in conventions and consistency, and minimal APIs for small, focused services where lower ceremony matters more than default structure — raw performance rarely decides it.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q19"
+  },
+  {
+    "id": "dotnet-aspnet-core-middleware-di-and-configuration-q20",
+    "topic": "dotnet",
+    "subtopic": "aspnet-core-middleware-di-and-configuration",
+    "file": "02-dotnet-interview-aspnet-core-middleware-di-and-configuration",
+    "title": "When would you reach for a middleware versus an action filter for a cross-cutting concern, and is the built-in DI container ever not enough?",
+    "tldr": "Use middleware for pipeline-wide concerns without MVC context, filters for action-scoped concerns needing that context; the built-in DI container covers most needs but lacks things like native decorator support, which is the usual concrete reason teams adopt a third-party container via `IServiceProviderFactory`.",
+    "tags": [
+      "aspnet-core-middleware-di-and-configuration"
+    ],
+    "url": "/src/dotnet/02-dotnet-interview-aspnet-core-middleware-di-and-configuration.html#q20"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q1",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What does EF Core's change tracker actually do, and what states can a tracked entity be in?",
+    "tldr": "The change tracker records every entity's `EntityState` (Detached/Added/Unchanged/Modified/Deleted) so `SaveChanges` knows exactly what to INSERT/UPDATE/DELETE, and it's designed to live for one short unit of work, not the app's lifetime.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q1"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q2",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What's the difference between a tracking query and a no-tracking query, and when should you use each?",
+    "tldr": "Tracking queries set up change-detection and enable `SaveChanges`; no-tracking queries skip that for faster, read-only access — use `AsNoTrackingWithIdentityResolution()` when you need read-only *and* de-duplicated object identity across a result set.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q2"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q3",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "How does EF Core's change tracker actually detect that a property changed, given that entity classes are usually plain C# properties with no notification events?",
+    "tldr": "EF Core snapshots each tracked entity's properties at query time and later diffs the live object against that snapshot (during `DetectChanges`, called internally by `SaveChanges`) to figure out what changed — no notification interfaces required, at the cost of an O(tracked entities) scan.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q3"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q4",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "How does `Include()` actually load related data, and what SQL does it generate for a chain of `Include`/`ThenInclude` calls?",
+    "tldr": "`Include`/`ThenInclude` translate to SQL JOINs in a single query by default; joining two *sibling* collection navigations causes a cartesian explosion (cross-product row blow-up), while nested includes don't.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q4"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q5",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What is `AsSplitQuery()`, and what are its trade-offs compared to the default single-query behavior?",
+    "tldr": "`AsSplitQuery()` trades the single-query JOIN's consistency and one-round-trip guarantee for avoiding cartesian explosion and duplicated columns — pick per-query based on which cost hurts more for that specific data shape and latency profile.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q5"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q6",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "How does lazy loading work in EF Core, and what has to be true of your entity classes for it to work via proxies?",
+    "tldr": "Lazy loading (proxies over `virtual` navigation properties, or an injected `ILazyLoader`) fetches related data on first access — convenient, but looping over a collection and touching a lazy navigation per item silently fires one query per item, the classic N+1.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q6"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q7",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "EF Core caches compiled queries by \"query tree shape.\" What does that mean, and why does parameterizing a query matter for this?",
+    "tldr": "EF Core caches query translation by expression-tree shape; use variables (not inline literals) so repeated queries share one cached shape and one parameterized SQL plan, and reach for explicit `EF.CompileQuery` only for genuinely hot queries where skipping the cache lookup itself is worth the added rigidity.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q7"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q8",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "How would you actually detect that an endpoint has an N+1 query problem, and what's your process for confirming a fix worked?",
+    "tldr": "Detect N+1 by counting generated SQL statements per request via `LogTo`/`ToQueryString()`, looking for one-query-per-row instead of a constant count; fix with `Include`/projection, but validate the fix didn't trade N+1 for a cartesian-exploded single query.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q8"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q9",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What problem does `DbContext` pooling solve, and what did Microsoft's own benchmark show about its impact?",
+    "tldr": "`DbContext` pooling reuses reset context instances to avoid per-request setup cost (Microsoft measured roughly 2x lower latency and 10x less allocation in one benchmark), but any custom per-request state on your context subclass must be explicitly reset via a custom scoped factory, since pooling only resets EF Core's own internals.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q9"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q10",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What are `ExecuteUpdate` and `ExecuteDelete`, and why are they more efficient than the traditional query-then-`SaveChanges` approach for bulk operations?",
+    "tldr": "`ExecuteUpdate`/`ExecuteDelete` skip querying, materializing, and change-tracking entirely to issue one direct SQL statement — much faster for bulk changes, but since they bypass the change tracker and don't auto-wrap in a transaction, mixing them with tracked `SaveChanges` work on the same rows can silently overwrite one or the other.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q10"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q11",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What are global query filters, and what are the two classic use cases for them?",
+    "tldr": "Global query filters (`HasQueryFilter`) auto-apply a `Where` to every query against an entity — perfect for soft-delete and multi-tenancy — but combined with a required navigation they can silently drop rows via an unexpected INNER JOIN; fix by making the navigation optional or filtering both sides consistently.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q11"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q12",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What's the difference between \"client evaluation\" and \"server evaluation\" in an EF Core LINQ query, and why does EF Core throw an exception for some client evaluation but not other cases?",
+    "tldr": "EF Core silently allows client evaluation only in a query's final `Select`; anywhere else (like `Where`) it throws rather than risk quietly pulling an entire table into memory — opt in explicitly via `AsEnumerable`/`ToList` only when you know the data volume is safe to do so.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q12"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q13",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "`DbContext` is documented as \"not thread-safe.\" What exactly happens if you use one instance concurrently from multiple threads, and what's the most common way this happens by accident?",
+    "tldr": "A single `DbContext` instance can't be used by two operations at once (including two un-awaited async calls) — EF Core throws when it detects this, and the fix for genuine parallel work is a separate context instance per concurrent operation, via a new DI scope or `IDbContextFactory`.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q13"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q14",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "Why is `AddDbContext` registered as a *scoped* service by default in ASP.NET Core, rather than singleton or transient?",
+    "tldr": "Scoped lifetime ties one `DbContext` instance to one DI scope, which in ASP.NET Core normally means one HTTP request — matching the \"one unit of work\" design intent; hosting models like Blazor Server where a scope spans much more than one unit of work need `AddDbContextFactory` instead.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q14"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q15",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "How does EF Core translate LINQ into SQL, and why can a query throw at runtime for something that compiles fine as C#?",
+    "tldr": "LINQ queries build a deferred expression tree that's translated to SQL only when enumerated, against a specific provider — so a query can compile fine yet throw a runtime translation exception, which only real-database integration tests reliably catch (the in-memory provider doesn't validate this).",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q15"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q16",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What's the trade-off between using EF Core and using a lighter tool like Dapper (or raw ADO.NET) for a performance-critical read path?",
+    "tldr": "EF Core trades some raw performance for productivity (LINQ, change tracking, migrations); Dapper/raw SQL trades that productivity back for speed on hot paths — the right answer is to default to EF Core and drop to Dapper only for specific, measured bottlenecks, not as a blanket rule.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q16"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q17",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "How does the Repository pattern relate to `DbContext`, and why do many teams consider wrapping `DbContext` in a custom repository redundant?",
+    "tldr": "`DbSet`/`DbContext` already implement much of what a hand-rolled Repository/Unit-of-Work layer would provide, so wrapping them in a same-shaped custom abstraction is often redundant — a repository still earns its keep when it encapsulates specific reusable query logic or serves a deliberate architectural boundary (e.g. keeping EF Core out of a domain layer).",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q17"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q18",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What real-world problem does an ORM like EF Core actually solve — what was application code doing before something like this existed?",
+    "tldr": "ORMs like EF Core automate the tedious, error-prone manual work of mapping objects to relational rows and back (querying, dirty-checking, generating INSERT/UPDATE/DELETE) — the object-relational impedance mismatch — but they don't remove the need to understand what's happening underneath; they just relocate that understanding from \"SQL and mapping code\" to \"translation and tracking behavior.\"",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q18"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q19",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "You're designing a read-heavy, mostly-reporting API on top of EF Core. Would you flip the context's default tracking behavior globally to no-tracking, and what would you weigh in that decision?",
+    "tldr": "Flipping a context's default to no-tracking is a good fit for a genuinely read-only/reporting context, but risks silently-ineffective saves if that same context type is also used for writes — combine it with projections, `AsSplitQuery()` for multi-collection reports, and pooling/compiled queries for the highest-frequency queries specifically.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q19"
+  },
+  {
+    "id": "dotnet-ef-core-internals-and-query-performance-q20",
+    "topic": "dotnet",
+    "subtopic": "ef-core-internals-and-query-performance",
+    "file": "03-dotnet-interview-ef-core-internals-and-query-performance",
+    "title": "What's the fundamental difference in how EF Core executes `SaveChanges()` versus `ExecuteUpdate()`/`ExecuteDelete()`, in terms of when SQL actually runs against the database?",
+    "tldr": "`SaveChanges()` accumulates tracked changes and commits them together at one point; `ExecuteUpdate`/`ExecuteDelete` take effect immediately per call with no accumulation — for a bulk nightly cleanup touching thousands of rows, `ExecuteUpdate` is the right tool precisely because there's nothing to accumulate or track.",
+    "tags": [
+      "ef-core-internals-and-query-performance"
+    ],
+    "url": "/src/dotnet/03-dotnet-interview-ef-core-internals-and-query-performance.html#q20"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q1",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Where does a value type actually live in memory — always the stack?",
+    "tldr": "A value type lives wherever its containing storage lives (stack for a simple local, inline in the heap if it's a field/array element/closure capture) — the real benefit is avoiding a separate heap allocation and pointer indirection, not \"staying off the heap\" categorically.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q1"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q2",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "What makes the .NET garbage collector \"generational,\" and why does that assumption pay off?",
+    "tldr": "The GC is generational because most objects die young — collecting Gen0 frequently and cheaply while reserving expensive full (Gen2 + LOH/POH) collections for the rare long-lived survivors is what makes .NET's GC fast in practice.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q2"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q3",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Why is `Span<T>` declared as a `ref struct`, and what does that cost you?",
+    "tldr": "`Span<T>` is a `ref struct` so the compiler can guarantee it (and any stack pointer it wraps) never escapes to the heap — which is exactly what makes it unusable across `await`/in fields/in lambdas, and exactly why `Memory<T>` exists as the heap-safe alternative for those cases.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q3"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q4",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "What does `stackalloc` actually do, and what's the risk if you use it carelessly?",
+    "tldr": "`stackalloc` gives you GC-free, auto-freed stack memory, but its capacity is small and fixed, so unguarded or loop-based use risks an unrecoverable `StackOverflowException` — always cap it and fall back to a heap array above the threshold.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q4"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q5",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "How does `ArrayPool<T>` reduce GC pressure, and what's the contract you must honor to use it safely?",
+    "tldr": "`ArrayPool<T>` cuts GC pressure by reusing buffers instead of allocating fresh ones each time — but `Rent` only guarantees a length \"at least\" what you asked for, and you must `Return` every rented array (in a `finally`) to actually get the benefit.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q5"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q6",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "What's the difference between Workstation GC and Server GC, and which does ASP.NET Core use by default?",
+    "tldr": "Server GC (ASP.NET Core's default) parallelizes collection across one heap+thread per core for higher throughput, but that same design causes thread contention when many instances share a host — which is when switching to Workstation GC (with concurrent GC off) can win instead.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q6"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q7",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "What does \"background\" or \"concurrent\" GC actually let the rest of your app do during a collection?",
+    "tldr": "Background/concurrent GC lets the app keep running and allocating through most of a Gen2 collection instead of stopping the world, trading some total collector overhead for much shorter individual pause times.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q7"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q8",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "How do finalizers interact with the garbage collector, and why do finalizable objects take longer to reclaim?",
+    "tldr": "A finalizable object survives its first \"dead\" collection to run its finalizer and is only actually reclaimed on the next one — reclaiming it takes at least two GCs — which is exactly the extra cost `Dispose()` + `GC.SuppressFinalize` is designed to let you skip.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q8"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q9",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "You suspect a service has excessive GC pressure. Which `dotnet-counters` metrics would you watch, and what pattern would confirm it?",
+    "tldr": "Watch allocation rate, per-generation collection counts, and `% Time in GC` together via `dotnet-counters` — high allocation rate plus elevated `% Time in GC` confirms real GC pressure and points you toward fixing allocations in code rather than just tuning GC settings.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q9"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q10",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "`dotnet-counters` tells you GC pressure is high. How do you find *which* objects/types are actually driving the allocations?",
+    "tldr": "Use `dotnet-trace`'s allocation events to find which call stacks are allocating fastest, and `dotnet-gcdump`'s heap snapshot plus paths-to-root to find what's unexpectedly retaining memory — they answer different questions (\"what's allocating\" vs. \"what's still alive and why\").",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q10"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q11",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "How does BenchmarkDotNet's `MemoryDiagnoser` actually measure allocations, and what do the Gen0/Gen1/Gen2 columns mean?",
+    "tldr": "`MemoryDiagnoser` reports total allocated bytes (via `GC.GetAllocatedBytesForCurrentThread`) plus per-generation GC frequency normalized per 1,000 operations — both matter, since equal total bytes with higher collection frequency can still mean worse real-world pause behavior.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q11"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q12",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Your service has occasional large latency spikes correlated with big allocations. How do you diagnose Large Object Heap fragmentation specifically?",
+    "tldr": "LOH fragmentation shows up as a growing process footprint despite stable live large-object counts, confirmed via `dotnet-counters`' fragmentation metric or a `dotnet-gcdump`; pooling large buffers with `ArrayPool<T>` (or, rarely, an explicit one-off LOH compaction) is the fix.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q12"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q13",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Why does reducing allocation *count* often matter more for throughput than reducing GC pause *time* directly?",
+    "tldr": "Allocation rate drives how *often* the collector runs at all, which compounds across the whole app's throughput — that's a bigger lever than tuning individual pause behavior, which mainly smooths latency consistency rather than reducing total collector work.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q13"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q14",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Give a concrete real-world scenario where `Span<T>` eliminates allocations that would otherwise happen on every request.",
+    "tldr": "`Span<T>`-based slicing turns per-request parsing that used to allocate several intermediate strings/arrays into zero-copy views over existing memory, allocating only the one piece you actually need to keep — a direct, measurable Gen0-reduction win at scale.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q14"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q15",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Why can't you pass a `Span<T>` as a parameter to an `async` method, and how does this actually bite you in practice?",
+    "tldr": "`Span<T>` can't survive in an async state machine because that state machine may live on the heap, so async APIs take `Memory<T>` instead and drop down to `.Span` only for strictly synchronous portions of the work, never across an `await`.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q15"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q16",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "What is boxing, and why can it silently degrade the performance of otherwise \"efficient\" value-type code?",
+    "tldr": "Boxing silently allocates whenever a value type is used as `object`/a non-generic interface — including through easy-to-miss paths like interface method calls on structs or legacy non-generic collections — which is exactly the hidden-allocation problem generics were introduced to eliminate.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q16"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q17",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "What does `GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency` actually change, and what's the trade-off?",
+    "tldr": "`SustainedLowLatency` biases the collector to avoid full blocking Gen2 collections over an extended period (unlike `LowLatency`, which isn't even available under Server GC) — at the cost of no hard guarantee and potentially higher sustained memory use.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q17"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q18",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Does Native AOT compilation change which garbage collector your app uses?",
+    "tldr": "Native AOT removes the JIT and bundles a stripped-down CoreCLR, but that stripped-down runtime still provides the same generational GC — Native AOT's performance win is in startup time/footprint, not in changing how garbage collection itself works.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q18"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q19",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Design question: you're building a high-throughput binary protocol parser that must sustain very low p99 latency. Walk through the memory-management decisions you'd make.",
+    "tldr": "A low-latency high-throughput parser combines `ArrayPool<T>` for buffers, `Span<T>`-based zero-copy parsing, `stackalloc` for small scratch space, a deliberately-chosen GC mode (Server GC plus possibly `SustainedLowLatency`), and — critically — validation via `MemoryDiagnoser`, `dotnet-counters`, and real p99 measurement rather than assuming the \"known-fast\" APIs alone guarantee the result.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q19"
+  },
+  {
+    "id": "dotnet-memory-management-gc-and-high-performance-types-q20",
+    "topic": "dotnet",
+    "subtopic": "memory-management-gc-and-high-performance-types",
+    "file": "04-dotnet-interview-memory-management-gc-and-high-performance-types",
+    "title": "Struct vs. class: beyond \"value type vs. reference type,\" what's the concrete decision criteria for a high-frequency allocated type?",
+    "tldr": "Structs win for small, immutable, high-volume data by avoiding per-instance heap allocations, but copy-by-value semantics make mutable structs a serious correctness footgun — favor `readonly struct` for anything small enough to justify the choice at all.",
+    "tags": [
+      "memory-management-gc-and-high-performance-types"
+    ],
+    "url": "/src/dotnet/04-dotnet-interview-memory-management-gc-and-high-performance-types.html#q20"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q1",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What does the `record` modifier actually add on top of a `class` or `struct`, and how is a `record class`'s equality different from a plain class's?",
+    "tldr": "`record` adds compiler-generated value equality/`ToString`/`with`-support on top of a class or struct, but reference-typed properties (like arrays) are still compared by reference, not by contents.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q1"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q2",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "How does a `with` expression achieve \"non-destructive mutation,\" and what actually happens under the hood when you write `original with { FirstName = \"X\" }`?",
+    "tldr": "`with` copies the record (via a compiler-generated clone for `record class`, or plain value copy for `record struct`) and applies the specified property changes to the copy — the original is never mutated.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q2"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q3",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What does \"deferred execution\" mean for a LINQ query, and what mechanism in C# makes it possible?",
+    "tldr": "LINQ's deferred execution is built on `yield return` iterator blocks — the query is just a stored description until something enumerates it; scalar-returning operators like `Count()`/`Sum()` are the exception and run immediately.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q3"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q4",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What's the performance/correctness risk of enumerating the same deferred LINQ query variable twice, and how do you fix it?",
+    "tldr": "A deferred LINQ query re-runs its entire chain every time it's enumerated — call `.ToList()`/`.ToArray()` once and reuse that if you need the results more than once.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q4"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q5",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What's the fundamental difference between `IEnumerable<T>` and `IQueryable<T>`, and why does that difference matter for something like Entity Framework?",
+    "tldr": "`IQueryable<T>` captures LINQ operations as expression trees a provider can translate (e.g., to SQL); `IEnumerable<T>` runs compiled delegates in-process — that's why the same-looking `Where` call behaves completely differently depending on which one you're chained onto.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q5"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q6",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What is \"client evaluation\" in EF Core, why is it dangerous, and how would you detect it before it causes a production incident?",
+    "tldr": "EF Core \"client evaluation\" silently pulls untranslatable query logic into memory to finish it there — since EF Core 3.x this throws by default for filtering (not projection), specifically to prevent this from silently shipping to production.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q6"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q7",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What does C# pattern matching let you express that a plain `if`/`is`/`==` chain doesn't, and what's the difference between a type pattern and a property pattern?",
+    "tldr": "Type patterns safely test-and-cast; property patterns test an object's shape by its property values; `switch` expressions combine them with compiler-enforced exhaustiveness — all more than a chain of `if`/`is`/`==` can express as concisely.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q7"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q8",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "Nullable reference types are described as a \"compile-time feature.\" What does that mean in practice, and what's the actual runtime behavior difference between `string` and `string?`?",
+    "tldr": "Nullable reference types change zero runtime behavior — `string?` is still just `System.String` — the feature is purely compiler warnings from static null-state analysis, so `null` can still reach a \"non-nullable\" variable at runtime in cases the analysis can't see (structs, arrays, unannotated libraries).",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q8"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q9",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What does the null-forgiving operator (`!`) actually do, and why is overusing it considered a code smell?",
+    "tldr": "`!` only silences the compiler's nullable warning at that spot — it has zero runtime effect, so an incorrect `!` just converts a compile-time warning into a runtime `NullReferenceException` with no earlier warning to have prevented it.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q9"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q10",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What real-world problem do nullable reference types solve, and why was this added as an opt-in, warnings-based feature instead of a breaking change to the type system?",
+    "tldr": "Nullable reference types let you express \"this can never be null\" directly in the type signature and get compile-time warnings on violations — it's warnings-only and opt-in specifically so it doesn't break the vast amount of pre-existing, unannotated C# code and libraries.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q10"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q11",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "`record class` equality compares reference-typed properties by reference, not contents. Walk through a concrete case where this surprises someone who's used to \"records are like value objects.\"",
+    "tldr": "Record equality is shallow — a reference-typed property like an array is compared by reference, not contents, so two records holding equal-looking-but-different array instances are not equal.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q11"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q12",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What's the practical difference in behavior between assigning a `record class` variable and assigning a `record struct` variable?",
+    "tldr": "`record class` assignment copies a reference (shared mutable state, if any); `record struct` assignment copies the whole value (independent copies) — choose based on whether you need inheritance/large-object sharing or small independent value semantics.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q12"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q13",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What does the `required` modifier enforce, and at what point is that enforcement checked?",
+    "tldr": "`required` forces every object-initializer construction site to set that member, enforced as a compile-time error — it has no runtime component and doesn't apply directly to record positional parameters.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q13"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q14",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "How do primary constructor parameters actually get stored, and why does that matter for a type used with dependency injection?",
+    "tldr": "The compiler only allocates hidden storage for a primary constructor parameter if it's used somewhere in the type's members after construction — and in a derived class, a parameter forwarded to and also referenced independently of the base class becomes a separate, potentially stale copy.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q14"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q15",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What do collection expressions (`[1, 2, 3]`) actually compile to, and how can a custom type opt into supporting them?",
+    "tldr": "Collection expressions are target-typed and eagerly materialize a real collection (never lazily, unlike LINQ) — custom types opt in via a static `Create(ReadOnlySpan<T>)` method plus `[CollectionBuilder]`.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q15"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q16",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What does an `init`-only property accessor enable that a `get`-only auto-property or a `private set` doesn't?",
+    "tldr": "`init` allows assignment only during construction (including via the caller's object initializer) and never afterward, even from inside the type itself — it doesn't by itself require the caller to set the property; pair it with `required` for that.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q16"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q17",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "What are C# source generators, and how do they compare to reflection as a way to generate behavior based on a type's shape?",
+    "tldr": "Source generators emit real C# code at compile time based on inspecting the compilation, avoiding the runtime cost (and AOT/trimming friction) of reflecting over types dynamically at the price of needing to know the shape at build time.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q17"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q18",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "Is there a performance difference between LINQ query syntax (`from x in ... where ... select ...`) and method syntax (`.Where(...).Select(...)`)?",
+    "tldr": "Query syntax and method syntax compile to the same method calls with zero performance difference between them — the real (separate) performance trade-off is LINQ's per-operator iterator/delegate overhead versus a hand-written loop, which only matters in genuinely hot paths.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q18"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q19",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "You're designing a set of DTOs for an API layer. When would you reach for a `record`, when for a plain `class`, and when for a `struct`?",
+    "tldr": "Default to `record` (class) for data-only DTOs needing value equality and immutability; use a plain `class` when identity matters (notably EF Core entities, which rely on reference-equality-based tracking); reserve `struct`/`record struct` for genuinely small, short-lived value-like data.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q19"
+  },
+  {
+    "id": "dotnet-csharp-language-features-and-linq-internals-q20",
+    "topic": "dotnet",
+    "subtopic": "csharp-language-features-and-linq-internals",
+    "file": "05-dotnet-interview-csharp-language-features-and-linq-internals",
+    "title": "In general software engineering terms, what problem do property/type patterns and exhaustive `switch` expressions solve that's traditionally associated with the \"expression problem\" in OOP design?",
+    "tldr": "Pattern matching moves operations outside the type hierarchy (easy to add new operations, harder to add new types) — the opposite trade-off from virtual dispatch — and the compiler's exhaustiveness checking on `switch` expressions is what makes that safe against forgetting a case.",
+    "tags": [
+      "csharp-language-features-and-linq-internals"
+    ],
+    "url": "/src/dotnet/05-dotnet-interview-csharp-language-features-and-linq-internals.html#q20"
   }
 ]

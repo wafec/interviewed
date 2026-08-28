@@ -334,6 +334,1294 @@
       ],
       "explanation": ".Include()/.ThenInclude() (or explicit .Load() calls) fetch related data as part of the initial query via a JOIN, turning N+1 round trips into one (or a controlled few). A transaction, connection pool size, and query caching don't address the root cause of issuing one query per entity; making DbContext a Singleton is actively wrong and unsafe (DbContext is not thread-safe and is meant to be Scoped).",
       "reference": "https://learn.microsoft.com/en-us/ef/core/querying/related-data/"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-001",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What classic design pattern does the ASP.NET Core middleware pipeline implement?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Chain of Responsibility pattern"
+        },
+        {
+          "id": "b",
+          "text": "Observer pattern"
+        },
+        {
+          "id": "c",
+          "text": "Singleton pattern"
+        },
+        {
+          "id": "d",
+          "text": "Factory pattern"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Each middleware component decides independently whether to handle the request, pass it to the next one, or short-circuit — exactly Chain of Responsibility. Observer is about broadcasting events to subscribers, Singleton is about instance uniqueness, and Factory is about object creation — none describe a chain of handlers passing a request along.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-002",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "Which built-in DI lifetime creates exactly one instance per HTTP request?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Transient"
+        },
+        {
+          "id": "b",
+          "text": "Scoped"
+        },
+        {
+          "id": "c",
+          "text": "Singleton"
+        },
+        {
+          "id": "d",
+          "text": "Static"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Scoped services are created once per request/scope and shared within it. Transient creates a new instance every resolution, Singleton creates one for the whole app's lifetime, and \"Static\" isn't a DI lifetime at all.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/service-lifetimes"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-003",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Which pipeline-building method registers middleware that never calls a `next` delegate and always terminates the pipeline?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use"
+        },
+        {
+          "id": "b",
+          "text": "Map"
+        },
+        {
+          "id": "c",
+          "text": "Run"
+        },
+        {
+          "id": "d",
+          "text": "MapWhen"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "`Run` registers terminal middleware with no `next` parameter — it's meant to be the last delegate in the pipeline. `Use` can continue or short-circuit, while `Map`/`MapWhen` branch the pipeline by path/predicate rather than terminating it.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-004",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why must `UseRouting` be registered before authorization middleware?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Authorization needs the request body to already be parsed"
+        },
+        {
+          "id": "b",
+          "text": "UseRouting registers the DI container needed by authorization"
+        },
+        {
+          "id": "c",
+          "text": "It's purely a historical convention with no functional reason"
+        },
+        {
+          "id": "d",
+          "text": "Authorization needs the endpoint routing selects to check its metadata"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "`UseRouting` matches the request to an endpoint and stores it on `HttpContext` without running it; authorization needs that selected endpoint to read its `[Authorize]` metadata, so it must run afterward. Body parsing and DI container setup are unrelated to routing/auth ordering, and it's a functional requirement, not just convention.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/routing?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-005",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Which options interface is itself registered as a singleton, can be injected into other singletons, and always reflects the latest configuration?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "IOptionsMonitor<T>"
+        },
+        {
+          "id": "b",
+          "text": "IOptions<T>"
+        },
+        {
+          "id": "c",
+          "text": "IOptionsSnapshot<T>"
+        },
+        {
+          "id": "d",
+          "text": "IConfiguration"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "`IOptionsMonitor<T>` is a singleton with an always-current `CurrentValue` and change notifications via `OnChange`. `IOptions<T>` is frozen at startup, `IOptionsSnapshot<T>` is scoped (so it can't go into a singleton), and `IConfiguration` is the raw, untyped configuration source rather than a bound options object.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/options?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-006",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What is a \"captive dependency\" in ASP.NET Core's DI container?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A circular reference between two singleton services"
+        },
+        {
+          "id": "b",
+          "text": "A scoped/transient service kept alive for the app's life by a singleton"
+        },
+        {
+          "id": "c",
+          "text": "A service that fails to resolve because its dependencies aren't registered"
+        },
+        {
+          "id": "d",
+          "text": "A middleware that captures and logs every incoming request"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "A singleton that takes a scoped (or transient) service as a constructor dependency resolves it once and holds that instance forever, defeating the shorter-lived service's intended scoping. The other options describe unrelated problems: circular references, missing registrations, and request logging.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/core/extensions/dependency-injection/guidelines"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-007",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "By default, what happens if code resolves a scoped service directly from the root `IServiceProvider` in Production?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Yes, it always throws regardless of environment"
+        },
+        {
+          "id": "b",
+          "text": "No, but it logs a warning to the console"
+        },
+        {
+          "id": "c",
+          "text": "Yes, but only if ValidateOnBuild is enabled"
+        },
+        {
+          "id": "d",
+          "text": "No — Production disables scope validation by default, so it fails silently"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "`ValidateScopes` defaults to on in Development (where it throws immediately) and off in Production, so the scoped service is silently created once from the root container and effectively promoted to singleton behavior — no exception, no warning, just a latent shared-state bug.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection.serviceprovideroptions.validatescopes?view=net-8.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-008",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "internals"
+      ],
+      "type": "single",
+      "question": "`IHttpContextAccessor` is registered as a singleton. How does it still return the context for the currently executing request?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It relies on AsyncLocal<T> to flow the request's context through async calls"
+        },
+        {
+          "id": "b",
+          "text": "It creates a new instance per request internally"
+        },
+        {
+          "id": "c",
+          "text": "ASP.NET Core restarts the singleton on every request"
+        },
+        {
+          "id": "d",
+          "text": "It reads the context from a static dictionary keyed by thread ID"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "The accessor itself stays a single singleton instance, but its `HttpContext` property reads ambient state flowed via `AsyncLocal<T>` through the current request's async call chain. It isn't re-instantiated per request, the runtime doesn't restart singletons, and it isn't thread-ID-keyed (which would break under async continuations that hop threads).",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/microsoft.aspnetcore.http.ihttpcontextaccessor?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-009",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "What problem do \"keyed services\" (introduced in .NET 8) solve?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They allow a service to have multiple constructors"
+        },
+        {
+          "id": "b",
+          "text": "They enable property injection in the built-in container"
+        },
+        {
+          "id": "c",
+          "text": "Registering/resolving multiple implementations of an interface by a key"
+        },
+        {
+          "id": "d",
+          "text": "They replace the need for interfaces entirely"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Keyed services let you register several implementations of the same interface under distinct keys and resolve a specific one via `[FromKeyedServices(key)]`, replacing older workarounds like filtering an injected `IEnumerable<T>`. They don't affect constructor overloading, add property injection, or remove the need for interfaces.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-aspnet-core-middleware-di-and-configuration-010",
+      "tags": [
+        "aspnet-core-middleware-di-and-configuration",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What's a real factor favoring MVC controllers over minimal APIs for a large, long-lived API surface?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Controllers run measurably faster under all workloads"
+        },
+        {
+          "id": "b",
+          "text": "Built-in conventions (binding, filters) that scale better for large teams"
+        },
+        {
+          "id": "c",
+          "text": "Controllers can use dependency injection while minimal APIs cannot"
+        },
+        {
+          "id": "d",
+          "text": "Minimal APIs cannot use middleware at all"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Controllers bring conventions like model binding and the action filter pipeline that help large teams keep many endpoints consistent. Minimal APIs actually have somewhat lower per-request overhead (not higher), fully support DI, and run on the same middleware pipeline as controllers.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/fundamentals/apis?view=aspnetcore-10.0"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-001",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "By default, how does EF Core's change tracker detect that a property on a tracked entity has changed?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It requires entities to implement INotifyPropertyChanged"
+        },
+        {
+          "id": "b",
+          "text": "It diffs current values against a stored per-property snapshot"
+        },
+        {
+          "id": "c",
+          "text": "It re-queries the database before every SaveChanges call"
+        },
+        {
+          "id": "d",
+          "text": "It relies on the CLR's garbage collector to flag mutated objects"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "EF Core's default strategy is snapshot-based: it stores each property's value when the entity starts being tracked, then diffs against that snapshot during DetectChanges (called internally by SaveChanges). (a) describes change-tracking proxies, an opt-in alternative, not the default. (c) would defeat the purpose of tracking changes made only in memory. (d) isn't a real mechanism EF Core uses.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/change-tracking/"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-002",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "performance"
+      ],
+      "type": "single",
+      "question": "A tracking query returns an entity that's already present in the change tracker. What does EF Core do?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Throws a duplicate-key tracking exception immediately"
+        },
+        {
+          "id": "b",
+          "text": "Creates and tracks a brand-new instance alongside the old one"
+        },
+        {
+          "id": "c",
+          "text": "Returns the already-tracked instance instead of a new one"
+        },
+        {
+          "id": "d",
+          "text": "Automatically detaches the older instance from the context"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Tracking queries do identity resolution: if the entity is already tracked, EF Core hands back that same instance rather than creating a duplicate, which can use less memory and be faster than a no-tracking query for that case. (a), (b), and (d) don't match documented behavior.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/tracking"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-003",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Including two sibling collection navigations on the same entity in one query (e.g. Blog.Posts and Blog.Contributors) can cause which specific problem?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "A cartesian explosion from the cross product of the two collections' rows"
+        },
+        {
+          "id": "b",
+          "text": "A compile-time error, since EF Core disallows multiple collection includes"
+        },
+        {
+          "id": "c",
+          "text": "Silent data loss for one of the two navigations"
+        },
+        {
+          "id": "d",
+          "text": "An automatic fallback to lazy loading for both navigations"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Joining two collection navigations at the same level produces a cross product per parent row, multiplying result rows unnecessarily. (b) is false, this compiles and runs fine, it's just slow. (c) and (d) don't reflect what actually happens.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-004",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "What's the main downside of AsSplitQuery() compared to the default single-query behavior?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It cannot be combined with the Include() method at all"
+        },
+        {
+          "id": "b",
+          "text": "It disables change tracking for every entity in the result"
+        },
+        {
+          "id": "c",
+          "text": "No single-snapshot guarantee, since each round trip is separate"
+        },
+        {
+          "id": "d",
+          "text": "It only works with the SQL Server provider and no others"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Because split queries are separate round trips, most databases give no atomic-snapshot guarantee across them, so concurrent writes between the queries can produce inconsistent results. (a) is false, split queries are specifically for Include scenarios. (b) is unrelated, tracking is independent of single vs. split. (d) is false, it's a general relational-provider feature.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/single-split-queries"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-005",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "For lazy-loading proxies to work on a navigation property, what must be true of that property and its containing class?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Must be virtual on a class that isn't sealed"
+        },
+        {
+          "id": "b",
+          "text": "The property must be static and marked with [Lazy]"
+        },
+        {
+          "id": "c",
+          "text": "The class must implement IEnumerable directly"
+        },
+        {
+          "id": "d",
+          "text": "The property must return a Task-wrapped type"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Proxy-based lazy loading generates a runtime subclass that overrides navigation properties, which requires them to be virtual on a class that can be inherited from (not sealed). (b), (c), and (d) don't describe any real EF Core requirement.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/related-data/lazy"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-006",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "performance"
+      ],
+      "type": "single",
+      "question": "Why do two queries with the same shape but different inline literal constants (e.g. `p.Title == \"post1\"` vs `p.Title == \"post2\"`) get compiled and cached separately by EF Core?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Because the literal becomes part of the expression tree, changing its shape"
+        },
+        {
+          "id": "b",
+          "text": "Because string comparisons are never cached by EF Core under any circumstance"
+        },
+        {
+          "id": "c",
+          "text": "Because the query cache only holds one entry per DbContext type"
+        },
+        {
+          "id": "d",
+          "text": "Because literals force EF Core into client-side evaluation"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "EF Core caches compiled queries by expression-tree shape; a captured variable becomes a parameter (same shape regardless of value), but an inline constant is baked into the tree, so each distinct literal produces a distinct shape and a separate cache entry. (b), (c), and (d) misstate how the cache actually works.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/performance/advanced-performance-topics"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-007",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "advanced-features"
+      ],
+      "type": "single",
+      "question": "How do ExecuteUpdate() and ExecuteDelete() differ from the traditional query-then-SaveChanges() approach for bulk changes?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They queue changes in the change tracker for the next SaveChanges call"
+        },
+        {
+          "id": "b",
+          "text": "They issue one SQL statement immediately, bypassing the change tracker"
+        },
+        {
+          "id": "c",
+          "text": "They require every affected row to be loaded into memory first, like SaveChanges does"
+        },
+        {
+          "id": "d",
+          "text": "They only work when wrapped in an explicit transaction"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "ExecuteUpdate/ExecuteDelete skip querying and tracking entirely and issue one direct SQL UPDATE/DELETE immediately. (a) describes SaveChanges' actual model, the opposite of these methods. (c) is exactly what they avoid. (d) is false, they don't require a transaction, though multiple calls aren't atomic together without one.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/saving/execute-insert-update-delete"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-008",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A Post entity has a required navigation to Blog, and Blog has a global query filter. What can happen when you run `context.Posts.Include(p => p.Blog)`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The required navigation's INNER JOIN drops posts whose Blog was filtered out"
+        },
+        {
+          "id": "b",
+          "text": "EF Core throws a compile-time error for combining filters with required navigations"
+        },
+        {
+          "id": "c",
+          "text": "The query filter on Blog is automatically ignored whenever Include is used"
+        },
+        {
+          "id": "d",
+          "text": "Posts are returned with a null Blog reference instead of being filtered"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Required navigations translate to INNER JOINs, so if the related Blog row was excluded by its query filter, the Post row has no join partner and is silently dropped from the result too. (b) is false, it's a runtime data issue, not a compile error. (c) and (d) don't match documented behavior.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/filters"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-009",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Where in a LINQ query does EF Core (since 3.0) permit implicit client-side evaluation without throwing?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Only inside the top-level projection (the final Select)"
+        },
+        {
+          "id": "b",
+          "text": "Anywhere in the query, matching pre-3.0 behavior"
+        },
+        {
+          "id": "c",
+          "text": "Only inside OrderBy clauses"
+        },
+        {
+          "id": "d",
+          "text": "Nowhere; all client evaluation requires an explicit opt-in"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Since EF Core 3.0, client evaluation is allowed only in the top-level projection; a non-translatable call anywhere else (like inside Where) throws a runtime exception instead of silently evaluating client-side. (b) describes the old, pre-3.0 behavior. (c) isn't accurate. (d) is too strict, the projection case is allowed implicitly.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/client-eval"
+    },
+    {
+      "id": "dotnet-ef-core-internals-and-query-performance-010",
+      "tags": [
+        "ef-core-internals-and-query-performance",
+        "pitfalls"
+      ],
+      "type": "multiple",
+      "question": "Which of the following are documented reasons EF Core throws an InvalidOperationException for concurrent DbContext use? (select all that apply)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "An async call wasn't awaited before the context was used again"
+        },
+        {
+          "id": "b",
+          "text": "The same context instance was used concurrently from multiple threads"
+        },
+        {
+          "id": "c",
+          "text": "A LINQ query used a lambda expression instead of a method group"
+        },
+        {
+          "id": "d",
+          "text": "The context was registered with a transient lifetime in DI"
+        }
+      ],
+      "correct": [
+        "a",
+        "b"
+      ],
+      "explanation": "Both a missing await on an async EF Core call and genuine multi-threaded sharing of one context instance are documented causes of the concurrent-access exception. (c) is unrelated to concurrency, it's a syntax choice with no runtime effect here. (d) is a DI lifetime choice, not itself a cause of concurrent access.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-001",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "internals"
+      ],
+      "type": "single",
+      "question": "At what object size does the CLR allocate on the Large Object Heap instead of the normal small-object heap?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "1,024 bytes"
+        },
+        {
+          "id": "b",
+          "text": "16,384 bytes"
+        },
+        {
+          "id": "c",
+          "text": "85,000 bytes"
+        },
+        {
+          "id": "d",
+          "text": "1,048,576 bytes"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Objects at or above 85,000 bytes go on the Large Object Heap (LOH), which is collected only during generation 2 GCs. 1,024 and 16,384 bytes are plausible-sounding round numbers but aren't the actual threshold; 1,048,576 bytes (1 MB) is far too large and would make most large arrays never qualify.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/standard/garbage-collection/large-object-heap"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-002",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Why must `Span<T>` be declared as a `ref struct`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "To make it faster to pass as a method parameter"
+        },
+        {
+          "id": "b",
+          "text": "To let the compiler restrict it to stack-only lifetime, since it may wrap stack memory"
+        },
+        {
+          "id": "c",
+          "text": "To force the JIT to inline every method that uses it"
+        },
+        {
+          "id": "d",
+          "text": "To allow it to implement multiple interfaces without boxing"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Span<T> can wrap stack memory (e.g. from stackalloc), so it must never escape to the heap where that pointer could become invalid; ref struct is the compiler mechanism enforcing stack-only usage. It's not primarily about parameter-passing speed, inlining, or interface implementation — those are side effects, not the reason.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/ref-struct"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-003",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "trade-offs"
+      ],
+      "type": "single",
+      "question": "Which GC flavor does ASP.NET Core use by default?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Workstation GC, non-concurrent"
+        },
+        {
+          "id": "b",
+          "text": "Workstation GC, background"
+        },
+        {
+          "id": "c",
+          "text": "Server GC, non-concurrent"
+        },
+        {
+          "id": "d",
+          "text": "Server GC, background"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "ASP.NET Core defaults to Server GC running in background (concurrent) mode, since the host determines the default GC flavor for hosted apps and a web server is the high-throughput scenario Server GC targets. The Workstation options are the standalone-app default, not the hosted-app default.",
+      "reference": "https://learn.microsoft.com/en-us/aspnet/core/performance/memory"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-004",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "What does `ArrayPool<T>.Rent(minimumLength)` guarantee about the array it returns?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "An array of at least minimumLength, contents not guaranteed cleared"
+        },
+        {
+          "id": "b",
+          "text": "An array of exactly minimumLength, zero-filled"
+        },
+        {
+          "id": "c",
+          "text": "An array of exactly minimumLength, contents not guaranteed cleared"
+        },
+        {
+          "id": "d",
+          "text": "An array of at least minimumLength, always zero-filled"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Rent retrieves a buffer that is at least the requested length — it may be larger — and by default Return doesn't clear the array's contents for performance, so the caller must track and use only the logical length it requested. The exact-length options are wrong because pooled arrays are commonly reused and thus larger than requested; the always-zero-filled option is wrong because clearing is opt-in via Return's clearArray parameter.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/system.buffers.arraypool-1"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-005",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "internals"
+      ],
+      "type": "single",
+      "question": "An object overrides Finalize(). What happens the first time a GC discovers it's otherwise unreachable?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Its memory is reclaimed immediately, then Finalize runs afterward"
+        },
+        {
+          "id": "b",
+          "text": "It's promoted to generation 2 permanently and never finalized"
+        },
+        {
+          "id": "c",
+          "text": "The GC throws an exception because Finalize wasn't suppressed"
+        },
+        {
+          "id": "d",
+          "text": "It's moved to a queue of objects ready for finalization and kept alive until finalized"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "The object is moved off the finalization queue onto a queue of objects ready to be finalized, kept alive so a finalizer thread can run Finalize, and only becomes eligible for actual reclamation on a subsequent collection — this is why finalizable objects need at least two GCs. Reclaiming memory before finalizing would let a finalizer touch freed memory; permanent Gen2 promotion and an exception aren't part of the documented mechanism.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/system.object.finalize"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-006",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In `dotnet-counters`, which combination most directly confirms a GC-pressure problem rather than a purely CPU-bound one?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "High CPU usage with a normal allocation rate and low % Time in GC"
+        },
+        {
+          "id": "b",
+          "text": "Low allocation rate with high thread pool queue length"
+        },
+        {
+          "id": "c",
+          "text": "High allocation rate with elevated % Time in GC and frequent Gen0/Gen1 collections"
+        },
+        {
+          "id": "d",
+          "text": "High working set with zero exceptions thrown"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "A high allocation rate driving frequent generational collections and a meaningfully elevated % Time in GC is the direct signature of GC pressure. High CPU with normal allocation and low % Time in GC points to CPU-bound work unrelated to GC; thread pool queue length points to concurrency/async saturation; working set with no exceptions says little about GC specifically.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/core/diagnostics/dotnet-counters"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-007",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "performance"
+      ],
+      "type": "single",
+      "question": "In BenchmarkDotNet's MemoryDiagnoser output, what does the \"Gen 0\" column actually represent?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The percentage of total runtime spent in Gen0 collections"
+        },
+        {
+          "id": "b",
+          "text": "The number of Gen0 collections per 1,000 operations of the benchmarked method"
+        },
+        {
+          "id": "c",
+          "text": "The size in bytes of the Gen0 segment at the end of the benchmark"
+        },
+        {
+          "id": "d",
+          "text": "The exact number of Gen0 collections observed during the entire run"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "BenchmarkDotNet's own documentation defines the Gen X columns as collections per 1,000 operations, normalizing across benchmarks with different iteration counts — not a raw total count, a time percentage, or a segment size, all of which are plausible-sounding but incorrect readings of the column.",
+      "reference": "https://benchmarkdotnet.org/articles/configs/diagnosers.html"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-008",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "What is the key difference between GCLatencyMode.LowLatency and GCLatencyMode.SustainedLowLatency?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "SustainedLowLatency disables generation 0 collections entirely"
+        },
+        {
+          "id": "b",
+          "text": "They're functionally identical, just named differently across .NET versions"
+        },
+        {
+          "id": "c",
+          "text": "LowLatency isn't available under Server GC and suits short critical sections; SustainedLowLatency suits an extended period"
+        },
+        {
+          "id": "d",
+          "text": "LowLatency works under Server GC; SustainedLowLatency doesn't"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "LowLatency is documented as not available for the server garbage collector and is meant for short bounded critical sections, while SustainedLowLatency is designed to minimize latency over an extended period by avoiding full blocking collections. They are not identical, and neither mode disables Gen0 collections — SustainedLowLatency still allows Gen0/Gen1/concurrent Gen2 collections.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/system.runtime.gclatencymode"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-009",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "advanced"
+      ],
+      "type": "single",
+      "question": "Does a Native AOT-published .NET app use a different garbage collector than a normal JIT-based app?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Yes — Native AOT replaces the GC with a simpler reference-counting collector"
+        },
+        {
+          "id": "b",
+          "text": "No — it ships a stripped-down CoreCLR that still uses the same generational GC"
+        },
+        {
+          "id": "c",
+          "text": "Yes — Native AOT uses a mark-and-sweep collector without generations"
+        },
+        {
+          "id": "d",
+          "text": "No — Native AOT apps disable garbage collection entirely and require manual memory management"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "Native AOT changes the compilation/execution model (no JIT, ahead-of-time compiled) and bundles a stripped-down CoreCLR runtime, but that runtime still provides the same generational GC. It doesn't replace the collector with reference counting or plain mark-and-sweep, and it doesn't disable garbage collection or require manual memory management.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/core/deploying/native-aot/"
+    },
+    {
+      "id": "dotnet-memory-management-gc-and-high-performance-types-010",
+      "tags": [
+        "memory-management-gc-and-high-performance-types",
+        "internals",
+        "pitfalls"
+      ],
+      "type": "multiple",
+      "question": "Which of the following operations can silently box a struct? (Select all that apply.)",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Adding the struct to a non-generic ArrayList"
+        },
+        {
+          "id": "b",
+          "text": "Passing the struct to a method parameter typed as object"
+        },
+        {
+          "id": "c",
+          "text": "Storing the struct in a List<T> of its own concrete type"
+        },
+        {
+          "id": "d",
+          "text": "Calling an interface method on the struct through the interface type"
+        }
+      ],
+      "correct": [
+        "a",
+        "b",
+        "d"
+      ],
+      "explanation": "ArrayList stores object internally so any struct added is boxed; an object-typed parameter requires boxing to accept a value type; calling an interface method via the interface type on a struct typically boxes it too. A List<T> of the struct's own concrete type stores the value type directly and contiguously without boxing, which is exactly why generics were introduced.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/types/boxing-and-unboxing"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-001",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "Two `record class` instances have identical property values but were constructed as separate objects. What does `record1 == record2` evaluate to?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "True — records compare every property's value, not identity"
+        },
+        {
+          "id": "b",
+          "text": "False — records use reference equality like plain classes"
+        },
+        {
+          "id": "c",
+          "text": "Throws unless GetHashCode is manually overridden first"
+        },
+        {
+          "id": "d",
+          "text": "True only when both instances are boxed to object first"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "The `record` modifier generates value equality: `Equals`/`GetHashCode`/`==`/`!=` all compare every property's value. Two records with identical property values are equal even though they're distinct objects (ReferenceEquals is false). (b) describes plain classes, not records. (c) is wrong — no override is required, the compiler generates it. (d) boxing has no bearing on record equality.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/records"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-002",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "internals",
+        "performance"
+      ],
+      "type": "single",
+      "question": "For a `record struct`, does a `with` expression allocate a new object on the heap the way it does for a `record class`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "No — it's just another value copy, no heap allocation needed"
+        },
+        {
+          "id": "b",
+          "text": "Yes, both use the same compiler-generated Clone method"
+        },
+        {
+          "id": "c",
+          "text": "No, record structs never support with expressions"
+        },
+        {
+          "id": "d",
+          "text": "Yes, but only if the struct implements IEquatable"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "record struct is a value type, so assignment (and `with`) already copies the whole value — no heap allocation or clone method involved. record class needs a heap allocation because `with` copies via a compiler-generated clone method on the reference type. (b) is wrong — record structs don't use a Clone method. (c) is factually wrong, record structs do support `with`. (d) IEquatable is unrelated to with-expression mechanics.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/types/records"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-003",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What C# language construct is the compiler mechanism that makes LINQ's deferred execution possible?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Reflection over the IEnumerable interface at runtime"
+        },
+        {
+          "id": "b",
+          "text": "The `dynamic` keyword deferring type resolution"
+        },
+        {
+          "id": "c",
+          "text": "The `yield return` statement inside an iterator block"
+        },
+        {
+          "id": "d",
+          "text": "The `async`/`await` keywords compiling to a state machine"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "Deferred execution is supported directly by `yield return` inside an iterator block, which the compiler turns into a state machine implementing IEnumerator<T>. (a) reflection plays no role here. (b) `dynamic` is unrelated — it defers type checking, not sequence evaluation. (d) async/await is a different, unrelated state-machine mechanism for asynchronous continuation, not lazy sequence iteration.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-lazy-evaluation"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-004",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "A method has `IEnumerable<int> query = source.Where(...)`. The caller calls `query.Count()` then `query.ToList()`. What happens?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "ToList() throws because the query was already consumed"
+        },
+        {
+          "id": "b",
+          "text": "Count() and ToList() run in parallel automatically"
+        },
+        {
+          "id": "c",
+          "text": "The Where filter runs once, results are cached after Count()"
+        },
+        {
+          "id": "d",
+          "text": "The Where filter runs twice — once per enumeration"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "A deferred query variable stores no results — each terminal call (Count(), ToList()) re-enumerates the whole chain from scratch. (a) is wrong, IEnumerable queries aren't 'consumed' and can be enumerated repeatedly. (b) there's no automatic parallelism in LINQ to Objects. (c) is the common wrong assumption — nothing caches results unless you explicitly materialize with ToList()/ToArray().",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/standard/linq/deferred-execution-lazy-evaluation"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-005",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "What's the key structural difference between how `Where` behaves on an `IEnumerable<T>` versus an `IQueryable<T>`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "IQueryable's Where always executes on a background thread"
+        },
+        {
+          "id": "b",
+          "text": "IEnumerable uses a delegate, IQueryable an expression tree"
+        },
+        {
+          "id": "c",
+          "text": "There is no difference — both compile to identical IL"
+        },
+        {
+          "id": "d",
+          "text": "IQueryable's Where requires the source to implement ICollection"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "IEnumerable<T>'s Where takes a Func<T,bool> — a compiled, in-process delegate. IQueryable<T>'s Where takes an Expression<Func<T,bool>> — an inspectable expression tree a provider (e.g. EF Core) can translate to SQL. (a) no threading guarantee exists. (c) they compile to genuinely different overloads with different behavior. (d) ICollection isn't required by either interface's Where.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/api/system.linq.iqueryable"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-006",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "performance",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Since EF Core 3.0, what happens by default if part of a `Where` clause can't be translated to SQL?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "EF Core silently ignores that part of the filter"
+        },
+        {
+          "id": "b",
+          "text": "The query falls back to raw SQL execution"
+        },
+        {
+          "id": "c",
+          "text": "EF Core throws instead of evaluating it client-side"
+        },
+        {
+          "id": "d",
+          "text": "EF Core automatically rewrites the query into a translatable form"
+        }
+      ],
+      "correct": [
+        "c"
+      ],
+      "explanation": "EF Core 3.x changed the default so untranslatable filtering logic throws at runtime instead of silently falling back to client evaluation (pulling extra data to finish filtering in memory) — this prevents a query that quietly does far more work than intended from shipping unnoticed. (a) and (d) don't reflect actual behavior. (b) there's no raw-SQL fallback mechanism triggered this way.",
+      "reference": "https://learn.microsoft.com/en-us/ef/core/querying/client-eval"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-007",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "pitfalls"
+      ],
+      "type": "single",
+      "question": "Why is `if (obj is int number)` generally preferred over `if (obj is int) { int number = (int)obj; }`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "It's identical in every way, just shorter to type"
+        },
+        {
+          "id": "b",
+          "text": "It avoids one unboxing operation compared to the cast form"
+        },
+        {
+          "id": "c",
+          "text": "It compiles to a hidden try/catch around the cast"
+        },
+        {
+          "id": "d",
+          "text": "It's null-safe and never risks InvalidCastException"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "The declaration/type pattern safely tests and binds in one step — no cast that could throw InvalidCastException, and it correctly rejects null regardless of compile-time type, unlike an explicit cast which can throw. (a) undersells real behavioral differences. (b) the number of unboxing operations isn't the actual reason it's preferred. (c) there's no try/catch involved — it's a type test, not exception handling.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/functional/pattern-matching"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-008",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "With `<Nullable>enable</Nullable>` turned on, what changes about the compiled program's runtime behavior for a `string?` versus a `string`?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Nothing — both compile to System.String at runtime"
+        },
+        {
+          "id": "b",
+          "text": "string? is compiled as Nullable<string> under the hood"
+        },
+        {
+          "id": "c",
+          "text": "string? adds a runtime null-check before every dereference"
+        },
+        {
+          "id": "d",
+          "text": "string becomes a non-nullable value type at runtime"
+        }
+      ],
+      "correct": [
+        "a"
+      ],
+      "explanation": "Nullable reference types are entirely a compile-time, static-analysis feature — the runtime behavior of the program is unchanged. `string` and `string?` are both exactly System.String at the IL/runtime level. (b) Nullable<T> is only for value types, this doesn't apply to reference types. (c) no runtime checks are inserted. (d) string remains a reference type either way.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/fundamentals/null-safety/nullable-reference-types"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-009",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "fundamentals"
+      ],
+      "type": "single",
+      "question": "A `required` property is left unset in an object initializer. When does this get caught?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "At runtime, the first time the property is read"
+        },
+        {
+          "id": "b",
+          "text": "At runtime, when the object is garbage collected"
+        },
+        {
+          "id": "c",
+          "text": "It's never caught — required is documentation only"
+        },
+        {
+          "id": "d",
+          "text": "At compile time — the compiler reports an error"
+        }
+      ],
+      "correct": [
+        "d"
+      ],
+      "explanation": "required is enforced entirely at compile time as part of object-initializer resolution: any construction site that omits a required member is a compile error, not a runtime issue. (a) and (b) both incorrectly place the check at runtime. (c) required has real compiler enforcement, it's not just documentation.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/keywords/required"
+    },
+    {
+      "id": "dotnet-csharp-language-features-and-linq-internals-010",
+      "tags": [
+        "csharp-language-features-and-linq-internals",
+        "internals"
+      ],
+      "type": "single",
+      "question": "A primary constructor parameter is only used to initialize a readonly property and never referenced elsewhere in the type. Does the compiler still generate hidden field storage for that parameter?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Yes, always, regardless of how the parameter is used"
+        },
+        {
+          "id": "b",
+          "text": "No — storage is only generated when actually needed"
+        },
+        {
+          "id": "c",
+          "text": "Only for record types, never for plain classes or structs"
+        },
+        {
+          "id": "d",
+          "text": "Only if the parameter type is a reference type"
+        }
+      ],
+      "correct": [
+        "b"
+      ],
+      "explanation": "The compiler only creates hidden storage for a primary constructor parameter if it's referenced somewhere in a member of the type after construction. If it's only used to initialize a property/field once, no extra field is generated for the parameter itself. (a) overstates it — storage isn't unconditional. (c) this behavior applies to plain classes/structs too, not just records. (d) the parameter's type doesn't determine whether storage is generated.",
+      "reference": "https://learn.microsoft.com/en-us/dotnet/csharp/whats-new/tutorials/primary-constructors"
     }
   ]
 }
