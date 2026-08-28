@@ -1024,7 +1024,7 @@
         },
         {
           "id": "b",
-          "text": "To let the compiler restrict it to stack-only lifetime, since it may wrap stack memory"
+          "text": "So the compiler can enforce a stack-only lifetime for it"
         },
         {
           "id": "c",
@@ -1084,7 +1084,7 @@
       "choices": [
         {
           "id": "a",
-          "text": "An array of at least minimumLength, contents not guaranteed cleared"
+          "text": "At least minimumLength; contents aren't guaranteed cleared"
         },
         {
           "id": "b",
@@ -1128,7 +1128,7 @@
         },
         {
           "id": "d",
-          "text": "It's moved to a queue of objects ready for finalization and kept alive until finalized"
+          "text": "It's queued for finalization, kept alive until finalized"
         }
       ],
       "correct": [
@@ -1156,7 +1156,7 @@
         },
         {
           "id": "c",
-          "text": "High allocation rate with elevated % Time in GC and frequent Gen0/Gen1 collections"
+          "text": "High allocation rate with elevated % Time in GC"
         },
         {
           "id": "d",
@@ -1220,7 +1220,7 @@
         },
         {
           "id": "c",
-          "text": "LowLatency isn't available under Server GC and suits short critical sections; SustainedLowLatency suits an extended period"
+          "text": "LowLatency isn't for Server GC; SustainedLowLatency fits a longer duration"
         },
         {
           "id": "d",
